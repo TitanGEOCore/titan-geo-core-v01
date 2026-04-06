@@ -1,0 +1,72 @@
+{% comment %}
+  Titan GEO - Optimierte Produktbeschreibung
+  Zeigt die GEO-optimierte Beschreibung oder fällt auf die Standard-Beschreibung zurück
+{% endcomment %}
+
+{% assign geo_body = product.metafields.custom.geo_optimized_body.value %}
+
+{% if block.settings.use_geo_content and geo_body != blank %}
+  <div class="titan-geo-description" {{ block.shopify_attributes }}>
+    {% if block.settings.show_badge %}
+      <div class="titan-geo-badge" style="display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #0a0a1a, #1a1a3e); color: #0ff; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-bottom: 16px; letter-spacing: 0.5px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#0ff"/>
+        </svg>
+        GEO-Optimiert
+      </div>
+    {% endif %}
+
+    {% if block.settings.heading != blank %}
+      <{{ block.settings.heading_level }} class="titan-geo-heading" style="margin-bottom: 12px;">
+        {{ block.settings.heading }}
+      </{{ block.settings.heading_level }}>
+    {% endif %}
+
+    <div class="titan-geo-content">
+      {{ geo_body }}
+    </div>
+  </div>
+{% else %}
+  <div class="titan-geo-description" {{ block.shopify_attributes }}>
+    {{ product.description }}
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "GEO Beschreibung",
+  "target": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "use_geo_content",
+      "label": "GEO-optimierten Inhalt verwenden",
+      "default": true,
+      "info": "Wenn aktiviert, wird die KI-optimierte Beschreibung angezeigt (falls vorhanden)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge",
+      "label": "GEO-Badge anzeigen",
+      "default": false,
+      "info": "Zeigt ein kleines 'GEO-Optimiert' Badge über der Beschreibung"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift"
+    },
+    {
+      "type": "select",
+      "id": "heading_level",
+      "label": "Überschriften-Ebene",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "h4", "label": "H4" }
+      ],
+      "default": "h3"
+    }
+  ]
+}
+{% endschema %}

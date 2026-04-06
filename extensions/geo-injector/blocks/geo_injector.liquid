@@ -1,0 +1,43 @@
+{% comment %}
+  Titan GEO Core — JSON-LD Injector Block
+  Reads the custom.geo_data metafield and renders it as structured data.
+  Prevents duplicate injection via DOM check.
+{% endcomment %}
+
+{% assign geo_data = product.metafields.custom.geo_data.value %}
+
+{% if geo_data != blank %}
+  <script id="titan-geo-jsonld-check">
+    (function() {
+      if (document.querySelector('script[data-titan-geo]')) {
+        // Already injected — prevent duplicate
+        var self = document.getElementById('titan-geo-jsonld-check');
+        if (self) self.remove();
+        return;
+      }
+
+      var script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute('data-titan-geo', 'true');
+      script.textContent = {{ geo_data | json }};
+      document.head.appendChild(script);
+
+      // Clean up the loader script
+      var self = document.getElementById('titan-geo-jsonld-check');
+      if (self) self.remove();
+    })();
+  </script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Titan GEO Data",
+  "target": "head",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "This block injects GEO-optimized JSON-LD structured data into the page head. No configuration needed — it reads directly from the product's geo_data metafield."
+    }
+  ]
+}
+{% endschema %}

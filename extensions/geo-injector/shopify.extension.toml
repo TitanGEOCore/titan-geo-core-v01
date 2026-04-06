@@ -1,0 +1,22 @@
+api_version = "2025-01"
+uid = "0c8a5798-a306-183c-e588-a12212be1ebbad7567b7"
+
+[[extensions]]
+name = "Titan GEO Injector"
+handle = "geo-injector"
+type = "theme"
+
+  [[extensions.blocks]]
+  name = "GEO JSON-LD"
+  handle = "geo-jsonld"
+  template = "blocks/geo_injector.liquid"
+
+  [[extensions.blocks]]
+  name = "GEO Beschreibung"
+  handle = "geo-description"
+  template = "blocks/geo_description.liquid"
+
+  [[extensions.blocks]]
+  name = "GEO FAQ"
+  handle = "geo-faq"
+  template = "blocks/geo_faq.liquid"

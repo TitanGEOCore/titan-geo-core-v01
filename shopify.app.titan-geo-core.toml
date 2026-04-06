@@ -1,0 +1,25 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "a1917853f5899d1beba37b4f7561ac63"
+name = "Titan GEO Core"
+application_url = "https://geo.titanwalls.de"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "titan-geo-core.myshopify.com"
+
+[webhooks]
+api_version = "2026-04"
+
+[access_scopes]
+scopes = "read_products,write_products,read_content,write_content,read_themes,write_themes"
+optional_scopes = [ ]
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [
+  "https://geo.titanwalls.de/auth/callback",
+  "https://geo.titanwalls.de/auth/shopify/callback",
+  "https://geo.titanwalls.de/google/callback"
+]

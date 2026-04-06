@@ -1,0 +1,7 @@
+[commands]
+dev = "npx vite dev"
+build = "npx remix vite:build"
+
+[roles]
+frontend = []
+backend = ["backend"]

@@ -1,0 +1,82 @@
+{% comment %}
+  Titan GEO - FAQ Section
+  Generiert aus JSON-LD FAQPage Daten
+{% endcomment %}
+
+{% assign geo_data_raw = product.metafields.custom.geo_data.value %}
+
+{% if geo_data_raw != blank %}
+  {% assign geo_data = geo_data_raw %}
+
+  <div class="titan-geo-faq" {{ block.shopify_attributes }}>
+    <{{ block.settings.heading_level }} style="margin-bottom: 16px;">
+      {{ block.settings.heading | default: "Häufig gestellte Fragen" }}
+    </{{ block.settings.heading_level }}>
+
+    <div class="titan-geo-faq-list" style="display: flex; flex-direction: column; gap: 8px;">
+      {% comment %} FAQ items will be populated via JavaScript from JSON-LD data {% endcomment %}
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      try {
+        var geoData = {{ geo_data_raw }};
+        var faqList = document.querySelector('.titan-geo-faq-list');
+        if (!faqList || !geoData) return;
+
+        // Look for FAQ data in the JSON-LD
+        var faqs = [];
+        if (geoData['@type'] === 'FAQPage' && geoData.mainEntity) {
+          faqs = geoData.mainEntity;
+        } else if (geoData.mainEntity) {
+          faqs = geoData.mainEntity;
+        }
+
+        faqs.forEach(function(faq) {
+          if (!faq.name || !faq.acceptedAnswer) return;
+          var item = document.createElement('details');
+          item.style.cssText = 'border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px 16px; cursor: pointer;';
+
+          var summary = document.createElement('summary');
+          summary.style.cssText = 'font-weight: 600; list-style: none; display: flex; justify-content: space-between; align-items: center;';
+          summary.textContent = faq.name;
+
+          var answer = document.createElement('div');
+          answer.style.cssText = 'padding-top: 12px; color: #666; line-height: 1.6;';
+          answer.textContent = faq.acceptedAnswer.text || '';
+
+          item.appendChild(summary);
+          item.appendChild(answer);
+          faqList.appendChild(item);
+        });
+      } catch(e) { console.error('Titan GEO FAQ error:', e); }
+    })();
+  </script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "GEO FAQ",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Überschrift",
+      "default": "Häufig gestellte Fragen"
+    },
+    {
+      "type": "select",
+      "id": "heading_level",
+      "label": "Überschriften-Ebene",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "h4", "label": "H4" }
+      ],
+      "default": "h2"
+    }
+  ]
+}
+{% endschema %}
