@@ -11,10 +11,25 @@ import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
+  const url = new URL(request.url);
+  const cursor = url.searchParams.get("cursor");
+  const direction = url.searchParams.get("direction") || "next";
+
+  const paginationArgs = cursor
+    ? direction === "next"
+      ? `first: 25, after: "${cursor}"`
+      : `last: 25, before: "${cursor}"`
+    : "first: 25";
 
   const response = await admin.graphql(`
     query {
-      products(first: 80) {
+      products(${paginationArgs}) {
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
         nodes {
           id
           title
@@ -40,8 +55,15 @@ export const loader = async ({ request }) => {
     image: p.featuredImage?.url || null,
     hasAltText: !!(p.featuredImage?.altText),
   })) || [];
+  
+  const pageInfo = data.data?.products?.pageInfo || {
+    hasNextPage: false,
+    hasPreviousPage: false,
+    startCursor: null,
+    endCursor: null
+  };
 
-  return json({ products, shop: session.shop });
+  return json({ products, pageInfo, shop: session.shop });
 };
 
 export const action = async ({ request }) => {
@@ -372,7 +394,7 @@ function KeywordCard({ kw, products, category }) {
 
 /* Main Component */
 export default function Keywords() {
-  const { products } = useLoaderData();
+  const { products, pageInfo } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const [selectedProduct, setSelectedProduct] = useState("");
@@ -855,6 +877,31 @@ export default function Keywords() {
           </div>
         )}
       </BlockStack>
+
+      {/* Pagination */}
+      {(pageInfo.hasPreviousPage || pageInfo.hasNextPage) && (
+        <BlockStack gap="300" align="center">
+          <InlineStack gap="300" blockAlign="center">
+            {pageInfo.hasPreviousPage && (
+              <Button 
+                url={`/app/keywords?cursor=${pageInfo.startCursor}&direction=prev`}
+              >
+                ← Vorherige Seite
+              </Button>
+            )}
+            <Text variant="bodySm" as="span" tone="subdued">
+              Seite
+            </Text>
+            {pageInfo.hasNextPage && (
+              <Button 
+                url={`/app/keywords?cursor=${pageInfo.endCursor}&direction=next`}
+              >
+                Nächste Seite →
+              </Button>
+            )}
+          </InlineStack>
+        </BlockStack>
+      )}
     </Page>
   );
 }
