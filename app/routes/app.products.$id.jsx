@@ -137,7 +137,22 @@ export const action = async ({ request, params }) => {
 
     const previousData = JSON.parse(version.previousData);
 
+    // Get current product data for backup before rollback
+    const currentProductQuery = await admin.graphql(`
+      query getProduct($id: ID!) {
+        product(id: $id) {
+          id
+          title
+          descriptionHtml
+          seo { title description }
+        }
+      }
+    `, { variables: { id: shopifyProductId } });
+    const currentProductData = await currentProductQuery.json();
+    const currentProduct = currentProductData.data?.product;
+
     try {
+      // Restore the product with previous data
       const mutation = `#graphql
         mutation productUpdate($input: ProductInput!) {
           productUpdate(input: $input) {
@@ -158,6 +173,26 @@ export const action = async ({ request, params }) => {
               description: previousData.seo?.description || "",
             },
           },
+        },
+      });
+
+      // Create a new ContentVersion entry for this rollback
+      // Store the current state as previousData for the new rollback entry
+      await prisma.contentVersion.create({
+        data: {
+          shop: session.shop,
+          productId: shopifyProductId,
+          previousData: JSON.stringify({
+            title: currentProduct?.title,
+            descriptionHtml: currentProduct?.descriptionHtml,
+            seo: currentProduct?.seo,
+          }),
+          newData: JSON.stringify({
+            title: previousData.title,
+            descriptionHtml: previousData.descriptionHtml,
+            seo: previousData.seo,
+            rollbackedFrom: versionId,
+          }),
         },
       });
 
