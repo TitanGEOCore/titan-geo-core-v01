@@ -9,10 +9,34 @@ services:
       - "3000:3000"
     env_file:
       - .env
-    volumes:
-      - app-data:/app/prisma
+    environment:
+      # Die App greift auf den internen db-Container zu
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - titan-net
+
+  db:
+    image: postgres:15-alpine
+    container_name: titan-db
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-titan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-titan_secure_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-titan_geo}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - titan-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-titan} -d ${POSTGRES_DB:-titan_geo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   caddy:
     image: caddy:2-alpine
@@ -31,7 +55,7 @@ services:
       - app
 
 volumes:
-  app-data:
+  db-data:
   caddy-data:
   caddy-config:
 

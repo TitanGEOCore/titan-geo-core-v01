@@ -7,50 +7,62 @@ import { authenticate, GROWTH_PLAN, PRO_PLAN, ENTERPRISE_PLAN } from "../shopify
 import prisma from "../db.server";
 
 export const loader = async ({ request }) => {
-  const { billing, session } = await authenticate.admin(request);
-  const shop = session.shop;
+  try {
+    const { billing, session } = await authenticate.admin(request);
+    const shop = session.shop;
 
-  const { hasActivePayment, appSubscriptions } = await billing.check({
-    plans: [GROWTH_PLAN, PRO_PLAN, ENTERPRISE_PLAN],
-    isTest: process.env.NODE_ENV !== "production",
-  });
+    let currentPlan = "Starter";
+    try {
+      const { hasActivePayment, appSubscriptions } = await billing.check({
+        plans: [GROWTH_PLAN, PRO_PLAN, ENTERPRISE_PLAN],
+        isTest: true,
+      });
 
-  let currentPlan = "Starter";
-  if (hasActivePayment && appSubscriptions?.length > 0) {
-    const sub = appSubscriptions[0];
-    if (sub.name === ENTERPRISE_PLAN) currentPlan = "Enterprise";
-    else if (sub.name === PRO_PLAN) currentPlan = "Pro";
-    else if (sub.name === GROWTH_PLAN) currentPlan = "Growth";
+      if (hasActivePayment && appSubscriptions?.length > 0) {
+        const sub = appSubscriptions[0];
+        if (sub.name === ENTERPRISE_PLAN) currentPlan = "Enterprise";
+        else if (sub.name === PRO_PLAN) currentPlan = "Pro";
+        else if (sub.name === GROWTH_PLAN) currentPlan = "Growth";
+      }
+    } catch (billingError) {
+      console.error("Billing check error:", billingError);
+      // Continue with Starter plan as default
+    }
+
+    const usage = await prisma.usageTracker.count({ where: { shop } });
+
+    return json({ currentPlan, usage });
+  } catch (error) {
+    console.error("Billing loader error:", error);
+    return json({ currentPlan: "Starter", usage: 0 });
   }
-
-  const usage = await prisma.usageTracker.count({ where: { shop } });
-
-  return json({ currentPlan, usage });
 };
 
 export const action = async ({ request }) => {
-  const { billing } = await authenticate.admin(request);
-  const formData = await request.formData();
-  const plan = formData.get("plan");
+  try {
+    const { billing } = await authenticate.admin(request);
+    const formData = await request.formData();
+    const plan = formData.get("plan");
 
-  if (plan === "growth") {
-    await billing.request({
-      plan: GROWTH_PLAN,
-      isTest: process.env.NODE_ENV !== "production",
-    });
-  } else if (plan === "pro") {
-    await billing.request({
-      plan: PRO_PLAN,
-      isTest: process.env.NODE_ENV !== "production",
-    });
-  } else if (plan === "enterprise") {
-    await billing.request({
-      plan: ENTERPRISE_PLAN,
-      isTest: process.env.NODE_ENV !== "production",
-    });
+    const planMap = {
+      growth: GROWTH_PLAN,
+      pro: PRO_PLAN,
+      enterprise: ENTERPRISE_PLAN,
+    };
+
+    if (planMap[plan]) {
+      await billing.request({
+        plan: planMap[plan],
+        isTest: true,
+      });
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Billing action error:", error);
+    // billing.request throws a redirect to Shopify's billing confirmation — that's expected
+    throw error;
   }
-
-  return null;
 };
 
 const plans = [
@@ -221,21 +233,21 @@ export default function Billing() {
               <div
                 key={plan.name}
                 style={{
-                  background: "#1a1a2e",
+                  background: plan.featured ? "#fafaff" : "#ffffff",
                   borderRadius: "16px",
                   padding: "28px 24px",
                   display: "flex",
                   flexDirection: "column",
                   position: "relative",
                   overflow: "hidden",
-                  border: plan.featured ? "2px solid transparent" : "1px solid #2a2a4a",
+                  border: plan.featured ? "2px solid transparent" : "1px solid #e2e8f0",
                   backgroundImage: plan.featured
-                    ? "linear-gradient(#1a1a2e, #1a1a2e), linear-gradient(135deg, #6366f1, #a855f7, #ec4899, #6366f1)"
+                    ? "linear-gradient(#fafaff, #fafaff), linear-gradient(135deg, #6366f1, #a855f7, #ec4899, #6366f1)"
                     : "none",
                   backgroundOrigin: plan.featured ? "border-box" : "padding-box",
                   backgroundClip: plan.featured ? "padding-box, border-box" : "padding-box",
                   animation: plan.featured ? "titan-gradient-border 3s linear infinite" : "none",
-                  boxShadow: plan.featured ? "0 0 30px rgba(99, 102, 241, 0.3)" : "0 4px 20px rgba(0,0,0,0.2)",
+                  boxShadow: plan.featured ? "0 0 30px rgba(99, 102, 241, 0.15)" : "0 2px 12px rgba(0,0,0,0.06)",
                 }}
               >
                 {plan.featured && (
@@ -258,7 +270,7 @@ export default function Billing() {
 
                 <div style={{ marginBottom: "16px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                    <span style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff" }}>
+                    <span style={{ fontSize: "20px", fontWeight: 800, color: "#0f172a" }}>
                       {plan.name}
                     </span>
                     {plan.name === currentPlan && (
@@ -274,7 +286,7 @@ export default function Billing() {
                   <span style={{
                     fontSize: "36px",
                     fontWeight: 900,
-                    color: "#ffffff",
+                    color: "#0f172a",
                     letterSpacing: "-1px",
                   }}>
                     {plan.price === "0" ? "Gratis" : `$${plan.price}`}
@@ -293,7 +305,7 @@ export default function Billing() {
 
                 <div style={{
                   height: "1px",
-                  background: "linear-gradient(to right, transparent, #2a2a4a, transparent)",
+                  background: "linear-gradient(to right, transparent, #e2e8f0, transparent)",
                   margin: "0 0 20px 0",
                 }} />
 
@@ -314,7 +326,7 @@ export default function Billing() {
                         alignItems: "flex-start",
                         gap: "8px",
                         fontSize: "13px",
-                        color: feature.included ? "#e2e8f0" : "#475569",
+                        color: feature.included ? "#334155" : "#cbd5e1",
                         lineHeight: "1.4",
                       }}
                     >

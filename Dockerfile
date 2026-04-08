@@ -6,7 +6,6 @@ COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev
 
 COPY . .
-
 RUN npx prisma generate
 RUN npm run build
 
@@ -26,4 +25,5 @@ ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma db push --skip-generate && npm run start"]
+# WICHTIG: Hier ist der geänderte Produktions-Befehl
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]

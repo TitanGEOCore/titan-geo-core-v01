@@ -226,6 +226,15 @@ export default function Products() {
     handleAudit(shopifyId);
   };
 
+  // Responsive: detect mobile via window width
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const handleBulkOptimize = () => {
     if (limitReached) {
       shopify.toast.show(
@@ -243,6 +252,14 @@ export default function Products() {
         setTimeout(() => handleOptimize(product.shopifyId), i * 3000);
       }
     });
+  };
+
+  // Open product in Shopify admin (external link)
+  const openInShopify = (productId) => {
+    window.open(
+      `shopify:admin/products/${productId}`,
+      "_top"
+    );
   };
 
   const promotedBulkActions = [
@@ -392,16 +409,42 @@ export default function Products() {
               Health Check
             </Button>
           </Tooltip>
-          <Tooltip content="Zur Produktdetailseite">
+          <Tooltip content="GEO-Optimierung starten">
             <Button
               size="slim"
               variant="primary"
               onClick={(e) => {
                 e.stopPropagation();
+                handleOptimize(product.shopifyId);
+              }}
+              loading={optimizingId === product.shopifyId}
+              disabled={optimizingId === product.shopifyId || limitReached}
+            >
+              Optimieren
+            </Button>
+          </Tooltip>
+          <Tooltip content="Produktdetails anzeigen">
+            <Button
+              size="slim"
+              variant="plain"
+              onClick={(e) => {
+                e.stopPropagation();
                 navigate(`/app/products/${product.id}`);
               }}
             >
-              Optimieren
+              Details
+            </Button>
+          </Tooltip>
+          <Tooltip content="In Shopify Admin öffnen">
+            <Button
+              size="slim"
+              variant="plain"
+              onClick={(e) => {
+                e.stopPropagation();
+                openInShopify(product.id);
+              }}
+            >
+              Shopify
             </Button>
           </Tooltip>
         </InlineStack>
@@ -558,7 +601,7 @@ export default function Products() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr auto auto",
+              gridTemplateColumns: isMobile ? "1fr" : "1fr auto auto",
               gap: "12px",
               alignItems: "end",
             }}
@@ -620,29 +663,114 @@ export default function Products() {
           )}
         </Card>
 
-        {/* Products Table */}
+        {/* Products — Mobile Cards or Desktop Table */}
         {filteredProducts.length > 0 ? (
-          <Card padding="0">
-            <IndexTable
-              resourceName={resourceName}
-              itemCount={filteredProducts.length}
-              selectedItemsCount={
-                allResourcesSelected ? "All" : selectedResources.length
-              }
-              onSelectionChange={handleSelectionChange}
-              headings={[
-                { title: "Produkt" },
-                { title: "Status" },
-                { title: "GEO Score" },
-                { title: "Bewertung" },
-                { title: "Aktionen" },
-              ]}
-              promotedBulkActions={promotedBulkActions}
-              selectable
-            >
-              {rowMarkup}
-            </IndexTable>
-          </Card>
+          isMobile ? (
+            /* ── MOBILE: Card Layout ── */
+            <BlockStack gap="300">
+              {filteredProducts.map((product) => (
+                <Card key={product.id}>
+                  <BlockStack gap="300">
+                    <InlineStack gap="300" blockAlign="center" wrap={false}>
+                      <div style={{ borderRadius: "10px", overflow: "hidden", flexShrink: 0 }}>
+                        <Thumbnail
+                          source={product.image || ImageIcon}
+                          alt={product.imageAlt || product.title}
+                          size="small"
+                        />
+                      </div>
+                      <BlockStack gap="050">
+                        <Text variant="bodyMd" as="span" fontWeight="semibold">
+                          {product.title}
+                        </Text>
+                        <Text variant="bodySm" as="span" tone="subdued">
+                          /{product.handle}
+                        </Text>
+                      </BlockStack>
+                    </InlineStack>
+                    <InlineStack gap="200" blockAlign="center">
+                      <Badge tone={product.status === "ACTIVE" ? "success" : "info"}>
+                        {product.status === "ACTIVE" ? "Aktiv" : product.status}
+                      </Badge>
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", gap: "6px",
+                        padding: "4px 10px", borderRadius: "20px",
+                        background: `${getScoreColor(product.geoScore)}15`,
+                        border: `1px solid ${getScoreColor(product.geoScore)}30`,
+                      }}>
+                        <div style={{
+                          width: "8px", height: "8px", borderRadius: "50%",
+                          background: getScoreColor(product.geoScore),
+                        }} />
+                        <Text variant="bodySm" as="span" fontWeight="semibold">
+                          {product.geoScore !== null ? `${product.geoScore}/100` : "---"}
+                        </Text>
+                      </div>
+                      <Text variant="bodySm" as="span" tone="subdued">
+                        {getScoreLabel(product.geoScore)}
+                      </Text>
+                    </InlineStack>
+                    <InlineStack gap="200">
+                      <Button
+                        size="slim"
+                        onClick={() => handleHealthCheck(product.shopifyId)}
+                        loading={auditingId === product.shopifyId && healthCheckId === product.shopifyId}
+                        disabled={auditingId === product.shopifyId}
+                      >
+                        Health Check
+                      </Button>
+                      <Button
+                        size="slim"
+                        variant="primary"
+                        onClick={() => handleOptimize(product.shopifyId)}
+                        loading={optimizingId === product.shopifyId}
+                        disabled={optimizingId === product.shopifyId || limitReached}
+                      >
+                        Optimieren
+                      </Button>
+                      <Button
+                        size="slim"
+                        variant="plain"
+                        onClick={() => navigate(`/app/products/${product.id}`)}
+                      >
+                        Details
+                      </Button>
+                      <Button
+                        size="slim"
+                        variant="plain"
+                        onClick={() => openInShopify(product.id)}
+                      >
+                        Shopify
+                      </Button>
+                    </InlineStack>
+                  </BlockStack>
+                </Card>
+              ))}
+            </BlockStack>
+          ) : (
+            /* ── DESKTOP: IndexTable Layout ── */
+            <Card padding="0">
+              <IndexTable
+                resourceName={resourceName}
+                itemCount={filteredProducts.length}
+                selectedItemsCount={
+                  allResourcesSelected ? "All" : selectedResources.length
+                }
+                onSelectionChange={handleSelectionChange}
+                headings={[
+                  { title: "Produkt" },
+                  { title: "Status" },
+                  { title: "GEO Score" },
+                  { title: "Bewertung" },
+                  { title: "Aktionen" },
+                ]}
+                promotedBulkActions={promotedBulkActions}
+                selectable
+              >
+                {rowMarkup}
+              </IndexTable>
+            </Card>
+          )
         ) : (
           <Card>
             <Box padding="800">

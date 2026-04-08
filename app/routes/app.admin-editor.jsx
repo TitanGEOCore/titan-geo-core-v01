@@ -6,7 +6,7 @@ import fs from "fs";
 import path from "path";
 
 // Admin-Session-Prüfung importieren
-import { verifyAdminSession } from "./admin-login";
+import { verifyAdminSession } from "../admin-session.server";
 
 const CUSTOMIZATIONS_PATH = path.resolve(process.cwd(), "app/data/customizations.json");
 

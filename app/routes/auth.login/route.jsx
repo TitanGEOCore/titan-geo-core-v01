@@ -16,12 +16,22 @@ import { login } from "../../shopify.server";
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }) => {
-  const errors = login(request);
+  const url = new URL(request.url);
+  const errors = { shop: null };
+
+  // Wenn ein Shop-Parameter in der URL ist, direkt weiterleiten
+  if (url.searchParams.get("shop")) {
+    throw new Response(null, {
+      status: 302,
+      headers: { Location: `/app?shop=${url.searchParams.get("shop")}` },
+    });
+  }
+
   return { polarisTranslations, errors };
 };
 
 export const action = async ({ request }) => {
-  const errors = login(request);
+  const errors = await login(request);
   return errors;
 };
 

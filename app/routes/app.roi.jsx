@@ -427,55 +427,52 @@ export default function ROI() {
   // No optimizations yet — show onboarding-style page
   if (totalOptimizations === 0) {
     return (
-      <div className="titan-dark">
-        <Page title="ROI Dashboard" subtitle="Return on Investment deiner SEO-Optimierungen" backAction={{ content: "Dashboard", url: "/app" }}>
-          <BlockStack gap="600">
-            <Card>
-              <EmptyState
-                heading="Starte mit deiner ersten Optimierung"
-                action={{ content: "Produkte optimieren", url: "/app/products" }}
-                secondaryAction={!googleConnected ? { content: "Google verbinden", url: "/app/settings#google" } : undefined}
-              >
-                <p>
-                  Optimiere deine Produkte fuer KI-Suchmaschinen und verfolge hier den
-                  geschaetzten ROI. Basierend auf Branchen-Durchschnittswerten berechnen wir
-                  den Wert jeder Optimierung.
-                </p>
-              </EmptyState>
-            </Card>
+      <Page title="ROI Dashboard" subtitle="Return on Investment deiner SEO-Optimierungen" backAction={{ content: "Dashboard", url: "/app" }}>
+        <BlockStack gap="600">
+          <Card>
+            <EmptyState
+              heading="Starte mit deiner ersten Optimierung"
+              action={{ content: "Produkte optimieren", url: "/app/products" }}
+              secondaryAction={!googleConnected ? { content: "Google verbinden", url: "/app/settings#google" } : undefined}
+            >
+              <p>
+                Optimiere deine Produkte für KI-Suchmaschinen und verfolge hier den
+                geschätzten ROI. Basierend auf Branchen-Durchschnittswerten berechnen wir
+                den Wert jeder Optimierung.
+              </p>
+            </EmptyState>
+          </Card>
 
-            {/* Show what they'd get */}
-            <Card>
-              <BlockStack gap="400">
-                <Text variant="headingSm" as="h2">Was du hier sehen wirst</Text>
-                <Divider />
-                <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
-                  {[
-                    { title: "Optimierungs-Uebersicht", desc: "Gesamtzahl und Abdeckung deiner Optimierungen" },
-                    { title: "Traffic-Projektionen", desc: "Geschaetzter Traffic-Zuwachs basierend auf Branchen-Daten" },
-                    { title: "Umsatz-Prognose", desc: "Hochrechnung des erwarteten Mehrumsatzes" },
-                    { title: "Zeitlicher Verlauf", desc: "Woechentliche Optimierungs-Aktivitaet im Diagramm" },
-                  ].map((item) => (
-                    <Box key={item.title} padding="300" background="bg-surface-secondary" borderRadius="200">
-                      <BlockStack gap="100">
-                        <Text variant="bodyMd" fontWeight="semibold">{item.title}</Text>
-                        <Text variant="bodySm" tone="subdued">{item.desc}</Text>
-                      </BlockStack>
-                    </Box>
-                  ))}
-                </InlineGrid>
-              </BlockStack>
-            </Card>
-          </BlockStack>
-        </Page>
-      </div>
+          {/* Show what they'd get */}
+          <Card>
+            <BlockStack gap="400">
+              <Text variant="headingSm" as="h2">Was du hier sehen wirst</Text>
+              <Divider />
+              <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
+                {[
+                  { title: "Optimierungs-Übersicht", desc: "Gesamtzahl und Abdeckung deiner Optimierungen" },
+                  { title: "Traffic-Projektionen", desc: "Geschätzter Traffic-Zuwachs basierend auf Branchen-Daten" },
+                  { title: "Umsatz-Prognose", desc: "Hochrechnung des erwarteten Mehrumsatzes" },
+                  { title: "Zeitlicher Verlauf", desc: "Wöchentliche Optimierungs-Aktivität im Diagramm" },
+                ].map((item) => (
+                  <Box key={item.title} padding="300" background="bg-surface-secondary" borderRadius="200">
+                    <BlockStack gap="100">
+                      <Text variant="bodyMd" fontWeight="semibold">{item.title}</Text>
+                      <Text variant="bodySm" tone="subdued">{item.desc}</Text>
+                    </BlockStack>
+                  </Box>
+                ))}
+              </InlineGrid>
+            </BlockStack>
+          </Card>
+        </BlockStack>
+      </Page>
     );
   }
 
   const maxWeekly = weeklyTimeline.length > 0 ? Math.max(...weeklyTimeline.map((w) => w.count)) : 1;
 
   return (
-    <div className="titan-dark">
       <Page
         title="ROI Dashboard"
         subtitle="Return on Investment deiner GEO-Optimierungen"
@@ -491,8 +488,8 @@ export default function ROI() {
               action={{ content: "Google verbinden", url: "/app/settings#google" }}
             >
               <p>
-                Verbinde Google Search Console fuer echte Impressionen, Klicks und Ranking-Daten.
-                Ohne Google-Verbindung siehst du nur geschaetzte Werte basierend auf Branchen-Durchschnittswerten.
+                Verbinde Google Search Console fürechte Impressionen, Klicks und Ranking-Daten.
+                Ohne Google-Verbindung siehst du nur geschätzte Werte basierend auf Branchen-Durchschnittswerten.
               </p>
             </Banner>
           )}
@@ -507,14 +504,14 @@ export default function ROI() {
               color="#6366f1"
             />
             <MetricCardEnhanced
-              title="Geschaetzter Traffic-Zuwachs"
+              title="Geschätzter Traffic-Zuwachs"
               value={`+${projections.estimatedAdditionalClicks.toLocaleString("de-DE")}`}
-              subtitle="Zusaetzliche Klicks / Monat"
+              subtitle="Zusätzliche Klicks / Monat"
               icon="T"
               color="#06b6d4"
             />
             <MetricCardEnhanced
-              title="Geschaetzter Umsatz-Impact"
+              title="Geschätzter Umsatz-Impact"
               value={projections.estimatedRevenueImpact.toLocaleString("de-DE")}
               prefix=""
               suffix=" EUR"
@@ -571,7 +568,7 @@ export default function ROI() {
                 <InlineStack align="space-between" blockAlign="center">
                   <InlineStack gap="200" blockAlign="center">
                     <Text variant="headingSm" as="h2">ROI-Projektion</Text>
-                    <Badge tone="info">Geschaetzt</Badge>
+                    <Badge tone="info">Geschätzt</Badge>
                   </InlineStack>
                   <Icon source={showProjectionDetails ? ChevronUpIcon : ChevronDownIcon} />
                 </InlineStack>
@@ -636,7 +633,7 @@ export default function ROI() {
                           <Text variant="bodySm" fontWeight="semibold">{AVG_IMPRESSIONS_PER_PRODUCT}</Text>
                         </InlineStack>
                         <InlineStack align="space-between">
-                          <Text variant="bodySm">Geschaetzter Traffic-Zuwachs durch Optimierung</Text>
+                          <Text variant="bodySm">Geschätzter Traffic-Zuwachs durch Optimierung</Text>
                           <Text variant="bodySm" fontWeight="semibold">+{AVG_TRAFFIC_INCREASE_PERCENT}%</Text>
                         </InlineStack>
                         <InlineStack align="space-between">
@@ -657,7 +654,7 @@ export default function ROI() {
                         </InlineStack>
                         <Divider />
                         <InlineStack align="space-between">
-                          <Text variant="bodySm" fontWeight="bold">Resultat: Geschaetzter Mehrumsatz</Text>
+                          <Text variant="bodySm" fontWeight="bold">Resultat: Geschätzter Mehrumsatz</Text>
                           <Text variant="bodySm" fontWeight="bold" tone="success">
                             +{projections.estimatedRevenueImpact.toLocaleString("de-DE")} EUR / Monat
                           </Text>
@@ -665,9 +662,9 @@ export default function ROI() {
                       </BlockStack>
                     </div>
                     <Text variant="bodySm" tone="subdued">
-                      Hinweis: Projektionen basieren auf Branchen-Durchschnittswerten fuer E-Commerce.
-                      Tatsaechliche Ergebnisse koennen je nach Branche, Wettbewerb und Suchvolumen variieren.
-                      Verbinde Google Search Console fuer echte Performance-Daten.
+                      Hinweis: Projektionen basieren auf Branchen-Durchschnittswerten fürE-Commerce.
+                      Tatsaechliche Ergebnisse können je nach Branche, Wettbewerb und Suchvolumen variieren.
+                      Verbinde Google Search Console fürechte Performance-Daten.
                     </Text>
                   </BlockStack>
                 </Box>
@@ -687,7 +684,7 @@ export default function ROI() {
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setShowTimeline((v) => !v); }}
                 >
                   <InlineStack align="space-between" blockAlign="center">
-                    <Text variant="headingSm" as="h2">Optimierungs-Verlauf (Woechentlich)</Text>
+                    <Text variant="headingSm" as="h2">Optimierungs-Verlauf (Wöchentlich)</Text>
                     <InlineStack gap="200" blockAlign="center">
                       <Badge>{weeklyTimeline.reduce((s, w) => s + w.count, 0)} gesamt</Badge>
                       <Icon source={showTimeline ? ChevronUpIcon : ChevronDownIcon} />
@@ -817,10 +814,10 @@ export default function ROI() {
           {/* ── What-If Scenario ── */}
           <Card>
             <BlockStack gap="400">
-              <Text variant="headingSm" as="h2">Was waere wenn: 100% Abdeckung</Text>
+              <Text variant="headingSm" as="h2">Was wäre wenn: 100% Abdeckung</Text>
               <Divider />
               <Text variant="bodyMd" tone="subdued">
-                Wenn alle {totalProducts} Produkte optimiert waeren (statt aktuell {uniqueProductCount}):
+                Wenn alle {totalProducts} Produkte optimiert wären (statt aktuell {uniqueProductCount}):
               </Text>
               <InlineGrid columns={{ xs: 1, sm: 3 }} gap="300">
                 <Box padding="400" background="bg-surface-secondary" borderRadius="200">
@@ -836,7 +833,7 @@ export default function ROI() {
                 </Box>
                 <Box padding="400" background="bg-surface-secondary" borderRadius="200">
                   <BlockStack gap="100">
-                    <Text variant="bodySm" tone="subdued">Geschaetzter Mehrumsatz</Text>
+                    <Text variant="bodySm" tone="subdued">Geschätzter Mehrumsatz</Text>
                     <Text variant="headingLg" fontWeight="bold" tone="success">
                       +{Math.round(
                         totalProducts * AVG_IMPRESSIONS_PER_PRODUCT *
@@ -856,7 +853,7 @@ export default function ROI() {
                         (AVG_CTR_ORGANIC / 100) * (AVG_TRAFFIC_INCREASE_PERCENT / 100) * AVG_CPC_EUR
                       ).toLocaleString("de-DE")} EUR
                     </Text>
-                    <Text variant="bodySm" tone="subdued">CPC-Aequivalent / Monat</Text>
+                    <Text variant="bodySm" tone="subdued">CPC-Äquivalent / Monat</Text>
                   </BlockStack>
                 </Box>
               </InlineGrid>
@@ -875,13 +872,12 @@ export default function ROI() {
             <p>
               {googleConnected
                 ? "Die GSC-Daten umfassen die letzten 28 Tage. Es kann bis zu 48 Stunden dauern, bis neue Optimierungen sichtbar sind."
-                : "Alle Projektionen basieren auf Branchen-Durchschnittswerten. Fuer echte Performance-Daten verbinde Google Search Console in den Einstellungen."
+                : "Alle Projektionen basieren auf Branchen-Durchschnittswerten. Fürechte Performance-Daten verbinde Google Search Console in den Einstellungen."
               }
-              {" "}Geschaetzte Werte dienen als Orientierung und koennen von tatsaechlichen Ergebnissen abweichen.
+              {" "}Geschätzte Werte dienen als Orientierung und können von tatsächlichen Ergebnissen abweichen.
             </p>
           </Banner>
         </BlockStack>
       </Page>
-    </div>
   );
 }

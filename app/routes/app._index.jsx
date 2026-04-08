@@ -1,7 +1,7 @@
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { useLoaderData, useNavigate, Link } from "@remix-run/react";
 import {
-  Page, BlockStack, Text, Box, Badge, Button, Divider,
+  Page, BlockStack, Text, Box, Badge, Button, Divider, Banner,
   InlineStack, SkeletonPage, SkeletonBodyText, SkeletonDisplayText,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
@@ -11,11 +11,9 @@ export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
   const shop = session.shop;
 
-  // Check onboarding
+  // Check onboarding (no server-side redirect — it breaks embedded context)
   const settingsCheck = await prisma.shopSettings.findUnique({ where: { shop } });
-  if (!settingsCheck?.brandVoice) {
-    return redirect("/app/onboarding");
-  }
+  const needsOnboarding = !settingsCheck?.brandVoice;
 
   // Usage stats
   const usageCount = await prisma.usageTracker.count({ where: { shop } });
@@ -76,6 +74,7 @@ export const loader = async ({ request }) => {
 
   return json({
     shop,
+    needsOnboarding,
     usageCount,
     freeLimit: FREE_LIMIT,
     googleConnected,
@@ -91,7 +90,7 @@ export const loader = async ({ request }) => {
 
 const features = [
   {
-    icon: "🚀",
+    icon: "\u{1F680}",
     iconColor: "purple",
     title: "Produkte optimieren",
     description: "KI-gestützte GEO-Optimierung für maximale AI-Sichtbarkeit",
@@ -100,7 +99,7 @@ const features = [
     badgeClass: "free",
   },
   {
-    icon: "🔍",
+    icon: "\u{1F50D}",
     iconColor: "blue",
     title: "Keyword-Recherche",
     description: "Relevante Keywords und Suchintentionen entdecken",
@@ -109,7 +108,7 @@ const features = [
     badgeClass: "free",
   },
   {
-    icon: "🏥",
+    icon: "\u{1F3E5}",
     iconColor: "green",
     title: "SEO Health Check",
     description: "Vollständige Analyse deiner Produktseiten",
@@ -118,16 +117,16 @@ const features = [
     badgeClass: "free",
   },
   {
-    icon: "🖼️",
+    icon: "\u{1F5BC}\uFE0F",
     iconColor: "orange",
     title: "Alt-Text Optimizer",
     description: "KI-generierte Bild-Alt-Texte für bessere Barrierefreiheit",
     href: "/app/alt-texts",
-    badge: "Pro",
-    badgeClass: "pro",
+    badge: "Free",
+    badgeClass: "free",
   },
   {
-    icon: "🎨",
+    icon: "\u{1F3A8}",
     iconColor: "pink",
     title: "Brand Templates",
     description: "Konsistente Inhalte mit wiederverwendbaren Vorlagen",
@@ -136,7 +135,7 @@ const features = [
     badgeClass: "pro",
   },
   {
-    icon: "📊",
+    icon: "\u{1F4CA}",
     iconColor: "cyan",
     title: "ROI Dashboard",
     description: "Verfolge Impressionen, Klicks und Rankings",
@@ -145,7 +144,7 @@ const features = [
     badgeClass: "pro",
   },
   {
-    icon: "🏆",
+    icon: "\u{1F3C6}",
     iconColor: "orange",
     title: "Wettbewerber-Analyse",
     description: "Vergleiche deine Produkte mit der Konkurrenz",
@@ -154,7 +153,7 @@ const features = [
     badgeClass: "pro",
   },
   {
-    icon: "⚡",
+    icon: "\u26A1",
     iconColor: "purple",
     title: "Content Audit",
     description: "Qualitätsanalyse aller Produktbeschreibungen",
@@ -163,7 +162,7 @@ const features = [
     badgeClass: "pro",
   },
   {
-    icon: "📝",
+    icon: "\u{1F4DD}",
     iconColor: "blue",
     title: "Meta Generator",
     description: "Bulk Meta-Titel & Beschreibungen generieren",
@@ -172,7 +171,7 @@ const features = [
     badgeClass: "pro",
   },
   {
-    icon: "🔗",
+    icon: "\u{1F517}",
     iconColor: "green",
     title: "Interne Verlinkung",
     description: "Intelligente Verlinkungsvorschläge zwischen Produkten",
@@ -181,7 +180,7 @@ const features = [
     badgeClass: "pro",
   },
   {
-    icon: "📈",
+    icon: "\u{1F4C8}",
     iconColor: "cyan",
     title: "Ranking Tracker",
     description: "Keyword-Positionen verfolgen und überwachen",
@@ -190,7 +189,7 @@ const features = [
     badgeClass: "enterprise",
   },
   {
-    icon: "🌍",
+    icon: "\u{1F30D}",
     iconColor: "pink",
     title: "Multi-Language",
     description: "Mehrsprachige Optimierung für internationale Märkte",
@@ -203,7 +202,22 @@ const features = [
 export default function Dashboard() {
   const data = useLoaderData();
   const navigate = useNavigate();
-  const scoreClass = data.avgGeoScore >= 70 ? "excellent" : data.avgGeoScore >= 40 ? "good" : "poor";
+
+  // Client-side onboarding redirect (preserves embedded context)
+  if (data.needsOnboarding) {
+    return (
+      <Page>
+        <Banner tone="info" title="Onboarding erforderlich">
+          <p>Richte zuerst deine Brand DNA ein, um die App nutzen zu können.</p>
+        </Banner>
+        <div style={{ marginTop: "16px" }}>
+          <Button variant="primary" onClick={() => navigate("/app/onboarding")}>
+            Jetzt einrichten
+          </Button>
+        </div>
+      </Page>
+    );
+  }
 
   return (
     <div className="titan-fade-in">
@@ -214,7 +228,7 @@ export default function Dashboard() {
           <div className="titan-hero" style={{ padding: "32px 28px" }}>
             <div className="titan-hero-content">
               <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-                <span style={{ fontSize: "32px" }}>{"⚡"}</span>
+                <span style={{ fontSize: "32px" }}>{"\u26A1"}</span>
                 <h1>Titan GEO Core</h1>
               </div>
               <p>
@@ -222,9 +236,9 @@ export default function Dashboard() {
                 Maximiere die Sichtbarkeit deiner Produkte in ChatGPT, Perplexity, Gemini und allen AI-Suchmaschinen.
               </p>
               <div style={{ marginTop: "16px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
-                <span className="titan-badge free">{"✓"} Gemini 2.5 Flash</span>
-                <span className="titan-badge pro">{"✓"} GEO-Optimierung</span>
-                <span className="titan-badge new">{"✓"} JSON-LD Schema</span>
+                <span className="titan-badge free">{"\u2713"} Gemini 2.5 Flash</span>
+                <span className="titan-badge pro">{"\u2713"} GEO-Optimierung</span>
+                <span className="titan-badge new">{"\u2713"} JSON-LD Schema</span>
               </div>
             </div>
           </div>
@@ -241,9 +255,9 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="titan-metric-card titan-slide-up titan-stagger-2">
-              <div className="titan-metric-label">{"Ø"} GEO Score</div>
+              <div className="titan-metric-label">{"\u00D8"} GEO Score</div>
               <div className="titan-metric-value">
-                {data.avgGeoScore > 0 ? `${data.avgGeoScore}/100` : "—"}
+                {data.avgGeoScore > 0 ? `${data.avgGeoScore}/100` : "\u2014"}
               </div>
               <div className="titan-metric-subtitle">
                 {data.productsWithScore > 0
@@ -293,7 +307,7 @@ export default function Dashboard() {
                 <Link
                   key={f.href}
                   to={f.href}
-                  className={`titan-feature-card titan-slide-up titan-stagger-${i + 1}`}
+                  className={`titan-feature-card titan-slide-up titan-stagger-${(i % 6) + 1}`}
                   style={{ textDecoration: "none", color: "inherit" }}
                 >
                   <div className="titan-feature-card-header">
@@ -364,7 +378,7 @@ export default function Dashboard() {
                 ))
               ) : (
                 <div style={{ padding: "40px 20px", textAlign: "center" }}>
-                  <div style={{ fontSize: "36px", marginBottom: "12px" }}>{"🚀"}</div>
+                  <div style={{ fontSize: "36px", marginBottom: "12px" }}>{"\u{1F680}"}</div>
                   <div style={{ fontWeight: 600, color: "#475569", marginBottom: "8px" }}>
                     Noch keine Optimierungen
                   </div>

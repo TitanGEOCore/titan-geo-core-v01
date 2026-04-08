@@ -5,7 +5,7 @@ import { authenticate } from "../shopify.server";
 import fs from "fs";
 import path from "path";
 
-import { verifyAdminSession } from "./admin-login";
+import { verifyAdminSession } from "../admin-session.server";
 
 const PAGES_CONFIG_PATH = path.resolve(process.cwd(), "app/data/pages-config.json");
 

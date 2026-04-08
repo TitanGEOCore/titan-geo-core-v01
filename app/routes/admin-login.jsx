@@ -1,36 +1,16 @@
 import { json, redirect } from "@remix-run/node";
 import { useActionData, Form } from "@remix-run/react";
 import { useState } from "react";
-
-// In-memory session store (in production, use Redis or DB)
-const adminSessions = new Map();
-
-export function getAdminSessions() {
-  return adminSessions;
-}
-
-export function verifyAdminSession(cookieHeader) {
-  if (!cookieHeader) return false;
-  const match = cookieHeader.match(/titan_admin_session=([^;]+)/);
-  if (!match) return false;
-  const token = decodeURIComponent(match[1]);
-  const session = adminSessions.get(token);
-  if (!session) return false;
-  // Session gültig für 24 Stunden
-  if (Date.now() - session.createdAt > 24 * 60 * 60 * 1000) {
-    adminSessions.delete(token);
-    return false;
-  }
-  return true;
-}
+import { getAdminSessions, verifyAdminSession } from "../admin-session.server";
 
 export const loader = async ({ request }) => {
   const cookieHeader = request.headers.get("Cookie") || "";
   if (verifyAdminSession(cookieHeader)) {
-    return redirect("/app/admin");
+    return redirect("/titan-admin");
   }
   return json({});
 };
+
 
 export const action = async ({ request }) => {
   const formData = await request.formData();
@@ -46,13 +26,14 @@ export const action = async ({ request }) => {
 
   // Erstelle Session-Token
   const token = crypto.randomUUID();
-  adminSessions.set(token, {
+  getAdminSessions().set(token, {
     email,
     createdAt: Date.now(),
     ip: request.headers.get("x-forwarded-for") || "unknown",
   });
 
-  return redirect("/app/admin", {
+  // Redirect to standalone admin panel (not inside Shopify iframe)
+  return redirect("/titan-admin", {
     headers: {
       "Set-Cookie": `titan_admin_session=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=86400`,
     },

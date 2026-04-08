@@ -7,10 +7,15 @@ export const action = async ({ request }) => {
   const { admin, billing, session } = await authenticate.admin(request);
   const shop = session.shop;
   const formData = await request.formData();
-  const productId = formData.get("productId");
+  let productId = formData.get("productId");
 
   if (!productId) {
     return json({ error: "Product ID fehlt." }, { status: 400 });
+  }
+
+  // Normalize to full GID format
+  if (!productId.startsWith("gid://")) {
+    productId = `gid://shopify/Product/${productId}`;
   }
 
   // Limit-Check

@@ -61,8 +61,8 @@ export const loader = async ({ request }) => {
         category: "meta", severity: "critical", autoFixable: true, fixRoute: "/app/meta-generator",
       },
       titleLength: {
-        pass: [], fail: [], label: "Titel-Laenge optimal (50-60 Zeichen)",
-        description: "Titel zwischen 50-60 Zeichen werden in Suchergebnissen vollstaendig angezeigt.",
+        pass: [], fail: [], label: "Titel-Länge optimal (50-60 Zeichen)",
+        description: "Titel zwischen 50-60 Zeichen werden in Suchergebnissen vollständig angezeigt.",
         category: "meta", severity: "warning", autoFixable: true, fixRoute: "/app/meta-generator",
       },
       seoDescriptions: {
@@ -79,7 +79,7 @@ export const loader = async ({ request }) => {
       // BILDER & MEDIEN (2 checks)
       altTexts: {
         pass: [], fail: [], label: "Hauptbild Alt-Text vorhanden",
-        description: "Alt-Texte sind essenziell fuer Barrierefreiheit und Bilder-SEO.",
+        description: "Alt-Texte sind essenziell für Barrierefreiheit und Bilder-SEO.",
         category: "bilder", severity: "critical", autoFixable: true, fixRoute: "/app/alt-texts",
       },
       allImagesAlt: {
@@ -95,18 +95,18 @@ export const loader = async ({ request }) => {
         category: "content", severity: "critical", autoFixable: false,
       },
       descriptionLength: {
-        pass: [], fail: [], label: "Beschreibung mindestens 300 Woerter",
-        description: "Laengere, ausfuehrliche Beschreibungen ranken deutlich besser.",
+        pass: [], fail: [], label: "Beschreibung mindestens 300 Wörter",
+        description: "Längere, ausführliche Beschreibungen ranken deutlich besser.",
         category: "content", severity: "warning", autoFixable: true, fixRoute: "/app/content-audit",
       },
       hasHeadings: {
-        pass: [], fail: [], label: "H1/H2-Ueberschriften in Beschreibung",
-        description: "Strukturierte Inhalte mit Ueberschriften werden von Suchmaschinen bevorzugt.",
+        pass: [], fail: [], label: "H1/H2-Überschriften in Beschreibung",
+        description: "Strukturierte Inhalte mit Überschriften werden von Suchmaschinen bevorzugt.",
         category: "content", severity: "warning", autoFixable: true, fixRoute: "/app/content-audit",
       },
       keywordDensity: {
         pass: [], fail: [], label: "Keyword im Titel und Beschreibung",
-        description: "Das Hauptkeyword (Produkttitel-Woerter) sollte in der Beschreibung vorkommen.",
+        description: "Das Hauptkeyword (Produkttitel-Wörter) sollte in der Beschreibung vorkommen.",
         category: "content", severity: "info", autoFixable: true, fixRoute: "/app/content-audit",
       },
 
@@ -118,14 +118,14 @@ export const loader = async ({ request }) => {
       },
       mobileFriendly: {
         pass: [], fail: [], label: "Mobilfreundliche Indikatoren",
-        description: "Beschreibungen ohne ueberlange Woerter oder grosse Inline-Styles.",
+        description: "Beschreibungen ohne überlange Wörter oder grosse Inline-Styles.",
         category: "technik", severity: "info", autoFixable: false,
       },
 
       // GEO-OPTIMIERUNG (2 checks)
       geoOptimized: {
         pass: [], fail: [], label: "GEO-optimiert (Score vorhanden)",
-        description: "Produkte mit GEO-Score wurden fuer KI-Suchmaschinen optimiert.",
+        description: "Produkte mit GEO-Score wurden für KI-Suchmaschinen optimiert.",
         category: "geo", severity: "critical", autoFixable: true, fixRoute: "/app/products",
       },
       jsonLd: {
@@ -197,12 +197,12 @@ export const loader = async ({ request }) => {
       // 8. Description length (min 300 words)
       wordCount >= 300
         ? checks.descriptionLength.pass.push(productRef)
-        : checks.descriptionLength.fail.push({ ...productRef, detail: `${wordCount} Woerter (mindestens 300 empfohlen)` });
+        : checks.descriptionLength.fail.push({ ...productRef, detail: `${wordCount} Wörter (mindestens 300 empfohlen)` });
 
       // 9. H1/H2 headings
       /<h[12][^>]*>/i.test(descHtml)
         ? checks.hasHeadings.pass.push(productRef)
-        : checks.hasHeadings.fail.push({ ...productRef, detail: "Keine Ueberschriften in der Beschreibung" });
+        : checks.hasHeadings.fail.push({ ...productRef, detail: "Keine Überschriften in der Beschreibung" });
 
       // 10. Keyword density — product title words appear in description
       const titleWords = p.title.toLowerCase().split(/\s+/).filter((w) => w.length > 3);
@@ -211,7 +211,7 @@ export const loader = async ({ request }) => {
       const keywordRatio = titleWords.length > 0 ? matchedKeywords.length / titleWords.length : 0;
       keywordRatio >= 0.5
         ? checks.keywordDensity.pass.push(productRef)
-        : checks.keywordDensity.fail.push({ ...productRef, detail: `Nur ${matchedKeywords.length}/${titleWords.length} Titelwoerter in der Beschreibung` });
+        : checks.keywordDensity.fail.push({ ...productRef, detail: `Nur ${matchedKeywords.length}/${titleWords.length} Titelwörter in der Beschreibung` });
 
       // 11. URL structure
       const urlOk = handle.length >= 3 && handle.length < 80 && !handle.includes("--")
@@ -225,7 +225,7 @@ export const loader = async ({ request }) => {
       const hasLargeInline = /style="[^"]{200,}"/i.test(descHtml);
       !hasLongWords && !hasLargeInline
         ? checks.mobileFriendly.pass.push(productRef)
-        : checks.mobileFriendly.fail.push({ ...productRef, detail: hasLongWords ? "Ueberlange Woerter gefunden" : "Grosse Inline-Styles" });
+        : checks.mobileFriendly.fail.push({ ...productRef, detail: hasLongWords ? "Überlange Wörter gefunden" : "Grosse Inline-Styles" });
 
       // 13. GEO optimized
       geoScore
@@ -259,7 +259,7 @@ export const loader = async ({ request }) => {
     const categories = {
       meta: { label: "Meta-Daten", icon: "M", color: "#6366f1", checks: [] },
       bilder: { label: "Bilder & Medien", icon: "B", color: "#06b6d4", checks: [] },
-      content: { label: "Content-Qualitaet", icon: "C", color: "#10b981", checks: [] },
+      content: { label: "Content-Qualität", icon: "C", color: "#10b981", checks: [] },
       technik: { label: "Technisches SEO", icon: "T", color: "#f59e0b", checks: [] },
       geo: { label: "GEO-Optimierung", icon: "G", color: "#8b5cf6", checks: [] },
     };
@@ -583,7 +583,7 @@ function CategorySection({ catKey, category, checks }) {
                   )}
                 </InlineStack>
                 <Text variant="bodySm" tone="subdued">
-                  {category.pass} von {category.total} Pruefungen bestanden
+                  {category.pass} von {category.total} Prüfungen bestanden
                 </Text>
               </div>
             </InlineStack>
@@ -662,10 +662,9 @@ export default function Health() {
   }
 
   return (
-    <div className="titan-dark">
-      <Page
+    <Page
         title="SEO Gesundheitscheck"
-        subtitle={`${analyzedProducts} von ${totalProducts} Produkten analysiert — ${Object.keys(checks).length} Pruefungen`}
+        subtitle={`${analyzedProducts} von ${totalProducts} Produkten analysiert — ${Object.keys(checks).length} Prüfungen`}
         backAction={{ content: "Dashboard", url: "/app" }}
       >
         <BlockStack gap="600">
@@ -695,8 +694,8 @@ export default function Health() {
                   {healthScore >= 80 ? "stark" : healthScore >= 50 ? "solide" : "unterdurchschnittlich"} ab
                 </Text>
                 <Text variant="bodyMd" tone="subdued">
-                  Basierend auf {Object.keys(checks).length} SEO-Faktoren ueber {analyzedProducts} Produkte,
-                  gewichtet nach Prioritaet (kritisch, Warnung, Info).
+                  Basierend auf {Object.keys(checks).length} SEO-Faktoren über {analyzedProducts} Produkte,
+                  gewichtet nach Priorität (kritisch, Warnung, Info).
                 </Text>
                 {autoFixableCount > 0 && (
                   <InlineStack gap="200">
@@ -713,17 +712,17 @@ export default function Health() {
 
           {/* ── Quick Stats ── */}
           <InlineGrid columns={{ xs: 2, sm: 4 }} gap="400">
-            <StatCard value={Object.keys(checks).length} label="Pruefungen" color="#6366f1" icon="P" />
+            <StatCard value={Object.keys(checks).length} label="Prüfungen" color="#6366f1" icon="P" />
             <StatCard value={totalCritical} label="Kritische Fehler" color="#ef4444" icon="!" />
             <StatCard value={totalWarnings} label="Warnungen" color="#f59e0b" icon="W" />
-            <StatCard value={autoFixableCount} label="Auto-Fix moeglich" color="#10b981" icon="F" />
+            <StatCard value={autoFixableCount} label="Auto-Fix möglich" color="#10b981" icon="F" />
           </InlineGrid>
 
           {/* ── Category Score Overview ── */}
           {categories && Object.keys(categories).length > 0 && (
             <Card>
               <BlockStack gap="400">
-                <Text variant="headingSm" as="h2">Kategorie-Uebersicht</Text>
+                <Text variant="headingSm" as="h2">Kategorie-Übersicht</Text>
                 <Divider />
                 <InlineGrid columns={{ xs: 2, sm: 3, md: 5 }} gap="400">
                   {Object.entries(categories).map(([key, cat]) => (
@@ -769,7 +768,7 @@ export default function Health() {
                 <BlockStack gap="100">
                   <Text fontWeight="medium">Brand DNA konfiguriert</Text>
                   <Text variant="bodySm" tone="subdued">
-                    Definiert den Tonfall und Stil fuer KI-Optimierungen
+                    Definiert den Tonfall und Stil für KI-Optimierungen
                   </Text>
                 </BlockStack>
                 <InlineStack gap="200">
@@ -788,7 +787,7 @@ export default function Health() {
                 <BlockStack gap="100">
                   <Text fontWeight="medium">Google Search Console</Text>
                   <Text variant="bodySm" tone="subdued">
-                    Ermoeglicht ROI-Tracking und echte Ranking-Daten
+                    Ermöglicht ROI-Tracking und echte Ranking-Daten
                   </Text>
                 </BlockStack>
                 <InlineStack gap="200">
@@ -825,7 +824,7 @@ export default function Health() {
                   { to: "/app/meta-generator", title: "Meta-Daten Generator", desc: "Fehlende Titel und Beschreibungen generieren", color: "#6366f1" },
                   { to: "/app/alt-texts", title: "Alt-Text Generator", desc: "Bild-Alt-Texte mit KI generieren", color: "#06b6d4" },
                   { to: "/app/content-audit", title: "Content Audit", desc: "Beschreibungen analysieren und verbessern", color: "#10b981" },
-                  { to: "/app/products", title: "GEO-Optimierung", desc: "Produkte fuer KI-Suche optimieren", color: "#8b5cf6" },
+                  { to: "/app/products", title: "GEO-Optimierung", desc: "Produkte für KI-Suche optimieren", color: "#8b5cf6" },
                 ].map((action) => (
                   <Link key={action.to} to={action.to} style={{ textDecoration: "none" }}>
                     <Box padding="400" background="bg-surface-secondary" borderRadius="200">
@@ -848,12 +847,11 @@ export default function Health() {
           <Banner tone="info">
             <p>
               Der Gesundheitscheck analysiert die ersten {analyzedProducts} von {totalProducts} Produkten.
-              Alle Pruefungen basieren auf aktuellen SEO-Best-Practices und GEO-Optimierungsstandards.
-              {totalProducts > analyzedProducts && " Upgrade auf Pro fuer eine vollstaendige Analyse aller Produkte."}
+              Alle Prüfungen basieren auf aktuellen SEO-Best-Practices und GEO-Optimierungsstandards.
+              {totalProducts > analyzedProducts && " Upgrade auf Pro für eine vollständige Analyse aller Produkte."}
             </p>
           </Banner>
         </BlockStack>
       </Page>
-    </div>
   );
 }

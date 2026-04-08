@@ -83,7 +83,18 @@ const FEATURE_LABELS = {
  * @param {string} feature - Feature-Kurzform (optimize, keywords, audit, etc.)
  * @returns {Promise<{ allowed: boolean, remaining: number, limit: number, message?: string, upgradeUrl?: string }>}
  */
+// Developer shops get unlimited access (bypasses all limits)
+const DEVELOPER_SHOPS = [
+  "titan-geo-core.myshopify.com",
+  "sb11zm-1k.myshopify.com",
+];
+
 export async function checkLimit(shop, feature) {
+  // Developer bypass — unlimited access for dev/test shops
+  if (DEVELOPER_SHOPS.includes(shop)) {
+    return { allowed: true, remaining: Infinity, limit: -1 };
+  }
+
   const plan = await getEffectivePlan(shop, prisma);
   const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
   const limit = planLimits[feature];

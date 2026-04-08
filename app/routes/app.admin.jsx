@@ -6,7 +6,7 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
-import { verifyAdminSession } from "./admin-login";
+import { verifyAdminSession } from "../admin-session.server";
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
