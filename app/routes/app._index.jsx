@@ -3,6 +3,7 @@ import { useLoaderData, useNavigate, Link } from "@remix-run/react";
 import {
   Page, BlockStack, Text, Box, Badge, Button, Divider, Banner,
   InlineStack, SkeletonPage, SkeletonBodyText, SkeletonDisplayText,
+  Card,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
@@ -47,6 +48,7 @@ export const loader = async ({ request }) => {
   let avgGeoScore = 0;
   let productsWithScore = 0;
   let pendingProducts = 0;
+  let lostRevenue = 0;
 
   const MAX_PRODUCTS = 1000;
   const BATCH_SIZE = 50;
@@ -107,7 +109,7 @@ export const loader = async ({ request }) => {
     pendingProducts = totalProducts - productsWithScore;
     
     // Lost revenue calculation (€45 per unoptimized product per month)
-    const lostRevenue = pendingProducts * 45;
+    lostRevenue = pendingProducts * 45;
   } catch (e) {
     console.error("Dashboard product fetch error:", e);
   }
@@ -266,27 +268,28 @@ export default function Dashboard() {
         <BlockStack gap="600">
 
           {/* ===== HERO SECTION ===== */}
-          <div className="titan-hero" style={{ padding: "32px 28px" }}>
-            <div className="titan-hero-content">
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
-                <span style={{ fontSize: "32px" }}>{"\u26A1"}</span>
-                <h1>Titan GEO Core</h1>
-              </div>
-              <p>
+          <Card>
+            <BlockStack gap="400">
+              <InlineStack align="space-between" wrap="never">
+                <InlineStack gap="200" align="center">
+                  <Text variant="headingLg" as="h1">Titan GEO Core</Text>
+                </InlineStack>
+              </InlineStack>
+              <Text variant="bodyMd" as="p" tone="subdued">
                 Deine KI-gestützte Kommandozentrale für Generative Engine Optimization.
                 Maximiere die Sichtbarkeit deiner Produkte in ChatGPT, Perplexity, Gemini und allen AI-Suchmaschinen.
-              </p>
-              <div style={{ marginTop: "16px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
-                <span className="titan-badge free">{"\u2713"} Gemini 2.5 Flash</span>
-                <span className="titan-badge pro">{"\u2713"} GEO-Optimierung</span>
-                <span className="titan-badge new">{"\u2713"} JSON-LD Schema</span>
-              </div>
-            </div>
-          </div>
+              </Text>
+              <InlineStack gap="200" wrap="wrap">
+                <Badge tone="success">✓ Gemini 2.5 Flash</Badge>
+                <Badge tone="info">✓ GEO-Optimierung</Badge>
+                <Badge tone="success">✓ JSON-LD Schema</Badge>
+              </InlineStack>
+            </BlockStack>
+          </Card>
 
           {/* ===== QUICK STATS ROW ===== */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(220px, 100%), 1fr))", gap: "20px" }}>
-            <div className="titan-metric-card titan-slide-up titan-stagger-1">
+            <div className="titan-metric-card">
               <div className="titan-metric-label">Total Optimierungen</div>
               <div className="titan-metric-value">{data.usageCount}</div>
               <div className="titan-metric-subtitle">
@@ -295,10 +298,10 @@ export default function Dashboard() {
                   : `${data.freeLimit - data.usageCount} von ${data.freeLimit} verbleibend`}
               </div>
             </div>
-            <div className="titan-metric-card titan-slide-up titan-stagger-2">
-              <div className="titan-metric-label">{"\u00D8"} GEO Score</div>
+            <div className="titan-metric-card">
+              <div className="titan-metric-label">Ø GEO Score</div>
               <div className="titan-metric-value">
-                {data.avgGeoScore > 0 ? `${data.avgGeoScore}/100` : "\u2014"}
+                {data.avgGeoScore > 0 ? `${data.avgGeoScore}/100` : "—"}
               </div>
               <div className="titan-metric-subtitle">
                 {data.productsWithScore > 0
@@ -306,7 +309,7 @@ export default function Dashboard() {
                   : "Noch keine Analyse"}
               </div>
             </div>
-            <div className="titan-metric-card titan-slide-up titan-stagger-3">
+            <div className="titan-metric-card">
               <div className="titan-metric-label">Produkte</div>
               <div className="titan-metric-value">{data.totalProducts}</div>
               <div className="titan-metric-subtitle">
@@ -315,7 +318,7 @@ export default function Dashboard() {
                   : "Alle optimiert!"}
               </div>
             </div>
-            <div className="titan-metric-card titan-slide-up titan-stagger-4">
+            <div className="titan-metric-card">
               <div className="titan-metric-label">Google Status</div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
                 <span
@@ -337,38 +340,24 @@ export default function Dashboard() {
 
           {/* ===== LOST REVENUE METRIC ===== */}
           {data.lostRevenue > 0 && (
-            <div 
-              className="titan-metric-card titan-slide-up titan-stagger-5"
-              style={{
-                background: "linear-gradient(135deg, #fef2f2 0%, #fef3c7 100%)",
-                border: "2px solid #f59e0b",
-                gridColumn: "1 / -1",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-                <div>
-                  <div className="titan-metric-label" style={{ color: "#b45309" }}>Verlorenes Umsatzpotenzial (Est.)</div>
-                  <div style={{ 
-                    fontSize: "32px", 
-                    fontWeight: 800, 
-                    color: "#dc2626",
-                    marginTop: "4px"
-                  }}>
-                    {data.lostRevenue.toLocaleString("de-DE")} € / Monat
-                  </div>
-                  <div className="titan-metric-subtitle" style={{ color: "#b45309" }}>
-                    Basierend auf {data.pendingProducts} unoptimierten Produkten (ca. 45€ pro Produkt)
-                  </div>
-                </div>
-                <Button 
-                  variant="primary" 
-                  tone="critical"
-                  url="/app/products"
-                >
-                  Potenzial freischalten
-                </Button>
-              </div>
-            </div>
+            <Card tone="warning">
+              <BlockStack gap="400">
+                <InlineStack align="space-between" wrap="wrap">
+                  <BlockStack gap="200">
+                    <Text variant="headingMd" as="h2">Verlorenes Umsatzpotenzial (Est.)</Text>
+                    <Text variant="headingLg" as="p" tone="critical">
+                      {data.lostRevenue.toLocaleString("de-DE")} € / Monat
+                    </Text>
+                    <Text variant="bodySm" tone="subdued" as="span">
+                      Basierend auf {data.pendingProducts} unoptimierten Produkten (ca. 45€ pro Produkt)
+                    </Text>
+                  </BlockStack>
+                  <Button variant="primary" tone="critical" url="/app/products">
+                    Potenzial freischalten
+                  </Button>
+                </InlineStack>
+              </BlockStack>
+            </Card>
           )}
 
           {/* ===== FEATURE MODULES GRID ===== */}
@@ -455,7 +444,7 @@ export default function Dashboard() {
                 ))
               ) : (
                 <div style={{ padding: "40px 20px", textAlign: "center" }}>
-                  <div style={{ fontSize: "36px", marginBottom: "12px" }}>{"\u{1F680}"}</div>
+                  <div style={{ fontSize: "36px", marginBottom: "12px" }}>🚀</div>
                   <div style={{ fontWeight: 600, color: "#475569", marginBottom: "8px" }}>
                     Noch keine Optimierungen
                   </div>
