@@ -21,6 +21,33 @@
   --titan-gold-light: #fbbf24;
   --titan-purple: #8b5cf6;
   --titan-purple-light: #a78bfa;
+  --titan-bg-dark: #0f172a;
+}
+
+/* === Hero Section === */
+.titan-hero {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f0f9ff 100%);
+  border-radius: var(--titan-radius);
+  padding: 40px 36px;
+  margin-bottom: 24px;
+  border: 1px solid var(--titan-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.titan-hero h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.titan-hero p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.6;
 }
 
 /* === Global Spacing Fix === */

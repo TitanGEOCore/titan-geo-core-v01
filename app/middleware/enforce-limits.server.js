@@ -30,8 +30,10 @@ export async function checkLimit(shop, feature) {
   }
 
   const plan = await getEffectivePlan(shop, prisma);
-  const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
-  const limit = planLimits[feature];
+  const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS[PLANS.STARTER];
+  // Translate short feature names (e.g. "optimize") to config keys (e.g. "geo_optimization")
+  const configFeature = FEATURE_MAP[feature] || feature;
+  const limit = planLimits[configFeature];
 
   if (limit === undefined) {
     return { allowed: false, remaining: 0, message: "Feature nicht verfügbar.", upgradeUrl: "/app/billing" };

@@ -22,8 +22,8 @@ export const loader = async ({ request }) => {
     : "first: 25";
 
   const response = await admin.graphql(`
-    query getProducts(${paginationArgs}) {
-      products {
+    query {
+      products(${paginationArgs}) {
         pageInfo {
           hasNextPage
           hasPreviousPage

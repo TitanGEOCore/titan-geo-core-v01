@@ -94,16 +94,29 @@ ${product.descriptionHtml || "No description"}
 
 Generate the fully optimized output.`;
 
-  const response = await genai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: userPrompt,
-    config: {
-      systemInstruction: buildSystemPrompt(settings),
-      responseMimeType: "application/json",
-      responseSchema: GEO_RESPONSE_SCHEMA,
-      temperature: 0.4,
-    },
-  });
+  let response;
+  try {
+    response = await genai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: userPrompt,
+      config: {
+        systemInstruction: buildSystemPrompt(settings),
+        responseMimeType: "application/json",
+        responseSchema: GEO_RESPONSE_SCHEMA,
+        temperature: 0.4,
+      },
+    });
+  } catch (apiError) {
+    console.error("Gemini API error:", apiError.message);
+    return {
+      geoScore: 0,
+      optimizedTitle: product.title || "Product",
+      optimizedMetaDesc: "Optimized product description",
+      optimizedHtmlBody: sanitizeHtml(product.descriptionHtml || "<p>Product description</p>"),
+      jsonLdSchema: {},
+      _apiError: true,
+    };
+  }
 
   let result;
   try {
@@ -111,7 +124,6 @@ Generate the fully optimized output.`;
   } catch (parseError) {
     console.error("Gemini JSON parse error:", parseError.message);
     console.error("Raw response:", response.text);
-    // Return a safe fallback object to prevent crash
     return {
       geoScore: 0,
       optimizedTitle: product.title || "Product",
@@ -143,16 +155,29 @@ PRODUCT:
 
 Return the geoScore (0-100), the current title as optimizedTitle, current meta as optimizedMetaDesc, current HTML as optimizedHtmlBody, and an empty jsonLdSchema object.`;
 
-  const response = await genai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: userPrompt,
-    config: {
-      systemInstruction: buildSystemPrompt(settings),
-      responseMimeType: "application/json",
-      responseSchema: GEO_RESPONSE_SCHEMA,
-      temperature: 0.2,
-    },
-  });
+  let response;
+  try {
+    response = await genai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: userPrompt,
+      config: {
+        systemInstruction: buildSystemPrompt(settings),
+        responseMimeType: "application/json",
+        responseSchema: GEO_RESPONSE_SCHEMA,
+        temperature: 0.2,
+      },
+    });
+  } catch (apiError) {
+    console.error("Gemini API error in audit:", apiError.message);
+    return {
+      geoScore: 0,
+      optimizedTitle: product.title || "Product",
+      optimizedMetaDesc: "Product meta description",
+      optimizedHtmlBody: sanitizeHtml(product.descriptionHtml || "<p>Product description</p>"),
+      jsonLdSchema: {},
+      _apiError: true,
+    };
+  }
 
   let auditResult;
   try {
@@ -160,15 +185,19 @@ Return the geoScore (0-100), the current title as optimizedTitle, current meta a
   } catch (parseError) {
     console.error("Gemini JSON parse error in audit:", parseError.message);
     console.error("Raw response:", response.text);
-    // Return a safe fallback object
     return {
       geoScore: 0,
       optimizedTitle: product.title || "Product",
       optimizedMetaDesc: "Product meta description",
-      optimizedHtmlBody: product.descriptionHtml || "<p>Product description</p>",
+      optimizedHtmlBody: sanitizeHtml(product.descriptionHtml || "<p>Product description</p>"),
       jsonLdSchema: {},
       _parseError: true,
     };
+  }
+
+  // Sanitize HTML output consistently
+  if (auditResult.optimizedHtmlBody) {
+    auditResult.optimizedHtmlBody = sanitizeHtml(auditResult.optimizedHtmlBody);
   }
 
   return auditResult;

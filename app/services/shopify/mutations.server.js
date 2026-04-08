@@ -181,7 +181,12 @@ export async function getUsageStats(shop) {
   const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
   const limit = planLimits.geo_optimization;
   
-  const count = await prisma.usageTracker.count({ where: { shop } });
+  // Count only today's usage (limits are per-day)
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const count = await prisma.usageTracker.count({
+    where: { shop, createdAt: { gte: todayStart } },
+  });
   
   let remaining;
   if (limit === -1) {

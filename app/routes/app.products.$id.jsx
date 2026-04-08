@@ -325,7 +325,7 @@ export default function ProductDetail() {
           >
             <p>
               Du hast alle {usageLimit} kostenlosen Optimierungen aufgebraucht.
-              Upgrade auf Titan GEO Pro fuer unbegrenzte Optimierungen.
+              Upgrade auf Titan GEO Pro für unbegrenzte Optimierungen.
             </p>
           </Banner>
         )}

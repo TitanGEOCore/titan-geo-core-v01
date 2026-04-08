@@ -85,7 +85,7 @@ const BRAND_VOICE_SUGGESTIONS = [
   "Locker & humorvoll",
   "Sachlich & informativ",
   "Jung & modern",
-  "Luxurioes & exklusiv",
+  "Luxuriös & exklusiv",
   "Nachhaltig & bewusst",
 ];
 
@@ -93,7 +93,7 @@ const AUDIENCE_PROMPTS = [
   "Alter und Geschlecht der Zielgruppe",
   "Interessen und Hobbys",
   "Einkommensniveau und Kaufverhalten",
-  "Werte und Ueberzeugungen",
+  "Werte und Überzeugungen",
 ];
 
 const TEMPLATES = [
@@ -102,26 +102,26 @@ const TEMPLATES = [
     brandVoice:
       "Professionell, freundlich, duzt den Kunden. Klare Produktvorteile hervorheben.",
     targetAudience:
-      "Online-Kaeufer, 25-55 Jahre, qualitaetsbewusst, vergleichen Preise und Bewertungen.",
+      "Online-Käufer, 25-55 Jahre, qualitätsbewusst, vergleichen Preise und Bewertungen.",
     noGos:
-      "Keine uebertriebenen Superlative, keine falschen Versprechen, keine Emojis.",
+      "Keine übertriebenen Superlative, keine falschen Versprechen, keine Emojis.",
   },
   {
     name: "Premium / Luxus",
     brandVoice:
       "Exklusiv, elegant, siezt den Kunden. Fokus auf Handwerk, Materialien und Storytelling.",
     targetAudience:
-      "Anspruchsvolle Kaeufer, 30-65 Jahre, hohes Einkommen, Wert auf Qualitaet und Exklusivitaet.",
+      "Anspruchsvolle Käufer, 30-65 Jahre, hohes Einkommen, Wert auf Qualität und Exklusivität.",
     noGos:
-      "Keine Rabatt-Sprache, keine Dringlichkeit ('nur noch X Stueck'), kein umgangssprachlicher Ton.",
+      "Keine Rabatt-Sprache, keine Dringlichkeit ('nur noch X Stück'), kein umgangssprachlicher Ton.",
   },
   {
     name: "Jung & Trendy",
     brandVoice:
-      "Cool, authentisch, duzt, nutzt zeitgemaesse Sprache. Kurze, praegnante Saetze.",
+      "Cool, authentisch, duzt, nutzt zeitgemäße Sprache. Kurze, prägnante Sätze.",
     targetAudience:
       "Gen Z und junge Millennials, 18-30 Jahre, social-media-affin, trendorientiert.",
-    noGos: "Kein 'Sie', keine langen Absaetze, keine veralteten Begriffe.",
+    noGos: "Kein 'Sie', keine langen Absätze, keine veralteten Begriffe.",
   },
 ];
 
@@ -151,7 +151,7 @@ export default function Onboarding() {
             "Bitte beschreibe deine Brand Voice (mindestens ein paar Worte).";
         } else if (brandVoice.trim().length < 10) {
           newErrors.brandVoice =
-            "Bitte gib mindestens 10 Zeichen ein fuer eine aussagekraeftige Beschreibung.";
+            "Bitte gib mindestens 10 Zeichen ein für eine aussagekräftige Beschreibung.";
         }
       }
 
@@ -161,7 +161,7 @@ export default function Onboarding() {
             "Bitte beschreibe deine Zielgruppe (mindestens ein paar Worte).";
         } else if (targetAudience.trim().length < 10) {
           newErrors.targetAudience =
-            "Bitte gib mindestens 10 Zeichen ein fuer eine aussagekraeftige Beschreibung.";
+            "Bitte gib mindestens 10 Zeichen ein für eine aussagekräftige Beschreibung.";
         }
       }
 
@@ -342,7 +342,7 @@ export default function Onboarding() {
                         }
                       }}
                       multiline={4}
-                      placeholder="z.B. Premium, sachlich, leicht humorvoll, duzt den Kunden. Klare Saetze, keine Fachwoerter."
+                      placeholder="z.B. Premium, sachlich, leicht humorvoll, duzt den Kunden. Klare Sätze, keine Fachwörter."
                       helpText={`${brandVoice.length}/${MAX_CHARS} Zeichen`}
                       autoComplete="off"
                       error={errors.brandVoice}
@@ -376,9 +376,9 @@ export default function Onboarding() {
 
                   <Banner tone="info" title="Tipp">
                     <p>
-                      Je praeziser du deine Brand Voice beschreibst, desto
+                      Je präziser du deine Brand Voice beschreibst, desto
                       besser kann die KI deinen Ton treffen. Denke an:
-                      Formalitaet (Du/Sie), Emotionalitaet, Fachsprache,
+                      Formalität (Du/Sie), Emotionalität, Fachsprache,
                       Humor.
                     </p>
                   </Banner>
@@ -426,7 +426,7 @@ export default function Onboarding() {
                         }
                       }}
                       multiline={4}
-                      placeholder="z.B. Design-affine Millennials, 25-40 Jahre, urban, qualitaetsbewusst, vergleichen online"
+                      placeholder="z.B. Design-affine Millennials, 25-40 Jahre, urban, qualitätsbewusst, vergleichen online"
                       helpText={`${targetAudience.length}/${MAX_CHARS} Zeichen`}
                       autoComplete="off"
                       error={errors.targetAudience}
@@ -504,22 +504,22 @@ export default function Onboarding() {
                         }
                       }}
                       multiline={4}
-                      placeholder="z.B. Keine Superlative wie 'bester/guenstigster', keine Emojis, kein 'Sie', keine Konkurrenz-Erwaehnung"
+                      placeholder="z.B. Keine Superlative wie 'bester/günstigster', keine Emojis, kein 'Sie', keine Konkurrenz-Erwähnung"
                       helpText={`${noGos.length}/${MAX_CHARS} Zeichen -- Dieses Feld ist optional`}
                       autoComplete="off"
                     />
                   </Box>
 
-                  <Banner tone="info" title="Beispiele fuer haeufige No-Gos">
+                  <Banner tone="info" title="Beispiele für häufige No-Gos">
                     <BlockStack gap="100">
                       <p>
-                        - Uebertriebene Superlative ("das Beste",
-                        "einzigartig", "revolutionaer")
+                        - Übertriebene Superlative ("das Beste",
+                        "einzigartig", "revolutionär")
                       </p>
                       <p>- Bestimmte Anredeformen (Sie/Du)</p>
                       <p>- Emojis oder Sonderzeichen im Text</p>
                       <p>- Dringlichkeits-Formulierungen ("Nur noch heute!")</p>
-                      <p>- Konkurrenz-Vergleiche oder -Erwaehnungen</p>
+                      <p>- Konkurrenz-Vergleiche oder -Erwähnungen</p>
                       <p>- Englische Begriffe, wenn vermeidbar</p>
                     </BlockStack>
                   </Banner>
@@ -546,7 +546,7 @@ export default function Onboarding() {
                       alignment="center"
                       tone="subdued"
                     >
-                      Ueberpruefe deine Einstellungen oder waehle ein
+                      Überprüfe deine Einstellungen oder wähle ein
                       vorgefertigtes Template.
                     </Text>
                   </BlockStack>
@@ -648,7 +648,7 @@ export default function Onboarding() {
                   <Divider />
                   <BlockStack gap="300">
                     <Text variant="headingSm" as="h3" alignment="center">
-                      Oder waehle ein Template:
+                      Oder wähle ein Template:
                     </Text>
                     <div
                       style={{
@@ -704,7 +704,7 @@ export default function Onboarding() {
                     <BlockStack gap="100">
                       <p>
                         Deine Brand DNA wird gespeichert und steuert alle
-                        zukuenftigen KI-Optimierungen.
+                        zukünftigen KI-Optimierungen.
                       </p>
                       <p>
                         Du hast 5 kostenlose Optimierungen im Starter-Plan.

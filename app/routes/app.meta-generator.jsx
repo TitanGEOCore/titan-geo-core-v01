@@ -872,3 +872,6 @@ export default function MetaGenerator() {
         </BlockStack>
       )}
     </Page>
+    </div>
+  );
+}

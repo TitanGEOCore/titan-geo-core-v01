@@ -34,6 +34,7 @@ export const PLAN_LIMITS = {
     // Feature flags
     bulkOperationsAllowed: false,
     autoPilotAllowed: false,
+    visionAiAllowed: false,
     autoApplyInternalLinks: false,
   },
   [PLANS.GROWTH]: {
@@ -43,6 +44,7 @@ export const PLAN_LIMITS = {
     // Feature flags
     bulkOperationsAllowed: true,
     autoPilotAllowed: false,
+    visionAiAllowed: false,
     autoApplyInternalLinks: false,
   },
   [PLANS.PRO]: {
@@ -52,6 +54,7 @@ export const PLAN_LIMITS = {
     // Feature flags
     bulkOperationsAllowed: true,
     autoPilotAllowed: false,
+    visionAiAllowed: false,
     autoApplyInternalLinks: true,
   },
   [PLANS.ENTERPRISE]: {

@@ -115,6 +115,15 @@ export default function Products() {
   const [sortBy, setSortBy] = useState("name");
   const [healthCheckId, setHealthCheckId] = useState(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   const resourceName = { singular: "Produkt", plural: "Produkte" };
 
   // Compute stats
@@ -220,6 +229,11 @@ export default function Products() {
       { productId: shopifyId },
       { method: "post", action: "/app/api/audit" }
     );
+  };
+
+  const handleHealthCheck = (shopifyId) => {
+    setHealthCheckId(shopifyId);
+    handleAudit(shopifyId);
   };
 
   const handleOptimize = (shopifyId) => {
@@ -485,7 +499,7 @@ export default function Products() {
           >
             <p>
               Du hast alle {freeLimit} kostenlosen Optimierungen aufgebraucht.
-              Upgrade auf Titan GEO Pro fuer unbegrenzte Optimierungen.
+              Upgrade auf Titan GEO Pro für unbegrenzte Optimierungen.
             </p>
           </Banner>
         )}
@@ -514,7 +528,7 @@ export default function Products() {
             >
               <p>
                 {auditFetcher.data.assessment ||
-                  "Analyse abgeschlossen. Oeffne die Produktdetailseite fuer mehr Details."}
+                  "Analyse abgeschlossen. Öffne die Produktdetailseite für mehr Details."}
               </p>
             </Banner>
           )}
@@ -841,7 +855,7 @@ export default function Products() {
               <Button
                 url={`/app/products?cursor=${pageInfo.endCursor}&direction=next`}
               >
-                Naechste Seite
+                Nächste Seite
               </Button>
             )}
           </InlineStack>
