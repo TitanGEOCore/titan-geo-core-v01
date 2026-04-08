@@ -108,11 +108,52 @@ export const action = async ({ request }) => {
       return json(limitErrorResponse(limitResult));
     }
 
+    // Check Vision AI feature flag for Enterprise customers
+    const { getEffectivePlan } = await import("../middleware/plan-check.server.js");
+    const prisma = await import("../db.server.js").then(m => m.default);
+    const plan = await getEffectivePlan(session.shop, prisma);
+    const { PLAN_LIMITS } = await import("../config/limits.server.js");
+    const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
+    const visionAiAllowed = planLimits.visionAiAllowed === true;
+
     const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     try {
-      const prompt = `Generiere einen optimalen SEO Alt-Text für ein Produktbild.
+      let prompt;
+      let contents;
+
+      if (visionAiAllowed && imageUrl) {
+        // Vision AI: Download image, convert to base64, use inline data
+        const imageResponse = await fetch(imageUrl);
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const base64Image = Buffer.from(imageBuffer).toString('base64');
+
+        prompt = `Analysiere das beigefügte Bild. Erkenne Farben, Materialien, Texturen und die visuelle Komposition, um einen hochpräzisen, barrierefreien SEO-Alt-Text zu generieren.
+
+Produkt: ${productTitle}
+
+Der Alt-Text muss:
+- 80-125 Zeichen lang sein
+- Das Produkt klar beschreiben inkl. visueller Details (Farbe, Material, Form)
+- Relevante Keywords natürlich einbauen
+- Auf Deutsch sein
+- KEIN "Bild von" oder "Foto von" am Anfang
+
+Antworte NUR mit dem Alt-Text, keine Anführungszeichen, keine Erklärung.`;
+
+        contents = [
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType: 'image/jpeg',
+              data: base64Image,
+            },
+          },
+        ];
+      } else {
+        // Fallback: Text-only generation (non-Enterprise)
+        prompt = `Generiere einen optimalen SEO Alt-Text für ein Produktbild.
 
 Produkt: ${productTitle}
 Bild-URL: ${imageUrl}
@@ -126,9 +167,12 @@ Der Alt-Text muss:
 
 Antworte NUR mit dem Alt-Text, keine Anführungszeichen, keine Erklärung.`;
 
+        contents = prompt;
+      }
+
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: prompt,
+        contents: contents,
         config: { temperature: 0.3 },
       });
 
