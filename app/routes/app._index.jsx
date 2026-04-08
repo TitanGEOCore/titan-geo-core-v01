@@ -105,6 +105,9 @@ export const loader = async ({ request }) => {
       ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length) 
       : 0;
     pendingProducts = totalProducts - productsWithScore;
+    
+    // Lost revenue calculation (€45 per unoptimized product per month)
+    const lostRevenue = pendingProducts * 45;
   } catch (e) {
     console.error("Dashboard product fetch error:", e);
   }
@@ -122,6 +125,7 @@ export const loader = async ({ request }) => {
     productsWithScore,
     avgGeoScore,
     pendingProducts,
+    lostRevenue,
   });
 };
 
@@ -330,6 +334,42 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* ===== LOST REVENUE METRIC ===== */}
+          {data.lostRevenue > 0 && (
+            <div 
+              className="titan-metric-card titan-slide-up titan-stagger-5"
+              style={{
+                background: "linear-gradient(135deg, #fef2f2 0%, #fef3c7 100%)",
+                border: "2px solid #f59e0b",
+                gridColumn: "1 / -1",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+                <div>
+                  <div className="titan-metric-label" style={{ color: "#b45309" }}>Verlorenes Umsatzpotenzial (Est.)</div>
+                  <div style={{ 
+                    fontSize: "32px", 
+                    fontWeight: 800, 
+                    color: "#dc2626",
+                    marginTop: "4px"
+                  }}>
+                    {data.lostRevenue.toLocaleString("de-DE")} € / Monat
+                  </div>
+                  <div className="titan-metric-subtitle" style={{ color: "#b45309" }}>
+                    Basierend auf {data.pendingProducts} unoptimierten Produkten (ca. 45€ pro Produkt)
+                  </div>
+                </div>
+                <Button 
+                  variant="primary" 
+                  tone="critical"
+                  url="/app/products"
+                >
+                  Potenzial freischalten
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* ===== FEATURE MODULES GRID ===== */}
           <div>
