@@ -1,7 +1,7 @@
 import prisma from "../../db.server.js";
 import axios from "axios";
+import { FREE_TIER_LIMIT } from "../../config/limits.server.js";
 
-const FREE_TIER_LIMIT = 5;
 const INDEX_NOW_KEY = process.env.INDEXNOW_KEY || "titan-geo-core-key";
 
 /**

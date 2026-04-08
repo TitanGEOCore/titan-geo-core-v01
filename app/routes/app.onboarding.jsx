@@ -35,18 +35,45 @@ export const action = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();
 
+  // Server-side validation
+  const brandVoice = (formData.get("brandVoice") || "").trim();
+  const targetAudience = (formData.get("targetAudience") || "").trim();
+  const noGos = (formData.get("noGos") || "").trim();
+
+  const errors = {};
+
+  // Validate brandVoice
+  if (!brandVoice) {
+    errors.brandVoice = "Bitte beschreibe deine Brand Voice.";
+  } else if (brandVoice.length < 10) {
+    errors.brandVoice = "Bitte gib mindestens 10 Zeichen ein für eine aussagekräftige Beschreibung.";
+  }
+
+  // Validate targetAudience
+  if (!targetAudience) {
+    errors.targetAudience = "Bitte beschreibe deine Zielgruppe.";
+  } else if (targetAudience.length < 10) {
+    errors.targetAudience = "Bitte gib mindestens 10 Zeichen ein für eine aussagekräftige Beschreibung.";
+  }
+
+  // If there are validation errors, return them
+  if (Object.keys(errors).length > 0) {
+    return json({ errors, success: false }, { status: 400 });
+  }
+
+  // Save to database
   await prisma.shopSettings.upsert({
     where: { shop: session.shop },
     update: {
-      brandVoice: formData.get("brandVoice") || "",
-      targetAudience: formData.get("targetAudience") || "",
-      noGos: formData.get("noGos") || "",
+      brandVoice,
+      targetAudience,
+      noGos,
     },
     create: {
       shop: session.shop,
-      brandVoice: formData.get("brandVoice") || "",
-      targetAudience: formData.get("targetAudience") || "",
-      noGos: formData.get("noGos") || "",
+      brandVoice,
+      targetAudience,
+      noGos,
     },
   });
 

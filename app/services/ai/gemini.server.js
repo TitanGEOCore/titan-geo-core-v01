@@ -105,7 +105,22 @@ Generate the fully optimized output.`;
     },
   });
 
-  const result = JSON.parse(response.text);
+  let result;
+  try {
+    result = JSON.parse(response.text);
+  } catch (parseError) {
+    console.error("Gemini JSON parse error:", parseError.message);
+    console.error("Raw response:", response.text);
+    // Return a safe fallback object to prevent crash
+    return {
+      geoScore: 0,
+      optimizedTitle: product.title || "Product",
+      optimizedMetaDesc: "Optimized product description",
+      optimizedHtmlBody: sanitizeHtml(product.descriptionHtml || "<p>Product description</p>"),
+      jsonLdSchema: {},
+      _parseError: true,
+    };
+  }
 
   result.optimizedHtmlBody = sanitizeHtml(result.optimizedHtmlBody);
 
@@ -139,5 +154,22 @@ Return the geoScore (0-100), the current title as optimizedTitle, current meta a
     },
   });
 
-  return JSON.parse(response.text);
+  let auditResult;
+  try {
+    auditResult = JSON.parse(response.text);
+  } catch (parseError) {
+    console.error("Gemini JSON parse error in audit:", parseError.message);
+    console.error("Raw response:", response.text);
+    // Return a safe fallback object
+    return {
+      geoScore: 0,
+      optimizedTitle: product.title || "Product",
+      optimizedMetaDesc: "Product meta description",
+      optimizedHtmlBody: product.descriptionHtml || "<p>Product description</p>",
+      jsonLdSchema: {},
+      _parseError: true,
+    };
+  }
+
+  return auditResult;
 }
