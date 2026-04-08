@@ -10,10 +10,25 @@ import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
+  const url = new URL(request.url);
+  const cursor = url.searchParams.get("cursor");
+  const direction = url.searchParams.get("direction") || "next";
+
+  const paginationArgs = cursor
+    ? direction === "next"
+      ? `first: 25, after: "${cursor}"`
+      : `last: 25, before: "${cursor}"`
+    : "first: 25";
 
   const response = await admin.graphql(`
     query {
-      products(first: 30) {
+      products(${paginationArgs}) {
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
         nodes {
           id
           title
@@ -58,7 +73,14 @@ export const loader = async ({ request }) => {
 
   const totalMissing = products.reduce((sum, p) => sum + (p.altText ? 0 : 1), 0);
 
-  return json({ products, totalMissing, shop: session.shop });
+  const pageInfo = data.data?.products?.pageInfo || {
+    hasNextPage: false,
+    hasPreviousPage: false,
+    startCursor: null,
+    endCursor: null
+  };
+
+  return json({ products, pageInfo, totalMissing, shop: session.shop });
 };
 
 export const action = async ({ request }) => {
@@ -175,7 +197,7 @@ Antworte NUR mit dem Alt-Text, keine Anführungszeichen, keine Erklärung.`;
 };
 
 export default function AltTexts() {
-  const { products, totalMissing } = useLoaderData();
+  const { products, pageInfo, totalMissing } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const [generatedAlts, setGeneratedAlts] = useState({});
@@ -191,6 +213,55 @@ export default function AltTexts() {
       shopify.toast.show(`Fehler: ${fetcher.data.error}`, { isError: true });
     }
   }, [fetcher.data]);
+
+  // Helper function for controlled delay
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  // Generate alt text for a single product
+  const handleGenerateSingle = (product) => {
+    fetcher.submit(
+      {
+        intent: "generate_alt",
+        productId: product.id,
+        productTitle: product.title,
+        imageUrl: product.image || "",
+      },
+      { method: "post" },
+    );
+  };
+
+  // Bulk generate alt texts for all products without alt text
+  const handleBulkGenerate = async () => {
+    const toGenerate = products.filter(p => !p.altText);
+
+    if (toGenerate.length === 0) {
+      shopify.toast.show("Alle Produkte haben bereits Alt-Texte!");
+      return;
+    }
+
+    const total = toGenerate.length;
+    shopify.toast.show(`${total} Alt-Texte werden generiert...`);
+    let completed = 0;
+
+    for (let i = 0; i < toGenerate.length; i++) {
+      const product = toGenerate[i];
+      
+      // Add delay between each request (2.5 seconds)
+      if (i > 0) {
+        await delay(2500);
+      }
+      
+      handleGenerateSingle(product);
+      completed++;
+
+      // Show progress toast every 5 products
+      if (completed % 5 === 0 || completed === total) {
+        shopify.toast.show(`${completed}/${total} Alt-Texte generiert...`);
+      }
+    }
+
+    shopify.toast.show(`Alle ${total} Alt-Texte wurden zur Generierung eingereicht.`);
+  };
 
   return (
     <Page
@@ -215,6 +286,19 @@ export default function AltTexts() {
               optimale Alt-Texte generieren und direkt speichern.
             </p>
           </Banner>
+        )}
+
+        {/* Bulk Generate Button */}
+        {totalMissing > 0 && (
+          <BlockStack gap="200">
+            <Button
+              variant="primary"
+              onClick={handleBulkGenerate}
+              disabled={fetcher.state !== "idle"}
+            >
+              Alle {totalMissing} Alt-Texte generieren
+            </Button>
+          </BlockStack>
         )}
 
         <div
@@ -319,6 +403,31 @@ export default function AltTexts() {
             );
           })}
         </div>
+
+        {/* Pagination */}
+        {(pageInfo.hasPreviousPage || pageInfo.hasNextPage) && (
+          <BlockStack gap="300" align="center">
+            <InlineStack gap="300" blockAlign="center">
+              {pageInfo.hasPreviousPage && (
+                <Button 
+                  url={`/app/alt-texts?cursor=${pageInfo.startCursor}&direction=prev`}
+                >
+                  ← Vorherige Seite
+                </Button>
+              )}
+              <Text variant="bodySm" as="span" tone="subdued">
+                Seite
+              </Text>
+              {pageInfo.hasNextPage && (
+                <Button 
+                  url={`/app/alt-texts?cursor=${pageInfo.endCursor}&direction=next`}
+                >
+                  Nächste Seite →
+                </Button>
+              )}
+            </InlineStack>
+          </BlockStack>
+        )}
       </BlockStack>
     </Page>
   );
