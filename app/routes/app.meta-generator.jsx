@@ -9,10 +9,25 @@ import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
+  const url = new URL(request.url);
+  const cursor = url.searchParams.get("cursor");
+  const direction = url.searchParams.get("direction") || "next";
+
+  const paginationArgs = cursor
+    ? direction === "next"
+      ? `first: 25, after: "${cursor}"`
+      : `last: 25, before: "${cursor}"`
+    : "first: 25";
 
   const response = await admin.graphql(`
     query {
-      products(first: 80) {
+      products(${paginationArgs}) {
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
         nodes {
           id
           title
@@ -42,7 +57,14 @@ export const loader = async ({ request }) => {
     image: p.featuredImage?.url || null,
   }));
 
-  return json({ products, shop: session.shop });
+  const pageInfo = data.data?.products?.pageInfo || {
+    hasNextPage: false,
+    hasPreviousPage: false,
+    startCursor: null,
+    endCursor: null
+  };
+
+  return json({ products, pageInfo, shop: session.shop });
 };
 
 export const action = async ({ request }) => {
@@ -327,7 +349,7 @@ const getMetaStatus = (p) => {
 };
 
 export default function MetaGenerator() {
-  const { products } = useLoaderData();
+  const { products, pageInfo } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const [searchQuery, setSearchQuery] = useState("");
@@ -382,25 +404,42 @@ export default function MetaGenerator() {
     fetcher.submit(formData, { method: "post" });
   };
 
-  const handleBulkGenerate = () => {
+  // Helper function for controlled delay
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const handleBulkGenerate = async () => {
     const toOptimize = products.filter(p => {
       const s = getMetaStatus(p);
       return s.filter === "Meta fehlt" || s.filter === "Zu kurz" || s.filter === "Zu lang";
-    }).slice(0, 20); // Limit to 20 at a time
+    });
 
     if (toOptimize.length === 0) {
       shopify.toast.show("Alle Produkte haben bereits optimierte Meta-Daten!");
       return;
     }
 
-    const formData = new FormData();
-    formData.set("intent", "bulkGenerate");
-    formData.set("products", JSON.stringify(toOptimize.map(p => ({
-      id: p.id,
-      title: p.title,
-      description: p.description,
-    }))));
-    fetcher.submit(formData, { method: "post" });
+    const total = toOptimize.length;
+    shopify.toast.show(`${total} Meta-Tags werden generiert...`);
+    let completed = 0;
+
+    for (let i = 0; i < toOptimize.length; i++) {
+      const product = toOptimize[i];
+      
+      // Add delay between each request (2.5 seconds)
+      if (i > 0) {
+        await delay(2500);
+      }
+      
+      handleGenerate(product);
+      completed++;
+
+      // Show progress toast every 5 products
+      if (completed % 5 === 0 || completed === total) {
+        shopify.toast.show(`${completed}/${total} Meta-Tags generiert...`);
+      }
+    }
+
+    shopify.toast.show(`Alle ${total} Meta-Tags wurden zur Generierung eingereicht.`);
   };
 
   const handleBulkSave = useCallback(() => {
@@ -792,7 +831,29 @@ export default function MetaGenerator() {
           </BlockStack>
 
         </BlockStack>
-      </Page>
-    </div>
-  );
-}
+
+      {/* Pagination */}
+      {(pageInfo.hasPreviousPage || pageInfo.hasNextPage) && (
+        <BlockStack gap="300" align="center">
+          <InlineStack gap="300" blockAlign="center">
+            {pageInfo.hasPreviousPage && (
+              <Button 
+                url={`/app/meta-generator?cursor=${pageInfo.startCursor}&direction=prev`}
+              >
+                ← Vorherige Seite
+              </Button>
+            )}
+            <Text variant="bodySm" as="span" tone="subdued">
+              Seite
+            </Text>
+            {pageInfo.hasNextPage && (
+              <Button 
+                url={`/app/meta-generator?cursor=${pageInfo.endCursor}&direction=next`}
+              >
+                Nächste Seite →
+              </Button>
+            )}
+          </InlineStack>
+        </BlockStack>
+      )}
+    </Page>
