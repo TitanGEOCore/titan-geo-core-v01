@@ -14,6 +14,14 @@ export const loader = async ({ request }) => {
   const cursor = url.searchParams.get("cursor");
   const direction = url.searchParams.get("direction") || "next";
 
+  // Check plan for bulk operations permission
+  const { getEffectivePlan } = await import("../middleware/plan-check.server.js");
+  const prisma = await import("../db.server.js").then(m => m.default);
+  const plan = await getEffectivePlan(session.shop, prisma);
+  const { PLAN_LIMITS } = await import("../config/limits.server.js");
+  const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
+  const bulkAllowed = planLimits.bulkOperationsAllowed === true;
+
   const paginationArgs = cursor
     ? direction === "next"
       ? `first: 25, after: "${cursor}"`
@@ -80,7 +88,7 @@ export const loader = async ({ request }) => {
     endCursor: null
   };
 
-  return json({ products, pageInfo, totalMissing, shop: session.shop });
+  return json({ products, pageInfo, totalMissing, shop: session.shop, bulkAllowed });
 };
 
 export const action = async ({ request }) => {
@@ -197,7 +205,7 @@ Antworte NUR mit dem Alt-Text, keine Anführungszeichen, keine Erklärung.`;
 };
 
 export default function AltTexts() {
-  const { products, pageInfo, totalMissing } = useLoaderData();
+  const { products, pageInfo, totalMissing, bulkAllowed } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const [generatedAlts, setGeneratedAlts] = useState({});
@@ -288,13 +296,20 @@ export default function AltTexts() {
           </Banner>
         )}
 
+        {/* Paywall Banner for Bulk Operations */}
+        {!bulkAllowed && totalMissing > 0 && (
+          <Banner tone="info" title="Bulk-Automatisierung" action={{ content: "Upgrade", url: "/app/billing" }}>
+            🚀 Bulk-Automatisierung ist ein Pro-Feature. Spare Stunden manueller Arbeit.
+          </Banner>
+        )}
+
         {/* Bulk Generate Button */}
         {totalMissing > 0 && (
           <BlockStack gap="200">
             <Button
               variant="primary"
               onClick={handleBulkGenerate}
-              disabled={fetcher.state !== "idle"}
+              disabled={fetcher.state !== "idle" || !bulkAllowed}
             >
               Alle {totalMissing} Alt-Texte generieren
             </Button>

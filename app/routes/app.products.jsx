@@ -33,6 +33,14 @@ export const loader = async ({ request }) => {
   const cursor = url.searchParams.get("cursor");
   const direction = url.searchParams.get("direction") || "next";
 
+  // Check plan for bulk operations permission
+  const { getEffectivePlan } = await import("../middleware/plan-check.server.js");
+  const prisma = await import("../db.server.js").then(m => m.default);
+  const plan = await getEffectivePlan(shop, prisma);
+  const { PLAN_LIMITS } = await import("../config/limits.server.js");
+  const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
+  const bulkAllowed = planLimits.bulkOperationsAllowed === true;
+
   const paginationArgs = cursor
     ? direction === "next"
       ? `first: 25, after: "${cursor}"`
@@ -89,11 +97,12 @@ export const loader = async ({ request }) => {
     usageCount: usage.used,
     freeLimit: usage.limit,
     limitReached: usage.remaining === 0,
+    bulkAllowed,
   });
 };
 
 export default function Products() {
-  const { products, pageInfo, usageCount, freeLimit, limitReached } =
+  const { products, pageInfo, usageCount, freeLimit, limitReached, bulkAllowed } =
     useLoaderData();
   const navigate = useNavigate();
   const shopify = useAppBridge();
@@ -271,7 +280,7 @@ export default function Products() {
     );
   };
 
-  const promotedBulkActions = [
+  const promotedBulkActions = bulkAllowed ? [
     {
       content: "Bulk Audit starten",
       onAction: () => {
@@ -290,7 +299,7 @@ export default function Products() {
       content: "Bulk Optimieren",
       onAction: handleBulkOptimize,
     },
-  ];
+  ] : [];
 
   const getScoreColor = (score) => {
     if (score === null) return "#94a3b8";
@@ -478,6 +487,13 @@ export default function Products() {
               Du hast alle {freeLimit} kostenlosen Optimierungen aufgebraucht.
               Upgrade auf Titan GEO Pro fuer unbegrenzte Optimierungen.
             </p>
+          </Banner>
+        )}
+
+        {/* Paywall Banner for Bulk Operations */}
+        {!bulkAllowed && (
+          <Banner tone="info" title="Bulk-Automatisierung" action={{ content: "Upgrade", url: "/app/billing" }}>
+            🚀 Bulk-Automatisierung ist ein Pro-Feature. Spare Stunden manueller Arbeit.
           </Banner>
         )}
 

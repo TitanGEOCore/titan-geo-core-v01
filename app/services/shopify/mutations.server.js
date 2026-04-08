@@ -1,45 +1,13 @@
 import prisma from "../../db.server.js";
 import axios from "axios";
-import { FREE_TIER_LIMIT } from "../../config/limits.server.js";
+import { checkLimit, trackUsage } from "../../middleware/enforce-limits.server.js";
+import { PLAN_LIMITS, PLANS } from "../../config/limits.server.js";
 
 const INDEX_NOW_KEY = process.env.INDEXNOW_KEY || "titan-geo-core-key";
 
 /**
- * Check if the shop has exceeded the free-tier limit and has no active subscription.
- */
-async function checkUsageLimit(shop, billing) {
-  const count = await prisma.usageTracker.count({ where: { shop } });
-
-  if (count >= FREE_TIER_LIMIT) {
-    let hasSubscription = false;
-    try {
-      const billingCheck = await billing.require({
-        plans: ["Titan GEO Pro"],
-        isTest: process.env.NODE_ENV !== "production",
-        onFailure: () => {
-          hasSubscription = false;
-        },
-      });
-      hasSubscription = true;
-    } catch {
-      hasSubscription = false;
-    }
-
-    if (!hasSubscription) {
-      return {
-        allowed: false,
-        count,
-        message: `Free-Tier-Limit erreicht (${count}/${FREE_TIER_LIMIT}). Bitte upgrade auf Titan GEO Pro, um weitere Optimierungen durchzuführen.`,
-      };
-    }
-  }
-
-  return { allowed: true, count };
-}
-
-/**
  * Deploy optimized content to Shopify product.
- * Enforces free-tier limit, creates backup, applies mutations, pings IndexNow.
+ * Enforces plan limits via central middleware, creates backup, applies mutations, pings IndexNow.
  *
  * @param {object} admin - Shopify admin GraphQL client.
  * @param {object} billing - Shopify billing API.
@@ -49,10 +17,15 @@ async function checkUsageLimit(shop, billing) {
  * @param {object} currentProduct - Current product data for backup.
  */
 export async function deployUpdate(admin, billing, shop, productId, data, currentProduct) {
-  // 1. Check free-tier limit
-  const usage = await checkUsageLimit(shop, billing);
-  if (!usage.allowed) {
-    return { success: false, error: usage.message, requiresUpgrade: true };
+  // 1. Check plan limits using central middleware
+  const limitResult = await checkLimit(shop, "optimize");
+  if (!limitResult.allowed) {
+    return { 
+      success: false, 
+      error: limitResult.message, 
+      requiresUpgrade: true,
+      upgradeUrl: limitResult.upgradeUrl 
+    };
   }
 
   // 2. Create backup in ContentVersion
@@ -174,11 +147,13 @@ export async function deployUpdate(admin, billing, shop, productId, data, curren
     );
   }
 
-  const newCount = usage.count + 1;
+  // Track usage for this feature
+  trackUsage(shop, "optimize");
+
   return {
     success: true,
-    remaining: Math.max(FREE_TIER_LIMIT - newCount, 0),
-    total: newCount,
+    remaining: limitResult.remaining,
+    limit: limitResult.limit,
   };
 }
 
@@ -200,12 +175,26 @@ async function pingIndexNow(url) {
  * Get current usage stats for a shop.
  */
 export async function getUsageStats(shop) {
+  // Import getEffectivePlan from the middleware
+  const { getEffectivePlan } = await import("../../middleware/plan-check.server.js");
+  const plan = await getEffectivePlan(shop, prisma);
+  const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
+  const limit = planLimits.geo_optimization;
+  
   const count = await prisma.usageTracker.count({ where: { shop } });
+  
+  let remaining;
+  if (limit === -1) {
+    remaining = Infinity;
+  } else {
+    remaining = Math.max(limit - count, 0);
+  }
+  
   return {
     used: count,
-    limit: FREE_TIER_LIMIT,
-    remaining: Math.max(FREE_TIER_LIMIT - count, 0),
-    percentage: Math.round((count / FREE_TIER_LIMIT) * 100),
+    limit: limit,
+    remaining: remaining,
+    percentage: limit === -1 ? 0 : Math.round((count / limit) * 100),
   };
 }
 

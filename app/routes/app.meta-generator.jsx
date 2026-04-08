@@ -13,6 +13,14 @@ export const loader = async ({ request }) => {
   const cursor = url.searchParams.get("cursor");
   const direction = url.searchParams.get("direction") || "next";
 
+  // Check plan for bulk operations permission
+  const { getEffectivePlan } = await import("../middleware/plan-check.server.js");
+  const prisma = await import("../db.server.js").then(m => m.default);
+  const plan = await getEffectivePlan(session.shop, prisma);
+  const { PLAN_LIMITS } = await import("../config/limits.server.js");
+  const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
+  const bulkAllowed = planLimits.bulkOperationsAllowed === true;
+
   const paginationArgs = cursor
     ? direction === "next"
       ? `first: 25, after: "${cursor}"`
@@ -64,7 +72,7 @@ export const loader = async ({ request }) => {
     endCursor: null
   };
 
-  return json({ products, pageInfo, shop: session.shop });
+  return json({ products, pageInfo, shop: session.shop, bulkAllowed });
 };
 
 export const action = async ({ request }) => {
@@ -349,7 +357,7 @@ const getMetaStatus = (p) => {
 };
 
 export default function MetaGenerator() {
-  const { products, pageInfo } = useLoaderData();
+  const { products, pageInfo, bulkAllowed } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const [searchQuery, setSearchQuery] = useState("");
@@ -482,6 +490,13 @@ export default function MetaGenerator() {
             </div>
           </div>
 
+          {/* Paywall Banner for Bulk Operations */}
+          {!bulkAllowed && (
+            <Banner tone="info" title="Bulk-Automatisierung" action={{ content: "Upgrade", url: "/app/billing" }}>
+              🚀 Bulk-Automatisierung ist ein Pro-Feature. Spare Stunden manueller Arbeit.
+            </Banner>
+          )}
+
           {/* Stats Overview */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px" }}>
             <div className="titan-metric-card">
@@ -507,7 +522,7 @@ export default function MetaGenerator() {
                   variant="primary"
                   onClick={handleBulkGenerate}
                   loading={isLoading && result?.intent === "bulkGenerate"}
-                  disabled={isLoading}
+                  disabled={isLoading || !bulkAllowed}
                   fullWidth
                   size="slim"
                 >
