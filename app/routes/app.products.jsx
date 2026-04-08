@@ -221,21 +221,10 @@ export default function Products() {
     );
   };
 
-  const handleHealthCheck = (shopifyId) => {
-    setHealthCheckId(shopifyId);
-    handleAudit(shopifyId);
-  };
+  // Helper function for controlled delay
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  // Responsive: detect mobile via window width
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
-  const handleBulkOptimize = () => {
+  const handleBulkOptimize = async () => {
     if (limitReached) {
       shopify.toast.show(
         "Free-Tier Limit erreicht. Bitte upgrade auf Pro.",
@@ -243,15 +232,35 @@ export default function Products() {
       );
       return;
     }
-    shopify.toast.show(
-      `${selectedResources.length} Produkte werden optimiert...`
-    );
-    selectedResources.forEach((id, i) => {
+    if (selectedResources.length === 0) {
+      shopify.toast.show("Bitte wähle mindestens ein Produkt aus.", { isError: true });
+      return;
+    }
+
+    const total = selectedResources.length;
+    shopify.toast.show(`${total} Produkte werden optimiert...`);
+    let completed = 0;
+
+    for (let i = 0; i < selectedResources.length; i++) {
+      const id = selectedResources[i];
       const product = filteredProducts.find((p) => p.id === id);
       if (product) {
-        setTimeout(() => handleOptimize(product.shopifyId), i * 3000);
+        // Add delay between each request (2.5 seconds)
+        if (i > 0) {
+          await delay(2500);
+        }
+        handleOptimize(product.shopifyId);
+        completed++;
+        
+        // Show progress toast every 5 products
+        if (completed % 5 === 0 && completed < total) {
+          shopify.toast.show(`${completed}/${total} Produkte optimiert...`);
+        }
       }
-    });
+    }
+
+    // Final toast
+    shopify.toast.show(`Alle ${total} Produkte wurden zur Optimierung eingereicht.`);
   };
 
   // Open product in Shopify admin (external link)

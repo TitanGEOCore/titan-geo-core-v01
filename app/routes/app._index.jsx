@@ -42,31 +42,68 @@ export const loader = async ({ request }) => {
   // Content versions
   const totalVersions = await prisma.contentVersion.count({ where: { shop } });
 
-  // Fetch product data + GEO scores from Shopify
+  // Fetch product data + GEO scores from Shopify with pagination (max 1000 products)
   let totalProducts = 0;
   let avgGeoScore = 0;
   let productsWithScore = 0;
   let pendingProducts = 0;
 
+  const MAX_PRODUCTS = 1000;
+  const BATCH_SIZE = 50;
+  let hasNextPage = true;
+  let cursor = null;
+  const allScores = [];
+
   try {
-    const response = await admin.graphql(`
+    // First get total count
+    const countResponse = await admin.graphql(`
       query {
         productsCount { count }
-        products(first: 50) {
-          nodes {
-            metafield(namespace: "custom", key: "geo_score") { value }
-          }
-        }
       }
     `);
-    const data = await response.json();
-    totalProducts = data.data?.productsCount?.count || 0;
-    const products = data.data?.products?.nodes || [];
-    const scores = products
-      .map(p => p.metafield?.value ? Number(p.metafield.value) : null)
-      .filter(s => s !== null);
-    productsWithScore = scores.length;
-    avgGeoScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+    const countData = await countResponse.json();
+    totalProducts = countData.data?.productsCount?.count || 0;
+
+    // Fetch all products with cursor pagination
+    while (hasNextPage && allScores.length < MAX_PRODUCTS) {
+      const response = await admin.graphql(`
+        query ($first: Int, $after: String) {
+          products(first: $first, after: $after) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            nodes {
+              metafield(namespace: "custom", key: "geo_score") { value }
+            }
+          }
+        }
+      `, {
+        variables: {
+          first: BATCH_SIZE,
+          after: cursor
+        }
+      });
+      
+      const data = await response.json();
+      const products = data.data?.products?.nodes || [];
+      const pageInfo = data.data?.products?.pageInfo || {};
+      
+      hasNextPage = pageInfo.hasNextPage || false;
+      cursor = pageInfo.endCursor || null;
+      
+      // Collect scores
+      products.forEach(p => {
+        if (p.metafield?.value) {
+          allScores.push(Number(p.metafield.value));
+        }
+      });
+    }
+
+    productsWithScore = allScores.length;
+    avgGeoScore = allScores.length > 0 
+      ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length) 
+      : 0;
     pendingProducts = totalProducts - productsWithScore;
   } catch (e) {
     console.error("Dashboard product fetch error:", e);
