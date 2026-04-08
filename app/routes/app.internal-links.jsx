@@ -11,6 +11,14 @@ import { authenticate } from "../shopify.server";
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
 
+  // Check plan for auto-apply internal links feature
+  const { getEffectivePlan } = await import("../middleware/plan-check.server.js");
+  const prisma = await import("../db.server.js").then(m => m.default);
+  const plan = await getEffectivePlan(session.shop, prisma);
+  const { PLAN_LIMITS } = await import("../config/limits.server.js");
+  const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
+  const autoApplyInternalLinks = planLimits.autoApplyInternalLinks === true;
+
   const response = await admin.graphql(`
     query {
       products(first: 50, sortKey: TITLE) {
@@ -46,7 +54,7 @@ export const loader = async ({ request }) => {
     linkCount: ((p.descriptionHtml || "").match(/<a\s/gi) || []).length,
   }));
 
-  return json({ products, shop: session.shop });
+  return json({ products, shop: session.shop, autoApplyInternalLinks });
 };
 
 /* ─── Action: Analyse, Auto-Verlinkung, Speichern ─── */
@@ -220,6 +228,103 @@ Generiere exakt dieses JSON-Format:
     } catch (e) {
       console.error("Auto-link error:", e);
       return json({ success: false, error: "Automatische Verlinkung fehlgeschlagen." });
+    }
+  }
+
+  // Generate single link with AI (Pro/Enterprise feature)
+  if (intent === "generate_link") {
+    // Check plan for auto-apply internal links feature
+    const { getEffectivePlan } = await import("../middleware/plan-check.server.js");
+    const prisma = await import("../db.server.js").then(m => m.default);
+    const plan = await getEffectivePlan(session.shop, prisma);
+    const { PLAN_LIMITS } = await import("../config/limits.server.js");
+    const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
+    const autoApplyInternalLinks = planLimits.autoApplyInternalLinks === true;
+
+    if (!autoApplyInternalLinks) {
+      return json({ success: false, error: "Auto-Inject Verlinkung ist ein Pro-Feature." });
+    }
+
+    const sourceTitle = formData.get("sourceTitle");
+    const targetTitle = formData.get("targetTitle");
+    const targetHandle = formData.get("targetHandle");
+
+    const { GoogleGenAI } = await import("@google/genai");
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+    const prompt = `Generiere einen einzigen, conversion-starken und natürlichen Übergangssatz auf Deutsch, der am Ende einer Produktbeschreibung für das Quellprodukt "${sourceTitle}" platziert wird und einen Link zum Zielprodukt "${targetTitle}" rechtfertigt. Antworte nur mit dem Satz.`;
+
+    try {
+      const result = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: { temperature: 0.3 },
+      });
+
+      const bridgeSentence = result.text.trim().replace(/^["']|["']$/g, "");
+      
+      // Create HTML snippet
+      const linkHtml = `<p class="titan-related-link">${bridgeSentence} <a href="/products/${targetHandle}">${targetTitle}</a></p>`;
+
+      return json({ 
+        success: true, 
+        intent: "generate_link", 
+        bridgeSentence, 
+        linkHtml,
+        targetHandle,
+        targetTitle
+      });
+    } catch (e) {
+      console.error("Link generation error:", e);
+      return json({ success: false, error: "Link-Generierung fehlgeschlagen." });
+    }
+  }
+
+  // Auto-apply generated link to product
+  if (intent === "apply_link") {
+    const productId = formData.get("productId");
+    const currentHtml = formData.get("currentHtml");
+    const linkHtml = formData.get("linkHtml");
+
+    // Append the link snippet to the description
+    const updatedHtml = currentHtml + "\n" + linkHtml;
+
+    try {
+      const mutation = await admin.graphql(
+        `#graphql
+        mutation productUpdate($input: ProductInput!) {
+          productUpdate(input: $input) {
+            product {
+              id
+              descriptionHtml
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }`,
+        {
+          variables: {
+            input: {
+              id: productId,
+              descriptionHtml: updatedHtml,
+            },
+          },
+        }
+      );
+
+      const mutationResult = await mutation.json();
+      const userErrors = mutationResult.data?.productUpdate?.userErrors || [];
+
+      if (userErrors.length > 0) {
+        return json({ success: false, intent: "apply_link", error: userErrors.map(e => e.message).join(", ") });
+      }
+
+      return json({ success: true, intent: "apply_link", productId, updatedHtml });
+    } catch (e) {
+      console.error("Apply link error:", e);
+      return json({ success: false, intent: "apply_link", error: "Link konnte nicht angewendet werden." });
     }
   }
 
