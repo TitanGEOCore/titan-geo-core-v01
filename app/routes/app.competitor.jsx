@@ -8,13 +8,28 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { authenticate } from "../shopify.server";
 
-/* ─── Loader: Produkte mit Bildern laden ─── */
+/* ─── Loader: Produkte mit Bildern laden (mit Pagination) ─── */
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
+  const url = new URL(request.url);
+  const cursor = url.searchParams.get("cursor");
+  const direction = url.searchParams.get("direction") || "next";
+
+  const paginationArgs = cursor
+    ? direction === "next"
+      ? `first: 25, after: "${cursor}"`
+      : `last: 25, before: "${cursor}"`
+    : "first: 25";
 
   const response = await admin.graphql(`
-    query {
-      products(first: 50, sortKey: TITLE) {
+    query getProducts(${paginationArgs}) {
+      products {
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
         nodes {
           id
           title
@@ -23,6 +38,9 @@ export const loader = async ({ request }) => {
           descriptionHtml
           featuredImage { url altText }
           seo { title description }
+          metafield(namespace: "custom", key: "geo_keywords") {
+            value
+          }
         }
       }
     }
@@ -39,9 +57,17 @@ export const loader = async ({ request }) => {
     imageAlt: p.featuredImage?.altText || "",
     seoTitle: p.seo?.title || "",
     seoDescription: p.seo?.description || "",
+    geoKeywords: p.metafield?.value ? JSON.parse(p.metafield.value) : null,
   }));
 
-  return json({ products, shop: session.shop });
+  const pageInfo = data.data?.products?.pageInfo || {
+    hasNextPage: false,
+    hasPreviousPage: false,
+    startCursor: null,
+    endCursor: null
+  };
+
+  return json({ products, pageInfo, shop: session.shop });
 };
 
 /* ─── Action: Analyse durchführen ─── */
@@ -186,6 +212,90 @@ Generiere mindestens 3 Stärken, 4 Schwächen, 6 Keywords (je mit 2-3 Placements
     } catch (err) {
       console.error("Competitor analysis error:", err);
       return json({ success: false, error: `Analyse fehlgeschlagen: ${err.message}` });
+    }
+  }
+
+  // Inject gap keywords from competitor analysis
+  if (intent === "inject_gap_keywords") {
+    const { admin, session } = await authenticate.admin(request);
+    const productId = formData.get("productId");
+    const productTitle = formData.get("productTitle");
+
+    // Limit-Check
+    const { checkLimit, trackUsage, limitErrorResponse } = await import("../middleware/enforce-limits.server.js");
+    const limitResult = await checkLimit(session.shop, "competitor");
+    if (!limitResult.allowed) {
+      return json(limitErrorResponse(limitResult));
+    }
+
+    const { GoogleGenAI } = await import("@google/genai");
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+    const prompt = `Analysiere das Produkt "${productTitle}". Nenne die 20 wichtigsten SEO-Keywords der stärksten Konkurrenten. Antworte ausschließlich mit einem JSON-Array von Strings.`;
+
+    try {
+      const result = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: { temperature: 0.3, responseMimeType: "application/json" },
+      });
+
+      const keywords = JSON.parse(result.text);
+      
+      if (!Array.isArray(keywords)) {
+        return json({ success: false, error: "Ungültiges Keyword-Format" });
+      }
+
+      // Save keywords to metafield
+      const metafieldMutation = await admin.graphql(
+        `#graphql
+        mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+          metafieldsSet(metafields: $metafields) {
+            metafields {
+              id
+              key
+              namespace
+              value
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }`,
+        {
+          variables: {
+            metafields: [
+              {
+                ownerId: productId,
+                namespace: "custom",
+                key: "geo_keywords",
+                type: "json",
+                value: JSON.stringify(keywords),
+              },
+            ],
+          },
+        }
+      );
+
+      const metafieldResult = await metafieldMutation.json();
+      const metafieldErrors = metafieldResult.data?.metafieldsSet?.userErrors || [];
+
+      if (metafieldErrors.length > 0) {
+        return json({ success: false, error: metafieldErrors.map(e => e.message).join(", ") });
+      }
+
+      trackUsage(session.shop, "competitor");
+
+      return json({ 
+        success: true, 
+        intent: "inject_gap_keywords", 
+        productId, 
+        keywords: keywords.slice(0, 5) // Return first 5 for display
+      });
+    } catch (err) {
+      console.error("Inject gap keywords error:", err);
+      return json({ success: false, error: `Keyword-Injektion fehlgeschlagen: ${err.message}` });
     }
   }
 
@@ -382,6 +492,44 @@ export default function Competitor() {
     } catch {}
   }, [shopify]);
 
+  // Bulk inject gap keywords for all products
+  const handleBulkInject = useCallback(async () => {
+    const productsToProcess = products.filter(p => !p.geoKeywords);
+    
+    if (productsToProcess.length === 0) {
+      shopify.toast.show("Keine Produkte ohne Keywords gefunden.");
+      return;
+    }
+
+    const total = productsToProcess.length;
+    shopify.toast.show(`Starte Keyword-Injektion für ${total} Produkte...`);
+
+    for (let i = 0; i < productsToProcess.length; i++) {
+      const product = productsToProcess[i];
+      
+      // Add delay between requests to prevent API locks
+      if (i > 0) {
+        await delay(2500);
+      }
+
+      const formData = new FormData();
+      formData.set("intent", "inject_gap_keywords");
+      formData.set("productId", product.id);
+      formData.set("productTitle", product.title);
+      fetcher.submit(formData, { method: "post" });
+
+      // Show progress toast every 5 products
+      if ((i + 1) % 5 === 0 && (i + 1) < total) {
+        shopify.toast.show(`${i + 1}/${total} Produkte verarbeitet...`);
+      }
+    }
+
+    shopify.toast.show(`Keyword-Injektion für ${total} Produkte abgeschlossen!`);
+  }, [products, fetcher, shopify]);
+
+  // Helper function for controlled delay
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
   // Vergleich-Kategorien
   const comparisonCategories = analysis?.comparison ? [
     { key: "content", label: "Content", data: analysis.comparison.content },
@@ -495,6 +643,17 @@ export default function Competitor() {
                 <p>Ausgewählt: <strong>{selectedProduct.title}</strong></p>
               </Banner>
             )}
+            
+            {/* Bulk Inject Button */}
+            <div style={{ marginTop: "16px" }}>
+              <Button 
+                variant="primary" 
+                onClick={handleBulkInject}
+                disabled={products.filter(p => !p.geoKeywords).length === 0}
+              >
+                Gap-Keywords für alle {products.filter(p => !p.geoKeywords).length} Produkte injizieren
+              </Button>
+            </div>
           </BlockStack>
         </Card>
 
