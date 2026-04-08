@@ -318,7 +318,7 @@ export default function Products() {
             image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
           >
             <p>
-              Fuege zuerst Produkte zu deinem Store hinzu, um sie zu
+              Füge zuerst Produkte zu deinem Store hinzu, um sie zu
               optimieren.
             </p>
           </EmptyState>
@@ -402,7 +402,7 @@ export default function Products() {
       </IndexTable.Cell>
       <IndexTable.Cell>
         <InlineStack gap="200">
-          <Tooltip content="GEO Audit durchfuehren">
+          <Tooltip content="GEO Audit durchführen">
             <Button
               size="slim"
               onClick={(e) => {
@@ -665,7 +665,7 @@ export default function Products() {
                     setStatusFilter("all");
                   }}
                 >
-                  Filter zuruecksetzen
+                  Filter zurücksetzen
                 </Button>
               </InlineStack>
             </div>
@@ -801,7 +801,7 @@ export default function Products() {
                     setStatusFilter("all");
                   }}
                 >
-                  Filter zuruecksetzen
+                  Filter zurücksetzen
                 </Button>
               </BlockStack>
             </Box>

@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { useLoaderData, useSubmit, useNavigate } from "@remix-run/react";
+import { useLoaderData, useSubmit, useNavigate, useNavigation } from "@remix-run/react";
 import {
   Page,
   Button,
@@ -137,6 +137,7 @@ export default function Onboarding() {
   const [animDirection, setAnimDirection] = useState("forward");
   const submit = useSubmit();
   const navigate = useNavigate();
+  const navigation = useNavigation();
 
   const totalSteps = 4;
 
@@ -351,7 +352,7 @@ export default function Onboarding() {
                   {/* Suggestions */}
                   <BlockStack gap="200">
                     <Text variant="bodySm" as="p" tone="subdued">
-                      Schnellauswahl -- Klicke um hinzuzufuegen:
+                      Schnellauswahl — Klicke um hinzuzufügen:
                     </Text>
                     <InlineStack gap="200" wrap>
                       {BRAND_VOICE_SUGGESTIONS.map((s) => (
@@ -719,13 +720,14 @@ export default function Onboarding() {
               <InlineStack align="space-between" blockAlign="center">
                 <div>
                   {step > 0 ? (
-                    <Button onClick={goBack}>Zurueck</Button>
+                    <Button onClick={goBack}>Zurück</Button>
                   ) : (
                     <Button
                       variant="plain"
                       onClick={() => navigate("/app")}
+                      disabled={navigation?.state === "submitting"}
                     >
-                      Spaeter einrichten
+                      Später einrichten
                     </Button>
                   )}
                 </div>
@@ -736,8 +738,9 @@ export default function Onboarding() {
                       <Button
                         variant="plain"
                         onClick={() => navigate("/app")}
+                        disabled={navigation?.state === "submitting"}
                       >
-                        Spaeter einrichten
+                        Später einrichten
                       </Button>
                     )}
                     {step < totalSteps - 1 ? (
