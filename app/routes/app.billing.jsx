@@ -11,11 +11,18 @@ export const loader = async ({ request }) => {
     const { billing, session } = await authenticate.admin(request);
     const shop = session.shop;
 
+    // Dynamically determine isTest for billing check
+    const host = request.headers.get("host") || "";
+    const isTest = process.env.NODE_ENV !== "production" || 
+                   host.includes("localhost") || 
+                   host.includes("ngrok") ||
+                   host.includes("test");
+
     let currentPlan = "Starter";
     try {
       const { hasActivePayment, appSubscriptions } = await billing.check({
         plans: [GROWTH_PLAN, PRO_PLAN, ENTERPRISE_PLAN],
-        isTest: true,
+        isTest,
       });
 
       if (hasActivePayment && appSubscriptions?.length > 0) {
@@ -39,30 +46,42 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
-  try {
-    const { billing } = await authenticate.admin(request);
-    const formData = await request.formData();
-    const plan = formData.get("plan");
+  const formData = await request.formData();
+  const plan = formData.get("plan");
 
-    const planMap = {
-      growth: GROWTH_PLAN,
-      pro: PRO_PLAN,
-      enterprise: ENTERPRISE_PLAN,
-    };
+  const planMap = {
+    growth: GROWTH_PLAN,
+    pro: PRO_PLAN,
+    enterprise: ENTERPRISE_PLAN,
+  };
 
-    if (planMap[plan]) {
+  if (planMap[plan]) {
+    // Dynamically determine isTest flag
+    // Use test mode for non-production environments or development shops
+    const host = request.headers.get("host") || "";
+    const isTest = process.env.NODE_ENV !== "production" || 
+                   host.includes("localhost") || 
+                   host.includes("ngrok") ||
+                   host.includes("test");
+
+    try {
+      const { billing } = await authenticate.admin(request);
       await billing.request({
         plan: planMap[plan],
-        isTest: true,
+        isTest,
       });
+    } catch (error) {
+      // billing.request throws a redirect to Shopify's billing confirmation — that's expected
+      // If the error is a Response (redirect), re-throw it to let Remix handle it
+      if (error instanceof Response) {
+        throw error;
+      }
+      console.error("Billing action error:", error);
+      throw error;
     }
-
-    return null;
-  } catch (error) {
-    console.error("Billing action error:", error);
-    // billing.request throws a redirect to Shopify's billing confirmation — that's expected
-    throw error;
   }
+
+  return null;
 };
 
 const plans = [

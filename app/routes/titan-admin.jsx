@@ -19,6 +19,11 @@ export const loader = async ({ request }) => {
   let totalShops = 0;
   let shops = [];
   let totalOptimizationsCount = 0;
+  let moduleStats = {
+    geo_optimization: 0,
+    alt_text_generation: 0,
+    meta_generation: 0,
+  };
 
   try {
     const sessions = await prisma.session.findMany({
@@ -27,12 +32,29 @@ export const loader = async ({ request }) => {
     const uniqueShops = [...new Set(sessions.map(s => s.shop))];
     totalShops = uniqueShops.length;
 
-    // Get usage per shop
+    // Get usage per shop with module breakdown
     const usageCounts = await prisma.usageTracker.groupBy({
-      by: ["shop"],
+      by: ["shop", "module"],
       _count: true,
     });
-    const usageMap = Object.fromEntries(usageCounts.map(u => [u.shop, u._count]));
+    
+    // Build usage map by shop and module
+    const usageMap = {};
+    for (const u of usageCounts) {
+      if (!usageMap[u.shop]) usageMap[u.shop] = {};
+      usageMap[u.shop][u.module] = u._count;
+    }
+
+    // Get total counts by module
+    const moduleTotals = await prisma.usageTracker.groupBy({
+      by: ["module"],
+      _count: true,
+    });
+    for (const m of moduleTotals) {
+      if (moduleStats.hasOwnProperty(m.module)) {
+        moduleStats[m.module] = m._count;
+      }
+    }
 
     // Get settings per shop
     const allSettings = await prisma.shopSettings.findMany();
@@ -40,7 +62,9 @@ export const loader = async ({ request }) => {
 
     shops = uniqueShops.map(shop => ({
       shop,
-      usage: usageMap[shop] || 0,
+      usage: usageMap[shop]?.geo_optimization || 0,
+      altTextUsage: usageMap[shop]?.alt_text_generation || 0,
+      metaUsage: usageMap[shop]?.meta_generation || 0,
       planOverride: settingsMap[shop]?.planOverride || null,
       brandVoice: !!settingsMap[shop]?.brandVoice,
     }));
@@ -55,13 +79,25 @@ export const loader = async ({ request }) => {
   const estimatedOutputTokens = totalOptimizationsCount * 1500;
   const estimatedCostUSD = ((estimatedInputTokens / 1_000_000) * 0.15) + ((estimatedOutputTokens / 1_000_000) * 0.60);
 
+  // Get admin users
+  let adminUsers = [];
+  try {
+    adminUsers = await prisma.adminUser.findMany({
+      select: { id: true, email: true, role: true, createdAt: true, updatedAt: true },
+    });
+  } catch (e) {
+    // Table might not exist yet
+  }
+
   return json({
     totalShops,
     shops,
     totalOptimizationsCount,
+    moduleStats,
     estimatedInputTokens,
     estimatedOutputTokens,
     estimatedCostUSD,
+    adminUsers,
   });
 };
 
@@ -103,11 +139,70 @@ export const action = async ({ request }) => {
     }
   }
 
+  // Admin User Management
+  if (intent === "createAdminUser") {
+    const email = formData.get("email");
+    const password = formData.get("password");
+    const role = formData.get("role") || "Viewer";
+    
+    if (!email || !password) {
+      return json({ error: "E-Mail und Passwort erforderlich" }, { status: 400 });
+    }
+    
+    try {
+      await prisma.adminUser.create({
+        data: { email, password, role },
+      });
+      return json({ success: true, message: `Admin-Benutzer ${email} erstellt` });
+    } catch (e) {
+      if (e.code === "P2002") {
+        return json({ error: "E-Mail existiert bereits" }, { status: 400 });
+      }
+      return json({ error: "Fehler beim Erstellen des Benutzers" }, { status: 500 });
+    }
+  }
+
+  if (intent === "updateAdminPassword") {
+    const email = formData.get("email");
+    const newPassword = formData.get("newPassword");
+    
+    if (!email || !newPassword) {
+      return json({ error: "E-Mail und neues Passwort erforderlich" }, { status: 400 });
+    }
+    
+    try {
+      await prisma.adminUser.update({
+        where: { email },
+        data: { password: newPassword },
+      });
+      return json({ success: true, message: `Passwort für ${email} geändert` });
+    } catch (e) {
+      return json({ error: "Benutzer nicht gefunden" }, { status: 404 });
+    }
+  }
+
+  if (intent === "deleteAdminUser") {
+    const email = formData.get("email");
+    
+    if (!email) {
+      return json({ error: "E-Mail erforderlich" }, { status: 400 });
+    }
+    
+    try {
+      await prisma.adminUser.delete({
+        where: { email },
+      });
+      return json({ success: true, message: `Benutzer ${email} gelöscht` });
+    } catch (e) {
+      return json({ error: "Benutzer nicht gefunden" }, { status: 404 });
+    }
+  }
+
   return json({ error: "Unbekannte Aktion" });
 };
 
 export default function TitanAdmin() {
-  const { totalShops, shops, totalOptimizationsCount, estimatedInputTokens, estimatedOutputTokens, estimatedCostUSD } = useLoaderData();
+  const { totalShops, shops, totalOptimizationsCount, moduleStats, estimatedInputTokens, estimatedOutputTokens, estimatedCostUSD, adminUsers } = useLoaderData();
   const submit = useSubmit();
   const actionData = useActionData();
   const [planShop, setPlanShop] = useState("");

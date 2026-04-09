@@ -29,6 +29,17 @@ model Session {
   @@index([shop])
 }
 
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String   // Hashed password
+  role         String   @default("Viewer") // Admin, Editor, Viewer
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([email])
+}
+
 model ShopSettings {
   id              String   @id @default(cuid())
   shop            String   @unique
@@ -43,11 +54,14 @@ model ShopSettings {
 model UsageTracker {
   id          String   @id @default(cuid())
   shop        String
-  productId   String
+  module      String   // Module type: geo_optimization, alt_text_generation, meta_generation
+  productId   String?  // Optional - can be null for aggregate tracking
   optimizedAt DateTime @default(now())
 
   @@index([shop])
+  @@index([shop, module])
   @@index([shop, productId])
+  @@index([shop, module, optimizedAt])
 }
 
 model ExternalTokens {
