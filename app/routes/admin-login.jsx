@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/node";
 import { useActionData, Form } from "@remix-run/react";
 import { useState } from "react";
-import { getAdminSessions, verifyAdminSession } from "../admin-session.server";
+import { getAdminSessions, verifyAdminSession, verifyAdminCredentials } from "../admin-session.server";
 
 export const loader = async ({ request }) => {
   const cookieHeader = request.headers.get("Cookie") || "";
@@ -17,17 +17,18 @@ export const action = async ({ request }) => {
   const email = formData.get("email");
   const password = formData.get("password");
 
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@titangeo.de";
-  const adminPassword = process.env.ADMIN_PASSWORD || "TitanGeo2024!";
-
-  if (email !== adminEmail || password !== adminPassword) {
-    return json({ error: "Ungültige Anmeldedaten. Zugriff verweigert." }, { status: 401 });
+  // Use database-backed authentication with ENV fallback
+  const result = await verifyAdminCredentials(email, password);
+  
+  if (!result.success) {
+    return json({ error: result.error }, { status: 401 });
   }
 
   // Erstelle Session-Token
   const token = crypto.randomUUID();
   getAdminSessions().set(token, {
-    email,
+    email: result.user.email,
+    role: result.user.role,
     createdAt: Date.now(),
     ip: request.headers.get("x-forwarded-for") || "unknown",
   });

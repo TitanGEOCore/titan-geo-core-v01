@@ -24,83 +24,115 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { useState, useEffect, useMemo } from "react";
 import { authenticate } from "../shopify.server";
 import { getUsageStats } from "../services/shopify/mutations.server";
+import { getEffectivePlan } from "../middleware/plan-check.server.js";
+import { PLAN_LIMITS } from "../config/limits.server.js";
+import prisma from "../db.server.js";
 
 export const loader = async ({ request }) => {
-  const { admin, session } = await authenticate.admin(request);
-  const shop = session.shop;
+  try {
+    const { admin, session } = await authenticate.admin(request);
+    const shop = session.shop;
 
-  const url = new URL(request.url);
-  const cursor = url.searchParams.get("cursor");
-  const direction = url.searchParams.get("direction") || "next";
+    const url = new URL(request.url);
+    const cursor = url.searchParams.get("cursor");
+    const direction = url.searchParams.get("direction") || "next";
 
-  // Check plan for bulk operations permission
-  const { getEffectivePlan } = await import("../middleware/plan-check.server.js");
-  const prisma = await import("../db.server.js").then(m => m.default);
-  const plan = await getEffectivePlan(shop, prisma);
-  const { PLAN_LIMITS } = await import("../config/limits.server.js");
-  const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
-  const bulkAllowed = planLimits.bulkOperationsAllowed === true;
+    // Check plan for bulk operations permission
+    let plan = "Starter";
+    let planLimits = PLAN_LIMITS.Starter;
+    let bulkAllowed = false;
 
-  const paginationArgs = cursor
-    ? direction === "next"
-      ? `first: 25, after: "${cursor}"`
-      : `last: 25, before: "${cursor}"`
-    : "first: 25";
+    try {
+      plan = await getEffectivePlan(shop, prisma);
+      planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
+      bulkAllowed = planLimits.bulkOperationsAllowed === true;
+    } catch (planError) {
+      console.error("Plan check error:", planError);
+      // Fall back to Starter plan
+      plan = "Starter";
+      planLimits = PLAN_LIMITS.Starter;
+      bulkAllowed = false;
+    }
 
-  const response = await admin.graphql(
-    `#graphql
-    query getProducts {
-      products(${paginationArgs}) {
-        pageInfo {
-          hasNextPage
-          hasPreviousPage
-          startCursor
-          endCursor
-        }
-        nodes {
-          id
-          title
-          handle
-          status
-          updatedAt
-          featuredImage {
-            url
-            altText
+    const paginationArgs = cursor
+      ? direction === "next"
+        ? `first: 25, after: "${cursor}"`
+        : `last: 25, before: "${cursor}"`
+      : "first: 25";
+
+    const response = await admin.graphql(
+      `#graphql
+      query getProducts {
+        products(${paginationArgs}) {
+          pageInfo {
+            hasNextPage
+            hasPreviousPage
+            startCursor
+            endCursor
           }
-          metafield(namespace: "custom", key: "geo_score") {
-            value
+          nodes {
+            id
+            title
+            handle
+            status
+            updatedAt
+            featuredImage {
+              url
+              altText
+            }
+            metafield(namespace: "custom", key: "geo_score") {
+              value
+            }
           }
         }
-      }
-    }`
-  );
+      }`
+    );
 
-  const data = await response.json();
-  const products = data.data?.products?.nodes || [];
-  const pageInfo = data.data?.products?.pageInfo || {};
+    const data = await response.json();
+    const products = data.data?.products?.nodes || [];
+    const pageInfo = data.data?.products?.pageInfo || {};
 
-  const usage = await getUsageStats(shop);
+    let usage = { used: 0, limit: 5, remaining: 5 };
+    try {
+      usage = await getUsageStats(shop);
+    } catch (usageError) {
+      console.error("Usage stats error:", usageError);
+      // Use default usage values on error
+      usage = { used: 0, limit: 5, remaining: 5 };
+    }
 
-  return json({
-    products: products.map((p) => ({
-      id: p.id.replace("gid://shopify/Product/", ""),
-      shopifyId: p.id,
-      title: p.title,
-      handle: p.handle,
-      status: p.status,
-      updatedAt: p.updatedAt,
-      image: p.featuredImage?.url,
-      imageAlt: p.featuredImage?.altText,
-      geoScore: p.metafield?.value ? Number(p.metafield.value) : null,
-    })),
-    pageInfo,
-    usageCount: usage.used,
-    freeLimit: usage.limit,
-    limitReached: usage.remaining === 0,
-    bulkAllowed,
-  });
+    return json({
+      products: products.map((p) => ({
+        id: p.id.replace("gid://shopify/Product/", ""),
+        shopifyId: p.id,
+        title: p.title,
+        handle: p.handle,
+        status: p.status,
+        updatedAt: p.updatedAt,
+        image: p.featuredImage?.url,
+        imageAlt: p.featuredImage?.altText,
+        geoScore: p.metafield?.value ? Number(p.metafield.value) : null,
+      })),
+      pageInfo,
+      usageCount: usage.used,
+      freeLimit: usage.limit,
+      limitReached: usage.remaining === 0,
+      bulkAllowed,
+    });
+  } catch (error) {
+    console.error("Products loader error:", error);
+    // Return fallback JSON to prevent white screen
+    return json({
+      error: "Fehler beim Laden der Produkte. Bitte versuche es später erneut.",
+      products: [],
+      pageInfo: {},
+      usageCount: 0,
+      freeLimit: 5,
+      limitReached: false,
+      bulkAllowed: false,
+    });
+  }
 };
-
 export default function Products() {
   const { products, pageInfo, usageCount, freeLimit, limitReached, bulkAllowed } =
     useLoaderData();

@@ -135,7 +135,7 @@ export async function deployUpdate(admin, billing, shop, productId, data, curren
 
   // 5. Register in UsageTracker
   await prisma.usageTracker.create({
-    data: { shop, productId },
+    data: { shop, module: "geo_optimization", productId },
   });
 
   // 6. Ping IndexNow
