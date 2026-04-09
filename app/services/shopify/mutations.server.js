@@ -185,7 +185,7 @@ export async function getUsageStats(shop) {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const count = await prisma.usageTracker.count({
-    where: { shop, createdAt: { gte: todayStart } },
+    where: { shop, optimizedAt: { gte: todayStart } },
   });
   
   let remaining;
@@ -209,7 +209,7 @@ export async function getUsageStats(shop) {
 export async function getVersionHistory(shop, productId) {
   return prisma.contentVersion.findMany({
     where: { shop, productId },
-    orderBy: { createdAt: "desc" },
+    orderBy: { optimizedAt: "desc" },
     take: 10,
   });
 }
