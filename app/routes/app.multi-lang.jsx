@@ -6,6 +6,7 @@ import {
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { authenticate } from "../shopify.server";
 import LoadingOverlay from "../components/LoadingOverlay";
+import { TitanHeader } from "../components/TitanHeader";
 
 // Mapping von Sprachcode zu ISO-3166-1-Ländercode für Flaggenbilder
 const LANG_TO_COUNTRY = {
@@ -146,7 +147,11 @@ Generiere exakt dieses JSON-Format (keine Markdown, nur JSON):
         contents: prompt,
         config: { temperature: 0.3, responseMimeType: "application/json" },
       });
-      const translateResult = JSON.parse(result.text);
+      let responseText = (result.text || "").trim();
+      if (responseText.startsWith("```")) {
+        responseText = responseText.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?\s*```$/, "");
+      }
+      const translateResult = JSON.parse(responseText);
       trackUsage(session.shop, "multilang");
       return json({
         success: true,
@@ -158,7 +163,7 @@ Generiere exakt dieses JSON-Format (keine Markdown, nur JSON):
       });
     } catch (e) {
       console.error("Translation error:", e);
-      return json({ success: false, error: "Übersetzung fehlgeschlagen. Bitte erneut versuchen." });
+      return json({ success: false, error: `Übersetzung fehlgeschlagen: ${e.message}. Bitte erneut versuchen.` });
     }
   }
 
@@ -212,7 +217,11 @@ Generiere exakt dieses JSON-Format (keine Markdown, nur JSON):
           contents: prompt,
           config: { temperature: 0.3, responseMimeType: "application/json" },
         });
-        const parsed = JSON.parse(result.text);
+        let bulkText = (result.text || "").trim();
+        if (bulkText.startsWith("```")) {
+          bulkText = bulkText.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?\s*```$/, "");
+        }
+        const parsed = JSON.parse(bulkText);
         trackBulkUsage(session.shop, "multilang");
         results.push({ productId: product.id, productTitle: product.title, success: true, translation: parsed });
       } catch (e) {
@@ -552,7 +561,12 @@ export default function MultiLang() {
         subtitle="Produkte für internationale Märkte übersetzen und optimieren"
         backAction={{ content: "Dashboard", url: "/app" }}
       >
-        <BlockStack gap="600">
+        <BlockStack gap="500">
+          <TitanHeader
+            title="Multi-Language Optimizer"
+            description="Übersetze und optimiere deine Produkte für internationale Märkte. KI-gestützte Übersetzungen mit kultureller Anpassung und lokaler SEO-Optimierung."
+            badge="Pro"
+          />
 
           {/* Stats Overview */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>

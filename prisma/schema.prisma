@@ -83,3 +83,15 @@ model ContentVersion {
 
   @@index([shop, productId])
 }
+
+model ShopAnalysisReport {
+  id               String   @id @default(cuid())
+  shop             String
+  overallScore     Int      @default(0)
+  criticalProducts String?  // JSON array of products with issues
+  fullReport       String   // Full AI analysis result as JSON
+  createdAt        DateTime @default(now())
+
+  @@index([shop])
+  @@index([shop, createdAt])
+}

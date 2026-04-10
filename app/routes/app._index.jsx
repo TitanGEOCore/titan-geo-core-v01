@@ -7,6 +7,8 @@ import {
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
+import { getEffectivePlan } from "../middleware/plan-check.server.js";
+import { PLAN_LIMITS } from "../config/limits.server.js";
 
 export const loader = async ({ request }) => {
   const { admin, session } = await authenticate.admin(request);
@@ -19,8 +21,11 @@ export const loader = async ({ request }) => {
   // Usage stats
   const usageCount = await prisma.usageTracker.count({ where: { shop } });
 
-  // Check plan from settings or default
-  const FREE_LIMIT = 10;
+  // Get effective plan (respects ADMIN_SHOP env, DEVELOPER_SHOPS, planOverride)
+  const currentPlan = await getEffectivePlan(shop, prisma);
+  const planLimits = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.Starter;
+  const geoLimit = planLimits.geo_optimization === -1 ? Infinity : planLimits.geo_optimization;
+  const FREE_LIMIT = geoLimit === Infinity ? 999 : geoLimit;
 
   // Google connection status
   const tokens = await prisma.externalTokens.findUnique({ where: { shop } });
@@ -118,6 +123,7 @@ export const loader = async ({ request }) => {
     shop,
     needsOnboarding,
     usageCount,
+    currentPlan,
     freeLimit: FREE_LIMIT,
     googleConnected,
     recentOptimizations,

@@ -2,10 +2,11 @@ import { json } from "@remix-run/node";
 import { useLoaderData, useFetcher, Link } from "@remix-run/react";
 import {
   Page, Card, Text, BlockStack, InlineStack, Button, Banner, Box,
-  Badge, Divider, Spinner, ProgressBar,
+  Badge, Divider, Spinner, ProgressBar, Thumbnail,
 } from "@shopify/polaris";
 import { useState, useEffect, useCallback } from "react";
 import { authenticate } from "../shopify.server";
+import { TitanHeader } from "../components/TitanHeader";
 
 /* ──────────────────────────────────────────────
    LOADER — Fetch all products for analysis
@@ -63,11 +64,32 @@ export const loader = async ({ request }) => {
 
   const totalProducts = data.data?.productsCount?.count || 0;
 
-  return json({ products, totalProducts, shop: session.shop });
+  // Load latest saved report from DB
+  const prisma = await import("../db.server.js").then(m => m.default);
+  let savedReport = null;
+  try {
+    const latest = await prisma.shopAnalysisReport.findFirst({
+      where: { shop: session.shop },
+      orderBy: { createdAt: "desc" },
+    });
+    if (latest) {
+      savedReport = {
+        id: latest.id,
+        overallScore: latest.overallScore,
+        criticalProducts: latest.criticalProducts ? JSON.parse(latest.criticalProducts) : [],
+        fullReport: JSON.parse(latest.fullReport),
+        createdAt: latest.createdAt,
+      };
+    }
+  } catch (e) {
+    console.error("Failed to load saved report:", e);
+  }
+
+  return json({ products, totalProducts, shop: session.shop, savedReport });
   } catch (error) {
     console.error("Shop-analysis loader error:", error);
     if (error instanceof Response) throw error;
-    return json({ products: [], totalProducts: 0, shop: "", error: error.message });
+    return json({ products: [], totalProducts: 0, shop: "", savedReport: null, error: error.message });
   }
 };
 
@@ -214,7 +236,69 @@ Wichtig:
 
     const result = JSON.parse(response.text);
     trackUsage(session.shop, "shopanalysis");
-    return json({ success: true, data: result });
+
+    // Build critical products list with details from loader products
+    const criticalProducts = [];
+    if (result.priorityActions) {
+      for (const action of result.priorityActions) {
+        if (action.affectedProducts > 0) {
+          // Find matching products from the input data
+          const matchingTitles = result.keywordOpportunities
+            ?.flatMap(k => k.matchingProducts || [])
+            ?.slice(0, 5) || [];
+          const matchedProducts = products
+            .filter(p => matchingTitles.some(t => p.title.toLowerCase().includes(t.toLowerCase())))
+            .slice(0, 3)
+            .map(p => ({
+              id: p.numericId,
+              title: p.title,
+              image: p.image,
+              issue: action.title,
+              module: action.module,
+            }));
+          criticalProducts.push(...matchedProducts);
+        }
+      }
+    }
+
+    // Also add products without SEO data
+    products.forEach(p => {
+      if (!p.seoTitle && !criticalProducts.find(cp => cp.id === p.numericId)) {
+        criticalProducts.push({
+          id: p.numericId,
+          title: p.title,
+          image: p.image,
+          issue: "Fehlender SEO-Titel",
+          module: "meta-generator",
+        });
+      }
+      if (!p.altText && !criticalProducts.find(cp => cp.id === p.numericId && cp.module === "alt-texts")) {
+        criticalProducts.push({
+          id: p.numericId,
+          title: p.title,
+          image: p.image,
+          issue: "Fehlender Alt-Text",
+          module: "alt-texts",
+        });
+      }
+    });
+
+    // Save to database
+    const prismaDb = await import("../db.server.js").then(m => m.default);
+    try {
+      await prismaDb.shopAnalysisReport.create({
+        data: {
+          shop: session.shop,
+          overallScore: result.overallScore || 0,
+          criticalProducts: JSON.stringify(criticalProducts.slice(0, 20)),
+          fullReport: JSON.stringify(result),
+        },
+      });
+    } catch (saveErr) {
+      console.error("Failed to save analysis report:", saveErr);
+    }
+
+    return json({ success: true, data: result, criticalProducts: criticalProducts.slice(0, 20) });
   } catch (err) {
     console.error("Shop analysis error:", err);
     return json({ error: `Analyse fehlgeschlagen: ${err.message}` });
@@ -329,7 +413,7 @@ const volumeBadge = (vol) => {
    HAUPTKOMPONENTE
    ────────────────────────────────────────────── */
 export default function ShopAnalysis() {
-  const { products, totalProducts } = useLoaderData();
+  const { products, totalProducts, savedReport } = useLoaderData();
   const fetcher = useFetcher();
 
   const [currentStep, setCurrentStep] = useState(-1);
@@ -338,27 +422,39 @@ export default function ShopAnalysis() {
   const [daysUntilNext, setDaysUntilNext] = useState(0);
 
   const isLoading = fetcher.state !== "idle";
-  const data = fetcher.data?.data;
+  // Use fresh data from action, or fall back to saved report from DB
+  const data = fetcher.data?.data || savedReport?.fullReport || null;
+  const criticalProducts = fetcher.data?.criticalProducts || savedReport?.criticalProducts || [];
   const error = fetcher.data?.error;
 
-  // Check localStorage for last analysis date
+  // Check saved report date (DB-based, not localStorage)
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("titan_shop_analysis_last_run");
-      if (stored) {
-        const lastDate = new Date(stored);
-        const now = new Date();
-        const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
-        setLastRunDate(lastDate.toLocaleDateString("de-DE"));
-        if (diffDays < 30) {
-          setCanRun(false);
-          setDaysUntilNext(30 - diffDays);
-        }
+    if (savedReport?.createdAt) {
+      const lastDate = new Date(savedReport.createdAt);
+      const now = new Date();
+      const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+      setLastRunDate(lastDate.toLocaleDateString("de-DE"));
+      if (diffDays < 30) {
+        setCanRun(false);
+        setDaysUntilNext(30 - diffDays);
       }
-    } catch {
-      // localStorage not available
+    } else {
+      // Fallback: check localStorage
+      try {
+        const stored = localStorage.getItem("titan_shop_analysis_last_run");
+        if (stored) {
+          const lastDate = new Date(stored);
+          const now = new Date();
+          const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+          setLastRunDate(lastDate.toLocaleDateString("de-DE"));
+          if (diffDays < 30) {
+            setCanRun(false);
+            setDaysUntilNext(30 - diffDays);
+          }
+        }
+      } catch {}
     }
-  }, []);
+  }, [savedReport]);
 
   // Step animation during loading
   useEffect(() => {
@@ -739,6 +835,54 @@ export default function ShopAnalysis() {
                   })}
                 </BlockStack>
               </Card>
+
+              {/* ───── Critical Products ───── */}
+              {criticalProducts.length > 0 && (
+                <Card>
+                  <BlockStack gap="400">
+                    <InlineStack align="space-between" blockAlign="center">
+                      <Text variant="headingSm" as="h2">Kritische Produkte</Text>
+                      <Badge tone="critical">{criticalProducts.length} Produkte</Badge>
+                    </InlineStack>
+                    <Divider />
+                    <Text variant="bodySm" tone="subdued">
+                      Diese Produkte haben konkrete SEO-Probleme, die sofort behoben werden sollten.
+                    </Text>
+
+                    {criticalProducts.slice(0, 10).map((cp, i) => {
+                      const moduleInfo = MODULE_LINKS[cp.module] || { url: "/app", label: cp.module };
+                      return (
+                        <div key={i} style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "16px",
+                          padding: "12px 16px",
+                          background: i % 2 === 0 ? "#fafbfc" : "#fff",
+                          borderRadius: "10px",
+                          border: "1px solid #f1f5f9",
+                        }}>
+                          <Thumbnail
+                            source={cp.image || ""}
+                            alt={cp.title}
+                            size="small"
+                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <Text variant="bodyMd" fontWeight="semibold" truncate>
+                              {cp.title}
+                            </Text>
+                            <Text variant="bodySm" tone="critical">
+                              {cp.issue}
+                            </Text>
+                          </div>
+                          <Link to={moduleInfo.url}>
+                            <Button variant="plain" size="slim">Beheben</Button>
+                          </Link>
+                        </div>
+                      );
+                    })}
+                  </BlockStack>
+                </Card>
+              )}
 
               {/* ───── Keyword Opportunities ───── */}
               <Card>

@@ -110,16 +110,17 @@ Beschreibung: ${productDescription || "Nicht verfügbar"}
 Aktueller SEO-Titel: ${currentSeoTitle || "Nicht gesetzt"}
 Aktuelle SEO-Beschreibung: ${currentSeoDesc || "Nicht gesetzt"}
 
-Regeln:
-- Meta-Titel: maximal 60 Zeichen, mit Haupt-Keyword am Anfang
-- Meta-Beschreibung: 140-160 Zeichen, mit Call-to-Action und Haupt-Keywords
+STRIKTE ZEICHENLIMIT-REGELN (ABSOLUT EINHALTEN):
+- Meta-Titel: EXAKT 50-60 Zeichen. NIEMALS mehr als 60 Zeichen. Zähle jedes Zeichen. Haupt-Keyword am Anfang.
+- Meta-Beschreibung: EXAKT 140-155 Zeichen. NIEMALS mehr als 155 Zeichen. Zähle jedes Zeichen. Mit Call-to-Action.
+- Wenn du die Limits überschreitest, ist die Antwort UNGÜLTIG.
 - Optimiert für GEO (Generative Engine Optimization) und klassische Suchmaschinen
 - Auf Deutsch
 
 Generiere exakt dieses JSON-Format (keine Markdown, nur JSON):
 {
-  "seoTitle": "Optimierter Meta-Titel hier",
-  "seoDescription": "Optimierte Meta-Beschreibung hier mit Call-to-Action",
+  "seoTitle": "Optimierter Meta-Titel hier (max 60 Zeichen!)",
+  "seoDescription": "Optimierte Meta-Beschreibung hier mit CTA (max 155 Zeichen!)",
   "reasoning": "Kurze Erklärung warum diese Meta-Daten besser sind",
   "improvements": [
     "Verbesserung 1: Was genau geändert wurde und warum",
@@ -138,6 +139,15 @@ Generiere exakt dieses JSON-Format (keine Markdown, nur JSON):
         },
       });
       const metaResult = JSON.parse(result.text);
+
+      // Hard-truncate to enforce character limits regardless of AI output
+      if (metaResult.seoTitle && metaResult.seoTitle.length > 60) {
+        metaResult.seoTitle = metaResult.seoTitle.substring(0, 57).replace(/\s+\S*$/, "") + "...";
+      }
+      if (metaResult.seoDescription && metaResult.seoDescription.length > 155) {
+        metaResult.seoDescription = metaResult.seoDescription.substring(0, 152).replace(/\s+\S*$/, "") + "...";
+      }
+
       trackUsage(session.shop, "metagenerator");
       return json({
         success: true,

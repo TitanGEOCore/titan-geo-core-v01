@@ -79,18 +79,34 @@ Respond ONLY with the structured JSON output. No commentary.`;
 export async function optimizeProduct(shop, product) {
   const settings = await prisma.shopSettings.findUnique({ where: { shop } });
 
+  // Build deep context section if available
+  const deepContextSection = product.deepContext
+    ? `\n\nDEEP CONTEXT (Metafields & Custom Data):\n${product.deepContext}`
+    : "";
+  const collectionsSection = product.collections?.length
+    ? `\n- Collections: ${product.collections.join(", ")}`
+    : "";
+  const variantDetails = product.variants?.length > 1
+    ? `\n- Variants: ${product.variants.map(v => `${v.title || ""} (${v.price || "N/A"})`).join(", ")}`
+    : "";
+  const variantOptions = product.variants?.[0]?.selectedOptions?.length
+    ? `\n- Options: ${product.variants[0].selectedOptions.map(o => `${o.name}: ${o.value}`).join(", ")}`
+    : "";
+
   const userPrompt = `Optimize this product for Generative Engine Optimization:
 
 CURRENT PRODUCT DATA:
 - Title: ${product.title}
 - Vendor: ${product.vendor || "N/A"}
 - Product Type: ${product.productType || "N/A"}
-- Tags: ${product.tags?.join(", ") || "N/A"}
+- Tags: ${product.tags?.join(", ") || "N/A"}${collectionsSection}
 - Current Description HTML:
 ${product.descriptionHtml || "No description"}
 - Price: ${product.variants?.[0]?.price || "N/A"}
 - SKU: ${product.variants?.[0]?.sku || "N/A"}
-- URL Handle: ${product.handle || "N/A"}
+- URL Handle: ${product.handle || "N/A"}${variantDetails}${variantOptions}${deepContextSection}
+
+CRITICAL: The optimizedMetaDesc MUST be under 160 characters. The optimizedTitle SHOULD be under 70 characters.
 
 Generate the fully optimized output.`;
 
@@ -140,6 +156,14 @@ Generate the fully optimized output.`;
   }
 
   result.optimizedHtmlBody = sanitizeHtml(result.optimizedHtmlBody);
+
+  // Enforce meta character limits
+  if (result.optimizedTitle && result.optimizedTitle.length > 70) {
+    result.optimizedTitle = result.optimizedTitle.substring(0, 67).replace(/\s+\S*$/, "") + "...";
+  }
+  if (result.optimizedMetaDesc && result.optimizedMetaDesc.length > 160) {
+    result.optimizedMetaDesc = result.optimizedMetaDesc.substring(0, 157).replace(/\s+\S*$/, "") + "...";
+  }
 
   return result;
 }

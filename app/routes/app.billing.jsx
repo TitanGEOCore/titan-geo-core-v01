@@ -5,6 +5,7 @@ import {
 } from "@shopify/polaris";
 import { authenticate, GROWTH_PLAN, PRO_PLAN, ENTERPRISE_PLAN } from "../shopify.server";
 import prisma from "../db.server";
+import { getEffectivePlan } from "../middleware/plan-check.server.js";
 
 export const loader = async ({ request }) => {
   try {
@@ -13,22 +14,29 @@ export const loader = async ({ request }) => {
 
     const isTest = process.env.NODE_ENV !== "production";
 
-    let currentPlan = "Starter";
-    try {
-      const { hasActivePayment, appSubscriptions } = await billing.check({
-        plans: [GROWTH_PLAN, PRO_PLAN, ENTERPRISE_PLAN],
-        isTest,
-      });
+    // First check plan override (Admin, Developer, planOverride)
+    const effectivePlan = await getEffectivePlan(shop, prisma);
 
-      if (hasActivePayment && appSubscriptions?.length > 0) {
-        const sub = appSubscriptions[0];
-        if (sub.name === ENTERPRISE_PLAN) currentPlan = "Enterprise";
-        else if (sub.name === PRO_PLAN) currentPlan = "Pro";
-        else if (sub.name === GROWTH_PLAN) currentPlan = "Growth";
+    // If plan is overridden (Admin, Developer, or manual override), use that
+    let currentPlan = effectivePlan;
+
+    // Only check Shopify billing if no override is active
+    if (effectivePlan === "Starter") {
+      try {
+        const { hasActivePayment, appSubscriptions } = await billing.check({
+          plans: [GROWTH_PLAN, PRO_PLAN, ENTERPRISE_PLAN],
+          isTest,
+        });
+
+        if (hasActivePayment && appSubscriptions?.length > 0) {
+          const sub = appSubscriptions[0];
+          if (sub.name === ENTERPRISE_PLAN) currentPlan = "Enterprise";
+          else if (sub.name === PRO_PLAN) currentPlan = "Pro";
+          else if (sub.name === GROWTH_PLAN) currentPlan = "Growth";
+        }
+      } catch (billingError) {
+        console.error("Billing check error:", billingError);
       }
-    } catch (billingError) {
-      console.error("Billing check error:", billingError);
-      // Continue with Starter plan as default
     }
 
     const usage = await prisma.usageTracker.count({ where: { shop } });
@@ -41,6 +49,7 @@ export const loader = async ({ request }) => {
 };
 
 export const action = async ({ request }) => {
+  const { billing } = await authenticate.admin(request);
   const formData = await request.formData();
   const plan = formData.get("plan");
 
@@ -51,24 +60,15 @@ export const action = async ({ request }) => {
   };
 
   if (planMap[plan]) {
-    // Dynamically determine isTest flag
     const isTest = process.env.NODE_ENV !== "production";
 
-    try {
-      const { billing } = await authenticate.admin(request);
-      await billing.request({
-        plan: planMap[plan],
-        isTest,
-      });
-    } catch (error) {
-      // billing.request throws a redirect to Shopify's billing confirmation — that's expected
-      // If the error is a Response (redirect), re-throw it to let Remix handle it
-      if (error instanceof Response) {
-        throw error;
-      }
-      console.error("Billing action error:", error);
-      throw error;
-    }
+    // billing.request() throws a Response redirect to Shopify's billing page.
+    // We MUST let this propagate to Remix — do NOT catch Response objects.
+    await billing.request({
+      plan: planMap[plan],
+      isTest,
+      returnUrl: `https://${process.env.SHOPIFY_APP_URL || "geo.titanwalls.de"}/app/billing`,
+    });
   }
 
   return null;

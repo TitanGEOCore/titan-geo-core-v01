@@ -7,6 +7,7 @@ import {
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { useState, useEffect } from "react";
 import { authenticate } from "../shopify.server";
+import { TitanHeader } from "../components/TitanHeader";
 
 export const loader = async ({ request }) => {
   try {
@@ -327,7 +328,13 @@ export default function AltTexts() {
       subtitle="Optimiere Alt-Texte für bessere SEO und Barrierefreiheit"
       backAction={{ content: "Dashboard", url: "/app" }}
     >
-      <BlockStack gap="400">
+      <BlockStack gap="500">
+        <TitanHeader
+          title="Bild Alt-Text Optimierer"
+          description="KI-generierte Alt-Texte verbessern die Barrierefreiheit und SEO deiner Produktbilder. Google bewertet Alt-Texte als wichtigen Ranking-Faktor."
+          badge="SEO"
+          badgeTone="success"
+        />
         {fetcher.data?.limitReached && (
           <Banner tone="warning" title="Tageslimit erreicht">
             <p>{fetcher.data.error}</p>

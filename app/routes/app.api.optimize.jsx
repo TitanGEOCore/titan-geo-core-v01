@@ -26,7 +26,7 @@ export const action = async ({ request }) => {
   }
 
   try {
-    // Fetch current product data
+    // Fetch current product data with deep context (metafields, collections, specs)
     const response = await admin.graphql(
       `#graphql
       query getProduct($id: ID!) {
@@ -42,11 +42,46 @@ export const action = async ({ request }) => {
             title
             description
           }
-          variants(first: 1) {
+          variants(first: 5) {
             edges {
               node {
                 price
                 sku
+                title
+                selectedOptions {
+                  name
+                  value
+                }
+              }
+            }
+          }
+          metafields(first: 20) {
+            edges {
+              node {
+                namespace
+                key
+                value
+                type
+              }
+            }
+          }
+          collections(first: 5) {
+            edges {
+              node {
+                title
+                handle
+              }
+            }
+          }
+          media(first: 5) {
+            edges {
+              node {
+                ... on MediaImage {
+                  image {
+                    altText
+                    url
+                  }
+                }
               }
             }
           }
@@ -62,9 +97,24 @@ export const action = async ({ request }) => {
       return json({ error: "Produkt nicht gefunden." }, { status: 404 });
     }
 
+    // Build deep context from metafields
+    const metafields = (product.metafields?.edges || []).map(({ node }) => node);
+    const deepContext = metafields
+      .filter(mf => mf.value && mf.value.length > 2 && !mf.key.startsWith("geo_"))
+      .map(mf => `[${mf.namespace}.${mf.key}] (${mf.type}): ${mf.value.substring(0, 500)}`)
+      .join("\n");
+
+    const collections = (product.collections?.edges || []).map(({ node }) => node.title);
+    const mediaAlts = (product.media?.edges || [])
+      .map(({ node }) => node.image?.altText)
+      .filter(Boolean);
+
     const productData = {
       ...product,
       variants: product.variants.edges.map(({ node }) => node),
+      deepContext: deepContext || null,
+      collections,
+      mediaAlts,
     };
 
     // Run Gemini optimization

@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { useActionData, Form } from "@remix-run/react";
+import { useActionData, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
 import { getAdminSessions, verifyAdminSession, verifyAdminCredentials } from "../admin-session.server";
 
@@ -43,6 +43,8 @@ export const action = async ({ request }) => {
 
 export default function AdminLogin() {
   const actionData = useActionData();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting" || navigation.state === "loading";
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -215,30 +217,36 @@ export default function AdminLogin() {
             {/* Submit */}
             <button
               type="submit"
+              disabled={isSubmitting}
               style={{
                 width: "100%",
                 padding: "14px",
                 borderRadius: "12px",
                 border: "none",
-                background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+                background: isSubmitting
+                  ? "linear-gradient(135deg, #4f46e5, #7c3aed)"
+                  : "linear-gradient(135deg, #6366f1, #8b5cf6)",
                 color: "#fff",
                 fontSize: "15px",
                 fontWeight: 700,
-                cursor: "pointer",
+                cursor: isSubmitting ? "wait" : "pointer",
                 transition: "all 0.2s ease",
                 boxShadow: "0 4px 16px rgba(99, 102, 241, 0.3)",
                 letterSpacing: "0.3px",
+                opacity: isSubmitting ? 0.8 : 1,
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = "translateY(-1px)";
-                e.target.style.boxShadow = "0 6px 24px rgba(99, 102, 241, 0.4)";
+                if (!isSubmitting) {
+                  e.target.style.transform = "translateY(-1px)";
+                  e.target.style.boxShadow = "0 6px 24px rgba(99, 102, 241, 0.4)";
+                }
               }}
               onMouseLeave={(e) => {
                 e.target.style.transform = "translateY(0)";
                 e.target.style.boxShadow = "0 4px 16px rgba(99, 102, 241, 0.3)";
               }}
             >
-              Anmelden
+              {isSubmitting ? "Anmeldung..." : "Anmelden"}
             </button>
           </Form>
 

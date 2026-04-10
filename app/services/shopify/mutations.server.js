@@ -204,7 +204,7 @@ export async function getUsageStats(shop) {
 export async function getVersionHistory(shop, productId) {
   return prisma.contentVersion.findMany({
     where: { shop, productId },
-    orderBy: { optimizedAt: "desc" },
+    orderBy: { createdAt: "desc" },
     take: 10,
   });
 }
