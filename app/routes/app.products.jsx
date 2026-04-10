@@ -54,16 +54,16 @@ export const loader = async ({ request }) => {
       bulkAllowed = false;
     }
 
-    const paginationArgs = cursor
+    const variables = cursor
       ? direction === "next"
-        ? `first: 25, after: "${cursor}"`
-        : `last: 25, before: "${cursor}"`
-      : "first: 25";
+        ? { first: 25, after: cursor }
+        : { last: 25, before: cursor }
+      : { first: 25 };
 
     const response = await admin.graphql(
       `#graphql
-      query getProducts {
-        products(${paginationArgs}) {
+      query getProducts($first: Int, $last: Int, $after: String, $before: String) {
+        products(first: $first, last: $last, after: $after, before: $before) {
           pageInfo {
             hasNextPage
             hasPreviousPage
@@ -85,7 +85,8 @@ export const loader = async ({ request }) => {
             }
           }
         }
-      }`
+      }`,
+      { variables }
     );
 
     const data = await response.json();

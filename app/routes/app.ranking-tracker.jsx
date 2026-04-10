@@ -11,6 +11,7 @@ const STORAGE_KEY = "titan_ranking_tracker";
 
 /* ─── Loader: Produkte laden ─── */
 export const loader = async ({ request }) => {
+  try {
   const { admin, session } = await authenticate.admin(request);
 
   const response = await admin.graphql(`
@@ -40,6 +41,11 @@ export const loader = async ({ request }) => {
   }));
 
   return json({ products, shop: session.shop });
+  } catch (error) {
+    console.error("Ranking-tracker loader error:", error);
+    if (error instanceof Response) throw error;
+    return json({ products: [], shop: "", error: error.message });
+  }
 };
 
 /* ─── Action: Ranking-Analyse & Keyword-Optimierung ─── */

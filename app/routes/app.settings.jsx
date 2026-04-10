@@ -25,9 +25,9 @@ import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
 import { getRedirectUri } from "../services/google/auth.server";
 import { getEffectivePlan } from "../middleware/plan-check.server";
-import { getAllUsageStats } from "../middleware/usage-limits.server";
 
 export const loader = async ({ request }) => {
+  try {
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
 
@@ -36,7 +36,30 @@ export const loader = async ({ request }) => {
 
   // Effektiver Plan und Nutzungsdaten
   const currentPlan = await getEffectivePlan(shop, prisma);
-  const usageStats = getAllUsageStats(shop, currentPlan);
+  const { PLAN_LIMITS } = await import("../config/limits.server.js");
+  const planLimits = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.Starter;
+
+  // Build usage stats from DB
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayUsage = await prisma.usageTracker.groupBy({
+    by: ["module"],
+    where: { shop, optimizedAt: { gte: todayStart } },
+    _count: true,
+  });
+  const usageMap = {};
+  todayUsage.forEach(u => { usageMap[u.module] = u._count; });
+
+  const usageStats = {};
+  for (const [key, limit] of Object.entries(planLimits)) {
+    if (typeof limit !== "number") continue;
+    const used = usageMap[key] || 0;
+    usageStats[key] = {
+      used,
+      limit: limit === -1 ? "Unbegrenzt" : limit,
+      remaining: limit === -1 ? "∞" : Math.max(0, limit - used),
+    };
+  }
 
   // API-Aufrufe gesamt aus UsageTracker
   let totalApiCalls = 0;
@@ -58,6 +81,11 @@ export const loader = async ({ request }) => {
     usageStats,
     totalApiCalls,
   });
+  } catch (error) {
+    console.error("Settings loader error:", error);
+    if (error instanceof Response) throw error;
+    return json({ shop: "", brandVoice: "", targetAudience: "", noGos: "", googleConnected: false, lastUpdated: null, googleRedirectUri: "", currentPlan: "Starter", usageStats: {}, totalApiCalls: 0, error: error.message });
+  }
 };
 
 export const action = async ({ request }) => {

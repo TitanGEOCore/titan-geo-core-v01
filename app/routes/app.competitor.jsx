@@ -10,20 +10,21 @@ import { authenticate } from "../shopify.server";
 
 /* ─── Loader: Produkte mit Bildern laden (mit Pagination) ─── */
 export const loader = async ({ request }) => {
+  try {
   const { admin, session } = await authenticate.admin(request);
   const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
   const direction = url.searchParams.get("direction") || "next";
 
-  const paginationArgs = cursor
+  const variables = cursor
     ? direction === "next"
-      ? `first: 25, after: "${cursor}"`
-      : `last: 25, before: "${cursor}"`
-    : "first: 25";
+      ? { first: 25, after: cursor }
+      : { last: 25, before: cursor }
+    : { first: 25 };
 
   const response = await admin.graphql(`
-    query {
-      products(${paginationArgs}) {
+    query getProducts($first: Int, $last: Int, $after: String, $before: String) {
+      products(first: $first, last: $last, after: $after, before: $before) {
         pageInfo {
           hasNextPage
           hasPreviousPage
@@ -44,7 +45,7 @@ export const loader = async ({ request }) => {
         }
       }
     }
-  `);
+  `, { variables });
   const data = await response.json();
   const products = (data.data?.products?.nodes || []).map(p => ({
     id: p.id,
@@ -68,6 +69,11 @@ export const loader = async ({ request }) => {
   };
 
   return json({ products, pageInfo, shop: session.shop });
+  } catch (error) {
+    console.error("Competitor loader error:", error);
+    if (error instanceof Response) throw error;
+    return json({ products: [], pageInfo: {}, shop: "", error: error.message });
+  }
 };
 
 /* ─── Action: Analyse durchführen ─── */

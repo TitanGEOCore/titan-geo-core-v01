@@ -11,6 +11,7 @@ import { authenticate } from "../shopify.server";
    LOADER — Fetch all products for analysis
    ────────────────────────────────────────────── */
 export const loader = async ({ request }) => {
+  try {
   const { admin, session } = await authenticate.admin(request);
 
   const response = await admin.graphql(`
@@ -63,6 +64,11 @@ export const loader = async ({ request }) => {
   const totalProducts = data.data?.productsCount?.count || 0;
 
   return json({ products, totalProducts, shop: session.shop });
+  } catch (error) {
+    console.error("Shop-analysis loader error:", error);
+    if (error instanceof Response) throw error;
+    return json({ products: [], totalProducts: 0, shop: "", error: error.message });
+  }
 };
 
 /* ──────────────────────────────────────────────

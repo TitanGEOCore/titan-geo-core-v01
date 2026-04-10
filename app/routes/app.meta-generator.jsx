@@ -8,6 +8,7 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
+  try {
   const { admin, session } = await authenticate.admin(request);
   const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
@@ -21,15 +22,15 @@ export const loader = async ({ request }) => {
   const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
   const bulkAllowed = planLimits.bulkOperationsAllowed === true;
 
-  const paginationArgs = cursor
+  const variables = cursor
     ? direction === "next"
-      ? `first: 25, after: "${cursor}"`
-      : `last: 25, before: "${cursor}"`
-    : "first: 25";
+      ? { first: 25, after: cursor }
+      : { last: 25, before: cursor }
+    : { first: 25 };
 
   const response = await admin.graphql(`
-    query {
-      products(${paginationArgs}) {
+    query getProducts($first: Int, $last: Int, $after: String, $before: String) {
+      products(first: $first, last: $last, after: $after, before: $before) {
         pageInfo {
           hasNextPage
           hasPreviousPage
@@ -52,7 +53,7 @@ export const loader = async ({ request }) => {
         }
       }
     }
-  `);
+  `, { variables });
   const data = await response.json();
   const products = (data.data?.products?.nodes || []).map(p => ({
     id: p.id,
@@ -73,6 +74,11 @@ export const loader = async ({ request }) => {
   };
 
   return json({ products, pageInfo, shop: session.shop, bulkAllowed });
+  } catch (error) {
+    console.error("Meta-generator loader error:", error);
+    if (error instanceof Response) throw error;
+    return json({ products: [], pageInfo: {}, shop: "", bulkAllowed: false, error: error.message });
+  }
 };
 
 export const action = async ({ request }) => {

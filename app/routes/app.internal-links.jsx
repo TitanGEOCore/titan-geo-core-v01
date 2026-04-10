@@ -9,6 +9,7 @@ import { authenticate } from "../shopify.server";
 
 /* ─── Loader: Produkte mit descriptionHtml laden ─── */
 export const loader = async ({ request }) => {
+  try {
   const { admin, session } = await authenticate.admin(request);
 
   // Check plan for auto-apply internal links feature
@@ -55,6 +56,11 @@ export const loader = async ({ request }) => {
   }));
 
   return json({ products, shop: session.shop, autoApplyInternalLinks });
+  } catch (error) {
+    console.error("Internal-links loader error:", error);
+    if (error instanceof Response) throw error;
+    return json({ products: [], shop: "", autoApplyInternalLinks: false, error: error.message });
+  }
 };
 
 /* ─── Action: Analyse, Auto-Verlinkung, Speichern ─── */

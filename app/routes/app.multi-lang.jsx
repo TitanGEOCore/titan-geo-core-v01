@@ -51,6 +51,7 @@ const LANGUAGES = [
 ];
 
 export const loader = async ({ request }) => {
+  try {
   const { admin, session } = await authenticate.admin(request);
 
   const response = await admin.graphql(`
@@ -82,6 +83,11 @@ export const loader = async ({ request }) => {
   }));
 
   return json({ products, shop: session.shop });
+  } catch (error) {
+    console.error("Multi-lang loader error:", error);
+    if (error instanceof Response) throw error;
+    return json({ products: [], shop: "", error: error.message });
+  }
 };
 
 export const action = async ({ request }) => {
