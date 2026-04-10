@@ -2,6 +2,7 @@ node_modules/
 build/
 .env
 .env.*
+setup_nginx_ssl.py
 prisma/dev.sqlite
 prisma/dev.sqlite-journal
 .cache/

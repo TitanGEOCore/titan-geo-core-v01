@@ -133,10 +133,8 @@ export async function deployUpdate(admin, billing, shop, productId, data, curren
     }
   );
 
-  // 5. Register in UsageTracker
-  await prisma.usageTracker.create({
-    data: { shop, module: "geo_optimization", productId },
-  });
+  // 5. Track usage (writes to DB via enforce-limits)
+  await trackUsage(shop, "optimize", productId);
 
   // 6. Ping IndexNow
   const handle = currentProduct.handle;
@@ -146,9 +144,6 @@ export async function deployUpdate(admin, billing, shop, productId, data, curren
       console.error("IndexNow ping failed:", err.message)
     );
   }
-
-  // Track usage for this feature
-  trackUsage(shop, "optimize");
 
   return {
     success: true,

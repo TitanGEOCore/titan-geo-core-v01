@@ -118,7 +118,7 @@ export const loader = async ({ request }) => {
       },
       mobileFriendly: {
         pass: [], fail: [], label: "Mobilfreundliche Indikatoren",
-        description: "Beschreibungen ohne überlange Wörter oder grosse Inline-Styles.",
+        description: "Beschreibungen ohne überlange Wörter oder große Inline-Styles.",
         category: "technik", severity: "info", autoFixable: false,
       },
 
@@ -225,7 +225,7 @@ export const loader = async ({ request }) => {
       const hasLargeInline = /style="[^"]{200,}"/i.test(descHtml);
       !hasLongWords && !hasLargeInline
         ? checks.mobileFriendly.pass.push(productRef)
-        : checks.mobileFriendly.fail.push({ ...productRef, detail: hasLongWords ? "Überlange Wörter gefunden" : "Grosse Inline-Styles" });
+        : checks.mobileFriendly.fail.push({ ...productRef, detail: hasLongWords ? "Überlange Wörter gefunden" : "Große Inline-Styles" });
 
       // 13. GEO optimized
       geoScore

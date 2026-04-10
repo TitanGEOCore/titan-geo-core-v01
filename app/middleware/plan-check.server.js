@@ -5,14 +5,22 @@
 
 /**
  * Gibt den effektiven Plan eines Shops zurück.
- * Wenn ein Admin-Override gesetzt ist, wird dieser verwendet.
- * Ansonsten wird "Starter" zurückgegeben (echte Billing-Prüfung erfolgt anderswo).
+ * Prüft Admin-Shop ENV, Developer-Shops, planOverride und fällt auf Starter zurück.
  *
  * @param {string} shop - Shop-Domain
  * @param {import("@prisma/client").PrismaClient} prisma - Prisma Client
  * @returns {Promise<string>} - Effektiver Plan-Name
  */
 export async function getEffectivePlan(shop, prisma) {
+  // Admin shop override from ENV
+  if (process.env.ADMIN_SHOP && shop === process.env.ADMIN_SHOP) {
+    return "Admin";
+  }
+  // Developer shops get Admin plan
+  const devShops = process.env.DEVELOPER_SHOPS;
+  if (devShops && devShops.split(',').map(s => s.trim()).includes(shop)) {
+    return "Admin";
+  }
   const settings = await prisma.shopSettings.findUnique({ where: { shop } });
   // Wenn planOverride gesetzt ist (durch Admin), diesen verwenden
   if (settings?.planOverride) return settings.planOverride;

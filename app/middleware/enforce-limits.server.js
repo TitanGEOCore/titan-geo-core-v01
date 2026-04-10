@@ -2,21 +2,20 @@
  * Enforce Limits Middleware für Titan GEO Core
  *
  * Vereint Plan-Check und Usage-Limits in einer einfachen API.
- * Nutzt die bestehende In-Memory-Lösung aus usage-limits.server.js
+ * Nutzt die Datenbank (UsageTracker) für persistente Nutzungsverfolgung
  * und die Plan-Ermittlung aus plan-check.server.js.
- * 
- * Limits werden jetzt aus der zentralen Konfiguration importiert.
+ *
+ * Limits werden aus der zentralen Konfiguration importiert.
  */
 
-import { checkUsageLimit, incrementUsage } from "./usage-limits.server.js";
 import { getEffectivePlan } from "./plan-check.server.js";
 import prisma from "../db.server.js";
-import { 
-  PLAN_LIMITS, 
-  FEATURE_MAP, 
-  FEATURE_LABELS, 
+import {
+  PLAN_LIMITS,
+  FEATURE_MAP,
+  FEATURE_LABELS,
   UPGRADE_HINTS,
-  PLANS 
+  PLANS
 } from "../config/limits.server.js";
 
 // Developer shops get unlimited access (from ENV or empty)
@@ -56,44 +55,48 @@ export async function checkLimit(shop, feature) {
     return { allowed: true, remaining: Infinity, limit: -1 };
   }
 
-  // Nutzung über die bestehende In-Memory-Lösung prüfen
-  const usageFeature = FEATURE_MAP[feature] || feature;
-  const usage = checkUsageLimit(shop, usageFeature, plan.toLowerCase());
+  // Query database for today's usage count
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const used = await prisma.usageTracker.count({
+    where: { shop, module: configFeature, optimizedAt: { gte: todayStart } },
+  });
 
-  // Wir verwenden unsere eigenen Plan-Limits statt der in usage-limits definierten
-  const remaining = Math.max(0, limit - usage.used);
+  const remaining = Math.max(0, limit - used);
 
   if (remaining <= 0) {
     return {
       allowed: false,
       remaining: 0,
       limit,
-      used: usage.used,
+      used,
       message: `Tageslimit für ${FEATURE_LABELS[feature] || feature} erreicht (${limit}/${limit}). ${UPGRADE_HINTS[feature] || "Warte 24 Stunden oder upgrade deinen Plan."}`,
       limitReached: true,
       upgradeUrl: "/app/billing",
     };
   }
 
-  return { allowed: true, remaining, limit, used: usage.used };
+  return { allowed: true, remaining, limit, used };
 }
 
 /**
- * Erhöht den Nutzungszähler für ein Feature.
+ * Erhöht den Nutzungszähler für ein Feature in der Datenbank.
  *
  * @param {string} shop - Shop-Domain
  * @param {string} feature - Feature-Kurzform
+ * @param {string|null} productId - Optionale Produkt-ID
  */
-export function trackUsage(shop, feature) {
+export async function trackUsage(shop, feature, productId = null) {
   const usageFeature = FEATURE_MAP[feature] || feature;
-  return incrementUsage(shop, usageFeature);
+  await prisma.usageTracker.create({
+    data: { shop, module: usageFeature, productId },
+  });
 }
 
 /**
  * Hilfsfunktion: Gibt eine formatierte Fehlermeldung als JSON zurück.
  * Kann direkt in Remix-Actions verwendet werden.
  *
- * @param {string} feature - Feature-Label
  * @param {object} limitResult - Ergebnis von checkLimit
  * @returns {{ error: string, limitReached: boolean, upgradeUrl: string }}
  */

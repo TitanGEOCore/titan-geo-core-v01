@@ -120,10 +120,15 @@ Generate the fully optimized output.`;
 
   let result;
   try {
-    result = JSON.parse(response.text);
+    let responseText = (response.text || "").trim();
+    // Strip markdown code fences if Gemini wraps the JSON
+    if (responseText.startsWith("```")) {
+      responseText = responseText.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?\s*```$/, "");
+    }
+    result = JSON.parse(responseText);
   } catch (parseError) {
     console.error("Gemini JSON parse error:", parseError.message);
-    console.error("Raw response:", response.text);
+    console.error("Raw response:", response.text?.substring(0, 500));
     return {
       geoScore: 0,
       optimizedTitle: product.title || "Product",
@@ -181,10 +186,14 @@ Return the geoScore (0-100), the current title as optimizedTitle, current meta a
 
   let auditResult;
   try {
-    auditResult = JSON.parse(response.text);
+    let responseText = (response.text || "").trim();
+    if (responseText.startsWith("```")) {
+      responseText = responseText.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?\s*```$/, "");
+    }
+    auditResult = JSON.parse(responseText);
   } catch (parseError) {
     console.error("Gemini JSON parse error in audit:", parseError.message);
-    console.error("Raw response:", response.text);
+    console.error("Raw response:", response.text?.substring(0, 500));
     return {
       geoScore: 0,
       optimizedTitle: product.title || "Product",

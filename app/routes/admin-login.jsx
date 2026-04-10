@@ -36,7 +36,7 @@ export const action = async ({ request }) => {
   // Redirect to standalone admin panel (not inside Shopify iframe)
   return redirect("/titan-admin", {
     headers: {
-      "Set-Cookie": `titan_admin_session=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=86400`,
+      "Set-Cookie": `titan_admin_session=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=86400`,
     },
   });
 };

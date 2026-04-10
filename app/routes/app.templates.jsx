@@ -129,7 +129,7 @@ const TEMPLATES = [
     tags: ["Sicherheit", "Familie", "Pädagogik"],
     brandVoice: "Warmherzig, vertrauenswürdig, verspielt aber informiert. Spricht Eltern auf Augenhöhe an, nicht von oben herab. Sicherheit und Entwicklungsförderung stehen im Vordergrund, werden aber nicht als Angstmarketing eingesetzt.",
     targetAudience: "Eltern und Großeltern, 25-50 Jahre, sicherheitsbewusst, qualitätsorientiert bei Kinderprodukten. Recherchieren gründlich vor Kaufentscheidungen.",
-    noGos: "Kein Angstmarketing gegenüber Eltern, keine übertriebenen Bildungsversprechen, kein 'Ihr Kind wird zum Genie', keine ungepüften Sicherheitsaussagen, keine Genderstereotypen.",
+    noGos: "Kein Angstmarketing gegenüber Eltern, keine übertriebenen Bildungsversprechen, kein 'Ihr Kind wird zum Genie', keine ungeprüften Sicherheitsaussagen, keine Genderstereotypen.",
   },
   {
     id: "beauty",
@@ -195,7 +195,7 @@ const TEMPLATES = [
     tags: ["Nostalgie", "Authentisch", "Kuratiert"],
     brandVoice: "Nostalgisch, geschichtenreich, kuratiert. Die Sprache ist eine Zeitmaschine, die vergangene Epochen lebendig macht. Jedes Stück trägt Geschichte in sich.",
     targetAudience: "Vintage-Liebhaber und Retro-Fans, 22-55 Jahre, stilbewusst mit Faible für vergangene Epochen. Besuchen Flohmärkte, Vintage-Märkte und Second-Hand-Läden.",
-    noGos: "Keine falschen Epochen-Zuordnungen, kein 'Vintage-Style' für Neuware ohne Kennzeichnung, keine Echtheitsbetruegereien, kein Verschweigen von Gebrauchsspuren.",
+    noGos: "Keine falschen Epochen-Zuordnungen, kein 'Vintage-Style' für Neuware ohne Kennzeichnung, keine Echtheitsbetrügereien, kein Verschweigen von Gebrauchsspuren.",
   },
   {
     id: "medical",

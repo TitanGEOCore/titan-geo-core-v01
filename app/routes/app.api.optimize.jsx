@@ -56,7 +56,7 @@ export const action = async ({ request }) => {
     );
 
     const data = await response.json();
-    const product = data.data.product;
+    const product = data.data?.product;
 
     if (!product) {
       return json({ error: "Produkt nicht gefunden." }, { status: 404 });

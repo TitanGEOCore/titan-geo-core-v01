@@ -121,6 +121,10 @@ export const action = async ({ request }) => {
   if (intent === "overridePlan") {
     const targetShop = formData.get("shop");
     const plan = formData.get("plan");
+    const validPlans = ["Starter", "Growth", "Pro", "Enterprise", "Admin", "none"];
+    if (!validPlans.includes(plan)) {
+      return json({ error: "Ungültiger Plan" }, { status: 400 });
+    }
     if (targetShop && plan) {
       await prisma.shopSettings.upsert({
         where: { shop: targetShop },

@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { useLoaderData, useSubmit, useNavigate, useNavigation } from "@remix-run/react";
+import { useLoaderData, useActionData, useSubmit, useNavigate, useNavigation } from "@remix-run/react";
 import {
   Page,
   Button,
@@ -23,12 +23,12 @@ export const loader = async ({ request }) => {
     where: { shop: session.shop },
   });
 
-  // If onboarding is already complete, redirect to dashboard
+  // If onboarding is already complete, signal client to navigate
   if (settings?.brandVoice) {
-    return redirect("/app");
+    return json({ shop: session.shop, alreadyOnboarded: true });
   }
 
-  return json({ shop: session.shop });
+  return json({ shop: session.shop, alreadyOnboarded: false });
 };
 
 export const action = async ({ request }) => {
@@ -77,7 +77,7 @@ export const action = async ({ request }) => {
     },
   });
 
-  return redirect("/app");
+  return json({ success: true });
 };
 
 const BRAND_VOICE_SUGGESTIONS = [
@@ -128,6 +128,8 @@ const TEMPLATES = [
 const MAX_CHARS = 500;
 
 export default function Onboarding() {
+  const loaderData = useLoaderData();
+  const actionData = useActionData();
   const [step, setStep] = useState(0);
   const [brandVoice, setBrandVoice] = useState("");
   const [targetAudience, setTargetAudience] = useState("");
@@ -138,6 +140,15 @@ export default function Onboarding() {
   const submit = useSubmit();
   const navigate = useNavigate();
   const navigation = useNavigation();
+
+  // Client-side navigation for embedded context safety
+  useEffect(() => {
+    if (loaderData?.alreadyOnboarded) navigate("/app");
+  }, [loaderData?.alreadyOnboarded]);
+
+  useEffect(() => {
+    if (actionData?.success) navigate("/app");
+  }, [actionData?.success]);
 
   const totalSteps = 4;
 

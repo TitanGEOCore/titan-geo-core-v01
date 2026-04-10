@@ -11,12 +11,7 @@ export const loader = async ({ request }) => {
     const { billing, session } = await authenticate.admin(request);
     const shop = session.shop;
 
-    // Dynamically determine isTest for billing check
-    const host = request.headers.get("host") || "";
-    const isTest = process.env.NODE_ENV !== "production" || 
-                   host.includes("localhost") || 
-                   host.includes("ngrok") ||
-                   host.includes("test");
+    const isTest = process.env.NODE_ENV !== "production";
 
     let currentPlan = "Starter";
     try {
@@ -57,12 +52,7 @@ export const action = async ({ request }) => {
 
   if (planMap[plan]) {
     // Dynamically determine isTest flag
-    // Use test mode for non-production environments or development shops
-    const host = request.headers.get("host") || "";
-    const isTest = process.env.NODE_ENV !== "production" || 
-                   host.includes("localhost") || 
-                   host.includes("ngrok") ||
-                   host.includes("test");
+    const isTest = process.env.NODE_ENV !== "production";
 
     try {
       const { billing } = await authenticate.admin(request);
