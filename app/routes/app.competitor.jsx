@@ -328,9 +328,9 @@ function saveAnalysis(entry) {
 }
 
 function verdictColor(verdict) {
-  if (verdict === "my_better") return "#10b981";
-  if (verdict === "competitor_better") return "#ef4444";
-  return "#f59e0b";
+  if (verdict === "my_better") return "#09090b";
+  if (verdict === "competitor_better") return "#a1a1aa";
+  return "#3f3f46";
 }
 
 function verdictLabel(verdict) {
@@ -386,15 +386,15 @@ function ComparisonBar({ label, myScore, competitorScore, verdict }) {
         </InlineStack>
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "11px", color: "#64748b", marginBottom: "4px" }}>Dein Shop: {myScore}/100</div>
+            <div style={{ fontSize: "11px", color: "#71717a", marginBottom: "4px" }}>Dein Shop: {myScore}/100</div>
             <div className="titan-progress-container">
-              <div className="titan-progress-bar" style={{ width: `${myScore}%`, background: "#6366f1" }} />
+              <div className="titan-progress-bar" style={{ width: `${myScore}%`, background: "#09090b" }} />
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "11px", color: "#64748b", marginBottom: "4px" }}>Wettbewerber: {competitorScore}/100</div>
+            <div style={{ fontSize: "11px", color: "#71717a", marginBottom: "4px" }}>Wettbewerber: {competitorScore}/100</div>
             <div className="titan-progress-container">
-              <div className="titan-progress-bar" style={{ width: `${competitorScore}%`, background: "#94a3b8" }} />
+              <div className="titan-progress-bar" style={{ width: `${competitorScore}%`, background: "#a1a1aa" }} />
             </div>
           </div>
         </div>
@@ -622,17 +622,17 @@ export default function Competitor() {
                   style={{
                     padding: "12px",
                     cursor: "pointer",
-                    border: selectedProduct?.id === p.id ? "2px solid #6366f1" : "1px solid rgba(99, 102, 241, 0.08)",
-                    background: selectedProduct?.id === p.id ? "linear-gradient(145deg, #eef2ff 0%, #e0e7ff 100%)" : undefined,
+                    border: selectedProduct?.id === p.id ? "2px solid #09090b" : "1px solid rgba(9, 9, 11, 0.08)",
+                    background: selectedProduct?.id === p.id ? "linear-gradient(145deg, #f4f4f5 0%, #e4e4e7 100%)" : undefined,
                   }}
                 >
                   <BlockStack gap="200">
                     {p.image ? (
-                      <div style={{ width: "100%", height: "80px", borderRadius: "8px", overflow: "hidden", background: "#f8fafc" }}>
+                      <div style={{ width: "100%", height: "80px", borderRadius: "8px", overflow: "hidden", background: "#f4f4f5" }}>
                         <img src={p.image} alt={p.imageAlt || p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       </div>
                     ) : (
-                      <div style={{ width: "100%", height: "80px", borderRadius: "8px", background: "linear-gradient(135deg, #e0e7ff, #ddd6fe)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#6366f1" }}>
+                      <div style={{ width: "100%", height: "80px", borderRadius: "8px", background: "linear-gradient(135deg, #e4e4e7, #e4e4e7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#09090b" }}>
                         &#128722;
                       </div>
                     )}
@@ -745,8 +745,8 @@ export default function Competitor() {
                     style={{
                       padding: "8px 18px",
                       cursor: "pointer",
-                      background: activeFilter === f.key ? "linear-gradient(135deg, #6366f1, #06b6d4)" : undefined,
-                      color: activeFilter === f.key ? "white" : "#475569",
+                      background: activeFilter === f.key ? "linear-gradient(135deg, #09090b, #3f3f46)" : undefined,
+                      color: activeFilter === f.key ? "white" : "#52525b",
                       fontWeight: 600,
                       fontSize: "13px",
                       borderRadius: "100px",
@@ -777,8 +777,8 @@ export default function Competitor() {
                           <div style={{ padding: "8px 16px", marginTop: "4px" }}>
                             <BlockStack gap="100">
                               {cat.data.differences.map((diff, di) => (
-                                <div key={di} style={{ display: "flex", gap: "8px", alignItems: "start", fontSize: "13px", color: "#475569" }}>
-                                  <span style={{ color: "#6366f1", flexShrink: 0 }}>&#9679;</span>
+                                <div key={di} style={{ display: "flex", gap: "8px", alignItems: "start", fontSize: "13px", color: "#52525b" }}>
+                                  <span style={{ color: "#09090b", flexShrink: 0 }}>&#9679;</span>
                                   <span>{diff}</span>
                                 </div>
                               ))}
@@ -796,20 +796,20 @@ export default function Competitor() {
                         <Text variant="bodySm" fontWeight="bold" as="h4">{cat.label}</Text>
                         <div className="titan-compare-grid" style={{ marginTop: "8px" }}>
                           <div className="titan-compare-after">
-                            <div className="titan-compare-label" style={{ color: "#059669" }}>Dein Shop</div>
+                            <div className="titan-compare-label" style={{ color: "#18181b" }}>Dein Shop</div>
                             <BlockStack gap="100">
                               {(cat.data?.myStrengths || []).map((s, si) => (
-                                <div key={si} style={{ fontSize: "13px", color: "#065f46", display: "flex", gap: "6px" }}>
+                                <div key={si} style={{ fontSize: "13px", color: "#18181b", display: "flex", gap: "6px" }}>
                                   <span>&#10003;</span><span>{s}</span>
                                 </div>
                               ))}
                             </BlockStack>
                           </div>
                           <div className="titan-compare-before">
-                            <div className="titan-compare-label" style={{ color: "#94a3b8" }}>Wettbewerber</div>
+                            <div className="titan-compare-label" style={{ color: "#a1a1aa" }}>Wettbewerber</div>
                             <BlockStack gap="100">
                               {(cat.data?.competitorStrengths || []).map((s, si) => (
-                                <div key={si} style={{ fontSize: "13px", color: "#475569", display: "flex", gap: "6px" }}>
+                                <div key={si} style={{ fontSize: "13px", color: "#52525b", display: "flex", gap: "6px" }}>
                                   <span>&#10003;</span><span>{s}</span>
                                 </div>
                               ))}
@@ -832,7 +832,7 @@ export default function Competitor() {
                     </InlineStack>
                     <Divider />
                     {analysis.strengths.map((s, i) => (
-                      <div key={i} className="titan-card-premium" style={{ padding: "16px", borderLeft: "4px solid #10b981" }}>
+                      <div key={i} className="titan-card-premium" style={{ padding: "16px", borderLeft: "4px solid #09090b" }}>
                         <BlockStack gap="200">
                           <InlineStack align="space-between" blockAlign="center">
                             <Text variant="bodyMd" fontWeight="bold">{s.title}</Text>
@@ -856,7 +856,7 @@ export default function Competitor() {
                     </InlineStack>
                     <Divider />
                     {analysis.weaknesses.map((w, i) => (
-                      <div key={i} className="titan-card-premium" style={{ padding: "16px", borderLeft: "4px solid #f59e0b" }}>
+                      <div key={i} className="titan-card-premium" style={{ padding: "16px", borderLeft: "4px solid #3f3f46" }}>
                         <BlockStack gap="300">
                           <InlineStack align="space-between" blockAlign="center">
                             <Text variant="bodyMd" fontWeight="bold">{w.title}</Text>
@@ -910,11 +910,11 @@ export default function Competitor() {
                               blog: "Blog-Beitrag",
                             };
                             return (
-                              <div key={pi} style={{ background: "#f8fafc", borderRadius: "8px", padding: "10px 14px" }}>
+                              <div key={pi} style={{ background: "#f4f4f5", borderRadius: "8px", padding: "10px 14px" }}>
                                 <InlineStack gap="200" blockAlign="center">
                                   <Badge>{whereLabels[pl.where] || pl.where}</Badge>
                                 </InlineStack>
-                                <div style={{ marginTop: "6px", fontSize: "13px", color: "#475569", fontStyle: "italic", lineHeight: "1.5" }}>
+                                <div style={{ marginTop: "6px", fontSize: "13px", color: "#52525b", fontStyle: "italic", lineHeight: "1.5" }}>
                                   &bdquo;{pl.exampleSentence}&ldquo;
                                 </div>
                               </div>
@@ -943,7 +943,7 @@ export default function Competitor() {
                             <InlineStack gap="200" blockAlign="center">
                               <div style={{
                                 width: "32px", height: "32px", fontSize: "14px",
-                                background: "linear-gradient(135deg, #6366f1, #06b6d4)",
+                                background: "linear-gradient(135deg, #09090b, #3f3f46)",
                                 color: "white", display: "flex", alignItems: "center",
                                 justifyContent: "center", borderRadius: "50%", fontWeight: "bold",
                                 minWidth: "32px",
@@ -976,8 +976,8 @@ export default function Competitor() {
                                 </InlineStack>
                                 <div style={{
                                   background: "white", borderRadius: "8px", padding: "12px",
-                                  border: "1px solid #e2e8f0", maxHeight: "150px", overflowY: "auto",
-                                  fontSize: "13px", lineHeight: "1.6", color: "#334155",
+                                  border: "1px solid #e4e4e7", maxHeight: "150px", overflowY: "auto",
+                                  fontSize: "13px", lineHeight: "1.6", color: "#3f3f46",
                                   whiteSpace: "pre-wrap",
                                 }}>
                                   {action.generatedContent.content}
@@ -1040,9 +1040,9 @@ export default function Competitor() {
                   Kopiere diesen Text und füge ihn in deinem Produkt ein, oder navigiere direkt zur Produktseite.
                 </Text>
                 <div style={{
-                  background: "#f8fafc", borderRadius: "12px", padding: "20px",
-                  border: "1px solid #e2e8f0", fontSize: "14px", lineHeight: "1.7",
-                  color: "#1e293b", whiteSpace: "pre-wrap", maxHeight: "400px", overflowY: "auto",
+                  background: "#f4f4f5", borderRadius: "12px", padding: "20px",
+                  border: "1px solid #e4e4e7", fontSize: "14px", lineHeight: "1.7",
+                  color: "#18181b", whiteSpace: "pre-wrap", maxHeight: "400px", overflowY: "auto",
                 }}>
                   {contentModal.generatedContent?.content || "Kein Content verfügbar"}
                 </div>

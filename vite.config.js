@@ -33,5 +33,15 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
-  build: { assetsInlineLimit: 0 },
+  build: {
+    assetsInlineLimit: 0,
+    // Force forward slashes in build output paths (fixes Windows→Linux deploy)
+    rollupOptions: {
+      output: {
+        assetFileNames: "assets/[name]-[hash][extname]",
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
+      },
+    },
+  },
 });

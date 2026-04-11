@@ -18,6 +18,10 @@ import {
   Spinner,
   Modal,
   ProgressBar,
+  TextField,
+  Select,
+  Tag,
+  FormLayout,
 } from "@shopify/polaris";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { useState, useCallback, useEffect } from "react";
@@ -225,6 +229,16 @@ export default function ProductDetail() {
   const [selectedTab, setSelectedTab] = useState(0);
   const [rollbackModalActive, setRollbackModalActive] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState(null);
+  const [quizActive, setQuizActive] = useState(false);
+  const [quizStep, setQuizStep] = useState(0);
+  const [quizData, setQuizData] = useState({
+    description: "",
+    usp: "",
+    audience: "",
+    vibe: "",
+    keywords: "",
+  });
+  const [selectedVibes, setSelectedVibes] = useState([]);
   const auditFetcher = useFetcher();
   const optimizeFetcher = useFetcher();
   const rollbackFetcher = useFetcher();
@@ -237,8 +251,15 @@ export default function ProductDetail() {
   useEffect(() => {
     if (optimizeFetcher.data?.success) {
       shopify.toast.show("Optimierung erfolgreich deployed!");
+      setQuizActive(false);
+      setQuizStep(0);
     }
-    if (optimizeFetcher.data?.error) {
+    if (optimizeFetcher.data?.status === "NEEDS_CONTEXT") {
+      // Open the Product Context Builder quiz
+      setQuizActive(true);
+      setQuizStep(0);
+    }
+    if (optimizeFetcher.data?.error && optimizeFetcher.data?.status !== "NEEDS_CONTEXT") {
       shopify.toast.show(optimizeFetcher.data.error, { isError: true });
     }
     if (optimizeFetcher.data?.requiresUpgrade) {
@@ -257,7 +278,7 @@ export default function ProductDetail() {
   }, [rollbackFetcher.data]);
 
   const tabs = [
-    { id: "overview", content: "Übersicht" },
+    { id: "overview", content: "\u00dcbersicht" },
     { id: "before-after", content: "Vorher / Nachher" },
     { id: "history", content: `Verlauf (${versions.length})` },
     { id: "jsonld", content: "JSON-LD" },
@@ -279,6 +300,54 @@ export default function ProductDetail() {
       { method: "post", action: "/app/api/optimize" }
     );
   };
+
+  const handleQuizSubmit = () => {
+    const manualContextPayload = JSON.stringify({
+      description: quizData.description,
+      usp: quizData.usp,
+      audience: quizData.audience,
+      vibe: selectedVibes.join(", "),
+      keywords: quizData.keywords,
+    });
+    optimizeFetcher.submit(
+      { productId: product.shopifyId, manualContext: manualContextPayload },
+      { method: "post", action: "/app/api/optimize" }
+    );
+  };
+
+  const VIBE_OPTIONS = [
+    "Luxuri\u00f6s", "Premium", "Hochwertig", "Minimalistisch",
+    "Praktisch", "Robust", "Nachhaltig", "Eco-Friendly",
+    "Verspielt", "Modern", "Klassisch", "Innovativ",
+    "G\u00fcnstig", "Preis-Leistung", "Professionell", "Handgemacht",
+  ];
+
+  const AUDIENCE_OPTIONS = [
+    { label: "-- Zielgruppe w\u00e4hlen --", value: "" },
+    { label: "Frauen 18-35", value: "Frauen 18-35" },
+    { label: "Frauen 35-55", value: "Frauen 35-55" },
+    { label: "M\u00e4nner 18-35", value: "M\u00e4nner 18-35" },
+    { label: "M\u00e4nner 35-55", value: "M\u00e4nner 35-55" },
+    { label: "Eltern & Familien", value: "Eltern & Familien" },
+    { label: "Teenager & Gen Z", value: "Teenager & Gen Z" },
+    { label: "Senioren 55+", value: "Senioren 55+" },
+    { label: "B2B / Unternehmen", value: "B2B / Unternehmen" },
+    { label: "Fitness & Sport", value: "Fitness & Sport" },
+    { label: "Technik-Enthusiasten", value: "Technik-Enthusiasten" },
+    { label: "Luxus-K\u00e4ufer", value: "Luxus-K\u00e4ufer" },
+    { label: "Alle / Allgemein", value: "Alle / Allgemein" },
+  ];
+
+  const quizSteps = [
+    { title: "Was ist dieses Produkt?", subtitle: "Beschreibe es in 1-2 S\u00e4tzen" },
+    { title: "USP & Features", subtitle: "Was macht es besonders?" },
+    { title: "Zielgruppe & Vibe", subtitle: "Wer kauft das und wie soll es wirken?" },
+  ];
+
+  const quizProgress = ((quizStep + 1) / quizSteps.length) * 100;
+  const canProceed = quizStep === 0 ? quizData.description.length > 10
+    : quizStep === 1 ? quizData.usp.length > 5
+    : selectedVibes.length > 0;
 
   const latestVersion = versions[0];
 
@@ -325,7 +394,7 @@ export default function ProductDetail() {
           >
             <p>
               Du hast alle {usageLimit} kostenlosen Optimierungen aufgebraucht.
-              Upgrade auf Titan GEO Pro für unbegrenzte Optimierungen.
+              Upgrade auf Titan GEO Pro f\u00fcr unbegrenzte Optimierungen.
             </p>
           </Banner>
         )}
@@ -368,7 +437,7 @@ export default function ProductDetail() {
                 ) : (
                   <Thumbnail source="" alt="" size="large" />
                 )}
-                {/* Score overlay badge */}
+                {/* Score overlay badge — monochrome */}
                 {product.geoScore !== null && (
                   <div
                     style={{
@@ -380,17 +449,17 @@ export default function ProductDetail() {
                       borderRadius: "50%",
                       background:
                         product.geoScore >= 70
-                          ? "var(--titan-success, #10b981)"
+                          ? "var(--titan-success, #18181b)"
                           : product.geoScore >= 40
-                            ? "var(--titan-warning, #f59e0b)"
-                            : "var(--titan-danger, #ef4444)",
+                            ? "var(--titan-warning, #3f3f46)"
+                            : "var(--titan-danger, #a1a1aa)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "white",
+                      color: "#ffffff",
                       fontSize: "12px",
                       fontWeight: "bold",
-                      border: "2px solid white",
+                      border: "2px solid #ffffff",
                       boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
                     }}
                   >
@@ -425,21 +494,21 @@ export default function ProductDetail() {
                         background:
                           product.geoScore !== null
                             ? product.geoScore >= 70
-                              ? "rgba(16, 185, 129, 0.1)"
+                              ? "rgba(9, 9, 11, 0.08)"
                               : product.geoScore >= 40
-                                ? "rgba(245, 158, 11, 0.1)"
-                                : "rgba(239, 68, 68, 0.1)"
-                            : "rgba(148, 163, 184, 0.1)",
+                                ? "rgba(63, 63, 70, 0.08)"
+                                : "rgba(161, 161, 170, 0.12)"
+                            : "rgba(161, 161, 170, 0.1)",
                         fontSize: "13px",
                         fontWeight: "600",
                         color:
                           product.geoScore !== null
                             ? product.geoScore >= 70
-                              ? "var(--titan-success, #10b981)"
+                              ? "var(--titan-success, #09090b)"
                               : product.geoScore >= 40
-                                ? "var(--titan-warning, #f59e0b)"
-                                : "var(--titan-danger, #ef4444)"
-                            : "#94a3b8",
+                                ? "var(--titan-warning, #3f3f46)"
+                                : "var(--titan-danger, #a1a1aa)"
+                            : "#a1a1aa",
                       }}
                     >
                       {product.geoScore !== null
@@ -554,10 +623,13 @@ export default function ProductDetail() {
                         Titel
                       </Text>
                       <InlineGrid columns={2} gap="400">
-                        <Box
-                          background="bg-surface-secondary"
-                          padding="400"
-                          borderRadius="200"
+                        <div
+                          style={{
+                            background: "#f4f4f5",
+                            padding: "16px",
+                            borderRadius: "8px",
+                            border: "1px solid #e4e4e7",
+                          }}
                         >
                           <BlockStack gap="100">
                             <Text
@@ -572,26 +644,29 @@ export default function ProductDetail() {
                               {latestVersion.previousData.title || "---"}
                             </Text>
                           </BlockStack>
-                        </Box>
-                        <Box
-                          background="bg-surface-success"
-                          padding="400"
-                          borderRadius="200"
+                        </div>
+                        <div
+                          style={{
+                            background: "#fafafa",
+                            padding: "16px",
+                            borderRadius: "8px",
+                            border: "1px solid #18181b",
+                          }}
                         >
                           <BlockStack gap="100">
                             <Text
                               variant="bodySm"
-                              tone="success"
                               fontWeight="semibold"
+                              as="span"
                             >
-                              Nachher
+                              <span style={{ color: "#09090b" }}>Nachher</span>
                             </Text>
                             <Divider />
                             <Text>
                               {latestVersion.newData.optimizedTitle || "---"}
                             </Text>
                           </BlockStack>
-                        </Box>
+                        </div>
                       </InlineGrid>
 
                       {/* Meta Description Comparison */}
@@ -599,10 +674,13 @@ export default function ProductDetail() {
                         Meta Description
                       </Text>
                       <InlineGrid columns={2} gap="400">
-                        <Box
-                          background="bg-surface-secondary"
-                          padding="400"
-                          borderRadius="200"
+                        <div
+                          style={{
+                            background: "#f4f4f5",
+                            padding: "16px",
+                            borderRadius: "8px",
+                            border: "1px solid #e4e4e7",
+                          }}
                         >
                           <BlockStack gap="100">
                             <Text
@@ -618,26 +696,29 @@ export default function ProductDetail() {
                                 "---"}
                             </Text>
                           </BlockStack>
-                        </Box>
-                        <Box
-                          background="bg-surface-success"
-                          padding="400"
-                          borderRadius="200"
+                        </div>
+                        <div
+                          style={{
+                            background: "#fafafa",
+                            padding: "16px",
+                            borderRadius: "8px",
+                            border: "1px solid #18181b",
+                          }}
                         >
                           <BlockStack gap="100">
                             <Text
                               variant="bodySm"
-                              tone="success"
                               fontWeight="semibold"
+                              as="span"
                             >
-                              Nachher
+                              <span style={{ color: "#09090b" }}>Nachher</span>
                             </Text>
                             <Divider />
                             <Text>
                               {latestVersion.newData.optimizedMetaDesc || "---"}
                             </Text>
                           </BlockStack>
-                        </Box>
+                        </div>
                       </InlineGrid>
 
                       {/* Body Comparison */}
@@ -645,11 +726,14 @@ export default function ProductDetail() {
                         Beschreibung
                       </Text>
                       <InlineGrid columns={2} gap="400">
-                        <Box
-                          background="bg-surface-secondary"
-                          padding="400"
-                          borderRadius="200"
-                          minHeight="200px"
+                        <div
+                          style={{
+                            background: "#f4f4f5",
+                            padding: "16px",
+                            borderRadius: "8px",
+                            border: "1px solid #e4e4e7",
+                            minHeight: "200px",
+                          }}
                         >
                           <BlockStack gap="100">
                             <Text
@@ -669,20 +753,23 @@ export default function ProductDetail() {
                               }}
                             />
                           </BlockStack>
-                        </Box>
-                        <Box
-                          background="bg-surface-success"
-                          padding="400"
-                          borderRadius="200"
-                          minHeight="200px"
+                        </div>
+                        <div
+                          style={{
+                            background: "#fafafa",
+                            padding: "16px",
+                            borderRadius: "8px",
+                            border: "1px solid #18181b",
+                            minHeight: "200px",
+                          }}
                         >
                           <BlockStack gap="100">
                             <Text
                               variant="bodySm"
-                              tone="success"
                               fontWeight="semibold"
+                              as="span"
                             >
-                              Nachher
+                              <span style={{ color: "#09090b" }}>Nachher</span>
                             </Text>
                             <Divider />
                             <div
@@ -694,7 +781,7 @@ export default function ProductDetail() {
                               }}
                             />
                           </BlockStack>
-                        </Box>
+                        </div>
                       </InlineGrid>
                     </>
                   ) : (
@@ -705,7 +792,7 @@ export default function ProductDetail() {
                           as="p"
                           alignment="center"
                         >
-                          Noch kein Vergleich verfügbar
+                          Noch kein Vergleich verf\u00fcgbar
                         </Text>
                         <Text
                           variant="bodyMd"
@@ -752,7 +839,7 @@ export default function ProductDetail() {
                             </InlineStack>
                             <Text variant="bodySm" as="p" tone="subdued">
                               Titel: "
-                              {version.newData.optimizedTitle || "Unverändert"}"
+                              {version.newData.optimizedTitle || "Unver\u00e4ndert"}"
                             </Text>
                           </BlockStack>
                           {index > 0 && (
@@ -764,7 +851,7 @@ export default function ProductDetail() {
                                 setRollbackModalActive(true);
                               }}
                             >
-                              Zurücksetzen
+                              Zur\u00fccksetzen
                             </Button>
                           )}
                           {index === 0 && <Badge tone="info">Aktuell</Badge>}
@@ -786,7 +873,7 @@ export default function ProductDetail() {
                 </BlockStack>
               )}
 
-              {/* JSON-LD Tab */}
+              {/* JSON-LD Tab — monochrome code block */}
               {selectedTab === 3 && (
                 <BlockStack gap="400">
                   <Text variant="headingSm" as="h3">
@@ -796,8 +883,8 @@ export default function ProductDetail() {
                     <Card>
                       <pre
                         style={{
-                          background: "#1a1a2e",
-                          color: "#0ff",
+                          background: "#09090b",
+                          color: "#d4d4d8",
                           padding: "16px",
                           borderRadius: "8px",
                           overflow: "auto",
@@ -834,7 +921,7 @@ export default function ProductDetail() {
                         </Text>
                         <Divider />
                         <InlineStack align="space-between">
-                          <Text variant="bodySm">Länge</Text>
+                          <Text variant="bodySm">L\u00e4nge</Text>
                           <Badge
                             tone={
                               (product.seoTitle || product.title).length <= 60
@@ -862,7 +949,7 @@ export default function ProductDetail() {
                         </Text>
                         <Divider />
                         <InlineStack align="space-between">
-                          <Text variant="bodySm">Länge</Text>
+                          <Text variant="bodySm">L\u00e4nge</Text>
                           <Badge
                             tone={
                               (product.seoDescription || "").length >= 50 &&
@@ -953,7 +1040,7 @@ export default function ProductDetail() {
                                 .split(/\s+/)
                                 .filter(Boolean).length
                             }{" "}
-                            Wörter
+                            W\u00f6rter
                           </Badge>
                         </InlineStack>
                       </BlockStack>
@@ -971,9 +1058,9 @@ export default function ProductDetail() {
         <Modal
           open={rollbackModalActive}
           onClose={() => setRollbackModalActive(false)}
-          title="Auf vorherige Version zurücksetzen?"
+          title="Auf vorherige Version zur\u00fccksetzen?"
           primaryAction={{
-            content: "Zurücksetzen",
+            content: "Zur\u00fccksetzen",
             destructive: true,
             onAction: () => {
               rollbackFetcher.submit(
@@ -1000,11 +1087,181 @@ export default function ProductDetail() {
                 hour: "2-digit",
                 minute: "2-digit",
               })}{" "}
-              zurückgesetzt. Dieser Vorgang kann nicht rückgängig gemacht werden.
+              zur\u00fcckgesetzt. Dieser Vorgang kann nicht r\u00fcckg\u00e4ngig gemacht werden.
             </Text>
           </Modal.Section>
         </Modal>
       )}
+
+      {/* Product Context Builder Quiz — monochrome treatment */}
+      <Modal
+        open={quizActive}
+        onClose={() => setQuizActive(false)}
+        title="Product Context Builder"
+        large
+        primaryAction={
+          quizStep < quizSteps.length - 1
+            ? { content: "Weiter \u2192", onAction: () => setQuizStep(s => s + 1), disabled: !canProceed }
+            : { content: isOptimizing ? "KI optimiert..." : "Optimierung starten", onAction: handleQuizSubmit, loading: isOptimizing, disabled: !canProceed }
+        }
+        secondaryActions={[
+          ...(quizStep > 0 ? [{ content: "\u2190 Zur\u00fcck", onAction: () => setQuizStep(s => s - 1) }] : []),
+          { content: "Abbrechen", onAction: () => setQuizActive(false) },
+        ]}
+      >
+        <Modal.Section>
+          <div style={{ background: "#f4f4f5", margin: "-16px", padding: "16px" }}>
+            <BlockStack gap="400">
+              {/* Progress — monochrome step indicators */}
+              <div>
+                <InlineStack align="space-between">
+                  <Text variant="bodySm" tone="subdued">Schritt {quizStep + 1} von {quizSteps.length}</Text>
+                  <Text variant="bodySm" tone="subdued">{Math.round(quizProgress)}%</Text>
+                </InlineStack>
+                <div style={{ marginTop: "8px" }}>
+                  <div style={{
+                    width: "100%",
+                    height: "4px",
+                    background: "#e4e4e7",
+                    borderRadius: "2px",
+                    overflow: "hidden",
+                  }}>
+                    <div style={{
+                      width: `${quizProgress}%`,
+                      height: "100%",
+                      background: "#18181b",
+                      borderRadius: "2px",
+                      transition: "width 0.3s ease",
+                    }} />
+                  </div>
+                </div>
+                {/* Step dots */}
+                <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginTop: "12px" }}>
+                  {quizSteps.map((_, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: i <= quizStep ? "24px" : "8px",
+                        height: "8px",
+                        borderRadius: "4px",
+                        background: i <= quizStep ? "#09090b" : "#d4d4d8",
+                        transition: "all 0.3s ease",
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Step Header */}
+              <BlockStack gap="100">
+                <Text variant="headingLg" as="h2">{quizSteps[quizStep]?.title}</Text>
+                <Text variant="bodyMd" tone="subdued">{quizSteps[quizStep]?.subtitle}</Text>
+              </BlockStack>
+
+              <Divider />
+
+              {/* Step 0: Product Description */}
+              {quizStep === 0 && (
+                <div style={{ background: "#ffffff", padding: "16px", borderRadius: "8px", border: "1px solid #e4e4e7" }}>
+                  <BlockStack gap="400">
+                    <Banner tone="info">
+                      <p>Dieses Produkt hat zu wenig Kontext f\u00fcr die KI. Hilf uns mit ein paar kurzen Angaben — die KI erstellt daraus professionellen Content.</p>
+                    </Banner>
+                    <TextField
+                      label="Was ist dieses Produkt?"
+                      placeholder="z.B. Ein handgefertigter Lederg\u00fcrtel aus italienischem Vollnarbenleder mit Messingschnalle"
+                      value={quizData.description}
+                      onChange={(v) => setQuizData(d => ({ ...d, description: v }))}
+                      multiline={3}
+                      autoComplete="off"
+                      helpText={`${quizData.description.length} Zeichen — mindestens 10 ben\u00f6tigt`}
+                    />
+                    <TextField
+                      label="Wichtige Keywords (optional)"
+                      placeholder="z.B. Lederg\u00fcrtel, Herreng\u00fcrtel, handgemacht, italienisches Leder"
+                      value={quizData.keywords}
+                      onChange={(v) => setQuizData(d => ({ ...d, keywords: v }))}
+                      autoComplete="off"
+                      helpText="Kommagetrennte Suchbegriffe, die Kunden verwenden w\u00fcrden"
+                    />
+                  </BlockStack>
+                </div>
+              )}
+
+              {/* Step 1: USP & Features */}
+              {quizStep === 1 && (
+                <div style={{ background: "#ffffff", padding: "16px", borderRadius: "8px", border: "1px solid #e4e4e7" }}>
+                  <BlockStack gap="400">
+                    <TextField
+                      label="USP — Was macht dieses Produkt besonders?"
+                      placeholder="z.B. Handgen\u00e4ht in einer Manufaktur in der Toskana. 5mm dick. H\u00e4lt ein Leben lang. Patiniert mit der Zeit."
+                      value={quizData.usp}
+                      onChange={(v) => setQuizData(d => ({ ...d, usp: v }))}
+                      multiline={4}
+                      autoComplete="off"
+                      helpText="Material, Qualit\u00e4t, Besonderheiten, Vorteile gegen\u00fcber der Konkurrenz"
+                    />
+                  </BlockStack>
+                </div>
+              )}
+
+              {/* Step 2: Audience & Vibe — monochrome vibe buttons */}
+              {quizStep === 2 && (
+                <div style={{ background: "#ffffff", padding: "16px", borderRadius: "8px", border: "1px solid #e4e4e7" }}>
+                  <BlockStack gap="400">
+                    <Select
+                      label="Prim\u00e4re Zielgruppe"
+                      options={AUDIENCE_OPTIONS}
+                      value={quizData.audience}
+                      onChange={(v) => setQuizData(d => ({ ...d, audience: v }))}
+                    />
+                    <BlockStack gap="200">
+                      <Text variant="bodyMd" fontWeight="semibold">Wie soll das Produkt wirken? (w\u00e4hle 1-4)</Text>
+                      <InlineStack gap="200" wrap>
+                        {VIBE_OPTIONS.map((vibe) => {
+                          const isSelected = selectedVibes.includes(vibe);
+                          return (
+                            <button
+                              key={vibe}
+                              type="button"
+                              onClick={() => {
+                                setSelectedVibes(prev =>
+                                  isSelected
+                                    ? prev.filter(v => v !== vibe)
+                                    : prev.length < 4 ? [...prev, vibe] : prev
+                                );
+                              }}
+                              style={{
+                                padding: "8px 16px",
+                                borderRadius: "20px",
+                                border: isSelected ? "2px solid #09090b" : "1px solid #e4e4e7",
+                                background: isSelected ? "#09090b" : "#ffffff",
+                                color: isSelected ? "#ffffff" : "#3f3f46",
+                                fontSize: "14px",
+                                fontWeight: isSelected ? 600 : 400,
+                                cursor: "pointer",
+                                transition: "all 0.15s ease",
+                              }}
+                            >
+                              {isSelected && "\u2713 "}{vibe}
+                            </button>
+                          );
+                        })}
+                      </InlineStack>
+                      {selectedVibes.length > 0 && (
+                        <InlineStack gap="100">
+                          <Text variant="bodySm" tone="subdued">Gew\u00e4hlt:</Text>
+                          {selectedVibes.map(v => <Tag key={v} onRemove={() => setSelectedVibes(prev => prev.filter(x => x !== v))}>{v}</Tag>)}
+                        </InlineStack>
+                      )}
+                    </BlockStack>
+                  </BlockStack>
+                </div>
+              )}
+            </BlockStack>
+          </div>
+        </Modal.Section>
+      </Modal>
     </Page>
   );
 }

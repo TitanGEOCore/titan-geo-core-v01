@@ -47,8 +47,8 @@ const PLANS = [
     priceNum: null,
     desc: "Perfekt zum Testen",
     features: ["5 GEO-Optimierungen gesamt", "Alt-Text Optimizer (5/Tag)", "SEO Health Check (20 Produkte)", "3 Brand Templates", "JSON-LD Schema", "Theme Editor Integration"],
-    color: "#3b82f6",
-    accent: "#60a5fa",
+    color: "#27272a",
+    accent: "#52525b",
   },
   {
     name: "Growth",
@@ -56,8 +56,8 @@ const PLANS = [
     priceNum: true,
     desc: "Für wachsende Shops",
     features: ["50 GEO-Optimierungen/Monat", "Alle Starter-Features", "Keyword-Recherche (20/Tag)", "Content Audit (20/Tag)", "Meta Generator (50/Tag)", "Wettbewerber-Analyse (5/Tag)", "ROI Dashboard", "E-Mail-Support"],
-    color: "#8b5cf6",
-    accent: "#a78bfa",
+    color: "#18181b",
+    accent: "#27272a",
   },
   {
     name: "Pro",
@@ -65,8 +65,8 @@ const PLANS = [
     priceNum: true,
     desc: "Maximale Sichtbarkeit",
     features: ["Unbegrenzte GEO-Optimierungen", "Alle Growth-Features", "Ranking Tracker", "Multi-Language (5 Sprachen)", "Bulk-Operationen", "Brand Templates + Custom Builder", "Interne Verlinkung (Auto-Apply)", "Priority Support"],
-    color: "#06b6d4",
-    accent: "#22d3ee",
+    color: "#3f3f46",
+    accent: "#52525b",
     featured: true,
   },
   {
@@ -75,8 +75,8 @@ const PLANS = [
     priceNum: true,
     desc: "Für Agenturen & große Shops",
     features: ["Alles aus Pro, plus:", "Multi-Language (16 Sprachen)", "API-Zugang", "Dedizierter Account Manager", "Custom Onboarding", "SLA 99.9%", "White-Label Option", "Priority Support (< 1h)"],
-    color: "#f59e0b",
-    accent: "#fbbf24",
+    color: "#3f3f46",
+    accent: "#52525b",
   },
 ];
 
@@ -137,8 +137,8 @@ export default function LandingPage() {
 
         .titan-lp {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          color: #e2e8f0;
-          background: #0a0a0f;
+          color: #e4e4e7;
+          background: #09090b;
           overflow-x: hidden;
           -webkit-font-smoothing: antialiased;
         }
@@ -170,8 +170,8 @@ export default function LandingPage() {
         }
 
         .titan-lp-back:hover {
-          background: rgba(139, 92, 246, 0.15);
-          border-color: rgba(139, 92, 246, 0.4);
+          background: rgba(24, 24, 27, 0.15);
+          border-color: rgba(24, 24, 27, 0.4);
           color: #fff;
         }
 
@@ -224,7 +224,7 @@ export default function LandingPage() {
 
         /* === HERO SECTION === */
         .titan-lp-hero {
-          background: linear-gradient(135deg, #0a0a0f 0%, #0f172a 25%, #1e1b4b 50%, #0f172a 75%, #0a0a0f 100%);
+          background: linear-gradient(135deg, #09090b 0%, #09090b 25%, #18181b 50%, #09090b 75%, #09090b 100%);
           background-size: 300% 300%;
           animation: titan-lp-gradient 10s ease infinite;
           min-height: 100vh;
@@ -246,13 +246,13 @@ export default function LandingPage() {
 
         .titan-lp-hero-badge {
           display: inline-block;
-          background: rgba(139, 92, 246, 0.12);
-          border: 1px solid rgba(139, 92, 246, 0.3);
+          background: rgba(24, 24, 27, 0.12);
+          border: 1px solid rgba(24, 24, 27, 0.3);
           border-radius: 100px;
           padding: 10px 24px;
           font-size: 14px;
           font-weight: 600;
-          color: #a78bfa;
+          color: #27272a;
           margin-bottom: 40px;
           letter-spacing: 0.5px;
         }
@@ -262,7 +262,7 @@ export default function LandingPage() {
           font-weight: 900;
           line-height: 1.05;
           margin: 0 0 32px 0;
-          background: linear-gradient(135deg, #ffffff 0%, #c0c0c0 20%, #8b5cf6 45%, #06b6d4 65%, #c0c0c0 85%, #ffffff 100%);
+          background: linear-gradient(135deg, #ffffff 0%, #c0c0c0 20%, #18181b 45%, #3f3f46 65%, #c0c0c0 85%, #ffffff 100%);
           background-size: 300% auto;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -273,14 +273,14 @@ export default function LandingPage() {
 
         .titan-lp-hero-tagline {
           font-size: clamp(18px, 2.5vw, 24px);
-          color: #94a3b8;
+          color: #a1a1aa;
           line-height: 1.6;
           margin: 0 auto 48px;
           max-width: 700px;
         }
 
         .titan-lp-hero-tagline strong {
-          color: #a78bfa;
+          color: #27272a;
           font-weight: 700;
         }
 
@@ -297,7 +297,7 @@ export default function LandingPage() {
           align-items: center;
           gap: 8px;
           padding: 18px 44px;
-          background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+          background: linear-gradient(135deg, #18181b, #3f3f46);
           color: #fff;
           border: none;
           border-radius: 14px;
@@ -324,7 +324,7 @@ export default function LandingPage() {
 
         .titan-lp-btn-primary:hover {
           transform: translateY(-3px);
-          box-shadow: 0 16px 40px rgba(139, 92, 246, 0.4), 0 0 80px rgba(139, 92, 246, 0.15);
+          box-shadow: 0 16px 40px rgba(24, 24, 27, 0.4), 0 0 80px rgba(24, 24, 27, 0.15);
         }
 
         .titan-lp-btn-primary:hover::after {
@@ -362,7 +362,7 @@ export default function LandingPage() {
         }
 
         .titan-lp-trust-badge {
-          color: #64748b;
+          color: #71717a;
           font-size: 14px;
           display: flex;
           align-items: center;
@@ -370,7 +370,7 @@ export default function LandingPage() {
         }
 
         .titan-lp-trust-check {
-          color: #10b981;
+          color: #09090b;
           font-weight: 700;
         }
 
@@ -394,9 +394,9 @@ export default function LandingPage() {
 
         .titan-lp-section-tag {
           display: inline-block;
-          background: rgba(139, 92, 246, 0.1);
-          border: 1px solid rgba(139, 92, 246, 0.25);
-          color: #a78bfa;
+          background: rgba(24, 24, 27, 0.1);
+          border: 1px solid rgba(24, 24, 27, 0.25);
+          color: #27272a;
           border-radius: 100px;
           padding: 8px 20px;
           font-size: 13px;
@@ -417,7 +417,7 @@ export default function LandingPage() {
 
         .titan-lp-section-subtitle {
           font-size: 18px;
-          color: #94a3b8;
+          color: #a1a1aa;
           max-width: 700px;
           line-height: 1.7;
           margin: 0;
@@ -435,12 +435,12 @@ export default function LandingPage() {
 
         /* === GEO EXPLANATION SECTION === */
         .titan-lp-geo {
-          background: #0d0d14;
+          background: #0a0a0b;
         }
 
         .titan-lp-geo-text {
           font-size: 18px;
-          color: #94a3b8;
+          color: #a1a1aa;
           max-width: 800px;
           margin: 0 auto 64px;
           line-height: 1.8;
@@ -457,7 +457,7 @@ export default function LandingPage() {
         .titan-lp-stat-box {
           text-align: center;
           padding: 48px 32px;
-          background: linear-gradient(145deg, #1a1a2e 0%, #16162a 100%);
+          background: linear-gradient(145deg, #18181b 0%, #18181b 100%);
           border-radius: 24px;
           border: 1px solid rgba(192, 192, 192, 0.08);
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -471,7 +471,7 @@ export default function LandingPage() {
           inset: 0;
           border-radius: 24px;
           padding: 1px;
-          background: linear-gradient(135deg, transparent 30%, rgba(139, 92, 246, 0.3) 50%, transparent 70%);
+          background: linear-gradient(135deg, transparent 30%, rgba(24, 24, 27, 0.3) 50%, transparent 70%);
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
@@ -486,7 +486,7 @@ export default function LandingPage() {
 
         .titan-lp-stat-box:hover {
           transform: translateY(-6px);
-          box-shadow: 0 20px 50px rgba(139, 92, 246, 0.12);
+          box-shadow: 0 20px 50px rgba(24, 24, 27, 0.12);
         }
 
         .titan-lp-stat-number {
@@ -503,32 +503,32 @@ export default function LandingPage() {
         }
 
         .titan-lp-stat-number.purple {
-          background-image: linear-gradient(135deg, #8b5cf6, #a78bfa, #c4b5fd);
+          background-image: linear-gradient(135deg, #18181b, #27272a, #a1a1aa);
         }
 
         .titan-lp-stat-number.green {
-          background-image: linear-gradient(135deg, #10b981, #34d399, #6ee7b7);
+          background-image: linear-gradient(135deg, #09090b, #09090b, #a1a1aa);
         }
 
         .titan-lp-stat-number.blue {
-          background-image: linear-gradient(135deg, #3b82f6, #06b6d4, #22d3ee);
+          background-image: linear-gradient(135deg, #27272a, #3f3f46, #52525b);
         }
 
         .titan-lp-stat-label {
           font-size: 18px;
           font-weight: 700;
-          color: #e2e8f0;
+          color: #e4e4e7;
           margin-bottom: 8px;
         }
 
         .titan-lp-stat-detail {
           font-size: 14px;
-          color: #64748b;
+          color: #71717a;
         }
 
         /* === FEATURES SECTION === */
         .titan-lp-features {
-          background: #0a0a0f;
+          background: #09090b;
         }
 
         .titan-lp-tier-header {
@@ -548,21 +548,21 @@ export default function LandingPage() {
         }
 
         .titan-lp-tier-badge.starter {
-          background: rgba(59, 130, 246, 0.12);
-          color: #60a5fa;
-          border: 1px solid rgba(59, 130, 246, 0.25);
+          background: rgba(27, 27, 30, 0.12);
+          color: #52525b;
+          border: 1px solid rgba(27, 27, 30, 0.25);
         }
 
         .titan-lp-tier-badge.pro {
-          background: rgba(139, 92, 246, 0.12);
-          color: #a78bfa;
-          border: 1px solid rgba(139, 92, 246, 0.25);
+          background: rgba(24, 24, 27, 0.12);
+          color: #27272a;
+          border: 1px solid rgba(24, 24, 27, 0.25);
         }
 
         .titan-lp-tier-badge.enterprise {
-          background: rgba(245, 158, 11, 0.12);
-          color: #fbbf24;
-          border: 1px solid rgba(245, 158, 11, 0.25);
+          background: rgba(63, 63, 70, 0.12);
+          color: #52525b;
+          border: 1px solid rgba(63, 63, 70, 0.25);
         }
 
         .titan-lp-tier-line {
@@ -582,7 +582,7 @@ export default function LandingPage() {
         }
 
         .titan-lp-feature-card {
-          background: #1a1a2e;
+          background: #18181b;
           border: 1px solid rgba(192, 192, 192, 0.06);
           border-radius: 20px;
           padding: 32px;
@@ -597,7 +597,7 @@ export default function LandingPage() {
           inset: 0;
           border-radius: 20px;
           padding: 1px;
-          background: linear-gradient(135deg, transparent, rgba(139, 92, 246, 0.4), rgba(6, 182, 212, 0.4), transparent);
+          background: linear-gradient(135deg, transparent, rgba(24, 24, 27, 0.4), rgba(63, 63, 70, 0.4), transparent);
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
@@ -612,8 +612,8 @@ export default function LandingPage() {
 
         .titan-lp-feature-card:hover {
           transform: translateY(-6px);
-          background: #1e1e36;
-          box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3), 0 0 40px rgba(139, 92, 246, 0.08);
+          background: #1c1c1f;
+          box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3), 0 0 40px rgba(24, 24, 27, 0.08);
         }
 
         .titan-lp-feature-icon {
@@ -631,14 +631,14 @@ export default function LandingPage() {
 
         .titan-lp-feature-desc {
           font-size: 15px;
-          color: #94a3b8;
+          color: #a1a1aa;
           line-height: 1.65;
           margin: 0;
         }
 
         /* === HOW IT WORKS === */
         .titan-lp-steps {
-          background: #0d0d14;
+          background: #0a0a0b;
         }
 
         .titan-lp-steps-grid {
@@ -655,7 +655,7 @@ export default function LandingPage() {
           left: 10%;
           right: 10%;
           height: 2px;
-          background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), rgba(6, 182, 212, 0.3), transparent);
+          background: linear-gradient(90deg, transparent, rgba(24, 24, 27, 0.3), rgba(63, 63, 70, 0.3), transparent);
           z-index: 0;
         }
 
@@ -672,12 +672,12 @@ export default function LandingPage() {
           width: 80px;
           height: 80px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+          background: linear-gradient(135deg, #18181b, #3f3f46);
           color: #fff;
           font-size: 24px;
           font-weight: 800;
           margin-bottom: 28px;
-          box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+          box-shadow: 0 8px 32px rgba(24, 24, 27, 0.3);
           position: relative;
         }
 
@@ -686,7 +686,7 @@ export default function LandingPage() {
           position: absolute;
           inset: -4px;
           border-radius: 50%;
-          border: 2px solid rgba(139, 92, 246, 0.2);
+          border: 2px solid rgba(24, 24, 27, 0.2);
           animation: titan-lp-pulse-ring 4s ease-in-out infinite;
         }
 
@@ -705,7 +705,7 @@ export default function LandingPage() {
 
         .titan-lp-step-desc {
           font-size: 15px;
-          color: #94a3b8;
+          color: #a1a1aa;
           line-height: 1.65;
           margin: 0;
           max-width: 260px;
@@ -715,7 +715,7 @@ export default function LandingPage() {
 
         /* === PRICING === */
         .titan-lp-pricing {
-          background: #0a0a0f;
+          background: #09090b;
         }
 
         .titan-lp-pricing-grid {
@@ -726,7 +726,7 @@ export default function LandingPage() {
         }
 
         .titan-lp-plan-card {
-          background: #1a1a2e;
+          background: #18181b;
           border: 1px solid rgba(192, 192, 192, 0.06);
           border-radius: 24px;
           padding: 40px 32px;
@@ -747,13 +747,13 @@ export default function LandingPage() {
           background-origin: border-box;
           background-clip: padding-box, border-box;
           background-image:
-            linear-gradient(145deg, #1a1a2e, #1a1a2e),
-            linear-gradient(135deg, #8b5cf6, #06b6d4, #8b5cf6);
-          box-shadow: 0 12px 48px rgba(139, 92, 246, 0.2), 0 0 60px rgba(6, 182, 212, 0.08);
+            linear-gradient(145deg, #18181b, #18181b),
+            linear-gradient(135deg, #18181b, #3f3f46, #18181b);
+          box-shadow: 0 12px 48px rgba(24, 24, 27, 0.2), 0 0 60px rgba(63, 63, 70, 0.08);
         }
 
         .titan-lp-plan-card.featured:hover {
-          box-shadow: 0 24px 60px rgba(139, 92, 246, 0.3), 0 0 80px rgba(6, 182, 212, 0.12);
+          box-shadow: 0 24px 60px rgba(24, 24, 27, 0.3), 0 0 80px rgba(63, 63, 70, 0.12);
         }
 
         .titan-lp-plan-popular {
@@ -761,7 +761,7 @@ export default function LandingPage() {
           top: 0;
           left: 0;
           right: 0;
-          background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+          background: linear-gradient(135deg, #18181b, #3f3f46);
           color: #fff;
           text-align: center;
           padding: 8px;
@@ -779,7 +779,7 @@ export default function LandingPage() {
 
         .titan-lp-plan-desc {
           font-size: 14px;
-          color: #64748b;
+          color: #71717a;
           margin: 0 0 28px 0;
         }
 
@@ -800,7 +800,7 @@ export default function LandingPage() {
 
         .titan-lp-plan-price-period {
           font-size: 16px;
-          color: #64748b;
+          color: #71717a;
           font-weight: 400;
         }
 
@@ -844,13 +844,13 @@ export default function LandingPage() {
         }
 
         .titan-lp-plan-cta.gradient {
-          background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+          background: linear-gradient(135deg, #18181b, #3f3f46);
           color: #fff;
           border: none;
         }
 
         .titan-lp-plan-cta.gradient:hover {
-          box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4);
+          box-shadow: 0 12px 32px rgba(24, 24, 27, 0.4);
           transform: translateY(-2px);
         }
 
@@ -868,7 +868,7 @@ export default function LandingPage() {
 
         /* === TESTIMONIALS === */
         .titan-lp-testimonials {
-          background: #0d0d14;
+          background: #0a0a0b;
         }
 
         .titan-lp-testimonials-grid {
@@ -878,7 +878,7 @@ export default function LandingPage() {
         }
 
         .titan-lp-testimonial-card {
-          background: #1a1a2e;
+          background: #18181b;
           border: 1px solid rgba(192, 192, 192, 0.06);
           border-radius: 20px;
           padding: 36px;
@@ -916,7 +916,7 @@ export default function LandingPage() {
           width: 48px;
           height: 48px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+          background: linear-gradient(135deg, #18181b, #3f3f46);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -934,13 +934,13 @@ export default function LandingPage() {
 
         .titan-lp-testimonial-shop {
           font-size: 13px;
-          color: #64748b;
+          color: #71717a;
           margin-top: 2px;
         }
 
         /* === FAQ === */
         .titan-lp-faq {
-          background: #0a0a0f;
+          background: #09090b;
         }
 
         .titan-lp-faq-list {
@@ -952,7 +952,7 @@ export default function LandingPage() {
         }
 
         .titan-lp-faq-item {
-          background: #1a1a2e;
+          background: #18181b;
           border: 1px solid rgba(192, 192, 192, 0.06);
           border-radius: 16px;
           overflow: hidden;
@@ -964,7 +964,7 @@ export default function LandingPage() {
         }
 
         .titan-lp-faq-item.open {
-          border-color: rgba(139, 92, 246, 0.25);
+          border-color: rgba(24, 24, 27, 0.25);
         }
 
         .titan-lp-faq-question {
@@ -975,7 +975,7 @@ export default function LandingPage() {
           align-items: center;
           font-weight: 600;
           font-size: 16px;
-          color: #e2e8f0;
+          color: #e4e4e7;
           background: transparent;
           border: none;
           width: 100%;
@@ -987,13 +987,13 @@ export default function LandingPage() {
         }
 
         .titan-lp-faq-question:hover {
-          background: rgba(139, 92, 246, 0.04);
+          background: rgba(24, 24, 27, 0.04);
         }
 
         .titan-lp-faq-arrow {
           transition: transform 0.3s ease;
           font-size: 14px;
-          color: #8b5cf6;
+          color: #18181b;
           flex-shrink: 0;
         }
 
@@ -1005,13 +1005,13 @@ export default function LandingPage() {
           padding: 0 28px 24px;
           font-size: 15px;
           line-height: 1.75;
-          color: #94a3b8;
+          color: #a1a1aa;
         }
 
         /* === FINAL CTA === */
         .titan-lp-final-cta {
           padding: 140px 32px;
-          background: linear-gradient(135deg, #0a0a0f 0%, #1e1b4b 40%, #312e81 60%, #1e1b4b 80%, #0a0a0f 100%);
+          background: linear-gradient(135deg, #09090b 0%, #18181b 40%, #27272a 60%, #18181b 80%, #09090b 100%);
           background-size: 200% 200%;
           animation: titan-lp-gradient 10s ease infinite;
           text-align: center;
@@ -1037,27 +1037,27 @@ export default function LandingPage() {
 
         .titan-lp-final-text {
           font-size: 18px;
-          color: #94a3b8;
+          color: #a1a1aa;
           margin: 0 0 48px 0;
           line-height: 1.7;
         }
 
         .titan-lp-final-note {
           margin-top: 28px;
-          color: #64748b;
+          color: #71717a;
           font-size: 15px;
         }
 
         /* === FOOTER === */
         .titan-lp-footer {
           padding: 48px 32px;
-          background: #060609;
+          background: #09090b;
           text-align: center;
           border-top: 1px solid rgba(192, 192, 192, 0.05);
         }
 
         .titan-lp-footer p {
-          color: #475569;
+          color: #52525b;
           font-size: 14px;
           margin: 0;
         }
@@ -1203,9 +1203,9 @@ export default function LandingPage() {
               height: `${3 + (i % 4) * 2}px`,
               borderRadius: "50%",
               background: i % 3 === 0
-                ? "rgba(139, 92, 246, 0.5)"
+                ? "rgba(24, 24, 27, 0.5)"
                 : i % 3 === 1
-                  ? "rgba(6, 182, 212, 0.4)"
+                  ? "rgba(63, 63, 70, 0.4)"
                   : "rgba(192, 192, 192, 0.3)",
               left: `${(i * 4.3 + 2) % 98}%`,
               top: `${(i * 6.7 + 5) % 95}%`,
@@ -1219,12 +1219,12 @@ export default function LandingPage() {
         {/* Glow Orbs */}
         <div className="titan-lp-orb" style={{
           top: "5%", left: "10%", width: "500px", height: "500px",
-          background: "radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(24, 24, 27, 0.12) 0%, transparent 70%)",
           animation: "titan-lp-pulse-ring 8s ease-in-out infinite",
         }} />
         <div className="titan-lp-orb" style={{
           bottom: "5%", right: "5%", width: "450px", height: "450px",
-          background: "radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(63, 63, 70, 0.1) 0%, transparent 70%)",
           animation: "titan-lp-pulse-ring 10s ease-in-out infinite reverse",
         }} />
         <div className="titan-lp-orb" style={{
@@ -1547,12 +1547,12 @@ export default function LandingPage() {
         {/* Orbs */}
         <div className="titan-lp-orb" style={{
           top: "15%", left: "8%", width: "350px", height: "350px",
-          background: "radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(24, 24, 27, 0.12) 0%, transparent 70%)",
           animation: "titan-lp-pulse-ring 7s ease-in-out infinite",
         }} />
         <div className="titan-lp-orb" style={{
           bottom: "15%", right: "10%", width: "300px", height: "300px",
-          background: "radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(63, 63, 70, 0.1) 0%, transparent 70%)",
           animation: "titan-lp-pulse-ring 9s ease-in-out infinite reverse",
         }} />
 

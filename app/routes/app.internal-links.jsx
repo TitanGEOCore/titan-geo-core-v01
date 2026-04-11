@@ -339,9 +339,9 @@ Generiere exakt dieses JSON-Format:
 
 /* ─── Hilfsfunktionen ─── */
 function priorityColor(p) {
-  if (p === "high") return "#ef4444";
-  if (p === "medium") return "#f59e0b";
-  return "#10b981";
+  if (p === "high") return "#a1a1aa";
+  if (p === "medium") return "#3f3f46";
+  return "#09090b";
 }
 
 function priorityLabel(p) {
@@ -551,7 +551,7 @@ export default function InternalLinks() {
                                   <Badge tone="success">Eingehend: {incoming}</Badge>
                                 </div>
                                 {outgoing > 0 && (
-                                  <div style={{ fontSize: "12px", color: "#475569" }}>
+                                  <div style={{ fontSize: "12px", color: "#52525b" }}>
                                     Verlinkt zu: {node.linksTo.map(h => {
                                       const p = products.find(pr => pr.handle === h);
                                       return p ? p.title : h;
@@ -559,7 +559,7 @@ export default function InternalLinks() {
                                   </div>
                                 )}
                                 {incoming > 0 && (
-                                  <div style={{ fontSize: "12px", color: "#059669" }}>
+                                  <div style={{ fontSize: "12px", color: "#18181b" }}>
                                     Verlinkt von: {node.linkedFrom.map(h => {
                                       const p = products.find(pr => pr.handle === h);
                                       return p ? p.title : h;
@@ -594,18 +594,18 @@ export default function InternalLinks() {
                             className="titan-card-premium"
                             style={{
                               padding: "16px",
-                              border: selectedProduct?.id === p.id ? "2px solid #6366f1" : undefined,
+                              border: selectedProduct?.id === p.id ? "2px solid #09090b" : undefined,
                               cursor: "pointer",
                             }}
                             onClick={() => setSelectedProduct(selectedProduct?.id === p.id ? null : p)}
                           >
                             <BlockStack gap="200">
                               {p.image ? (
-                                <div style={{ width: "100%", height: "100px", borderRadius: "8px", overflow: "hidden", background: "#f8fafc" }}>
+                                <div style={{ width: "100%", height: "100px", borderRadius: "8px", overflow: "hidden", background: "#f4f4f5" }}>
                                   <img src={p.image} alt={p.imageAlt || p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                 </div>
                               ) : (
-                                <div style={{ width: "100%", height: "100px", borderRadius: "8px", background: "linear-gradient(135deg, #e0e7ff, #ddd6fe)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px" }}>
+                                <div style={{ width: "100%", height: "100px", borderRadius: "8px", background: "linear-gradient(135deg, #e4e4e7, #d4d4d8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px" }}>
                                   &#128722;
                                 </div>
                               )}
@@ -652,7 +652,7 @@ export default function InternalLinks() {
                         <BlockStack gap="300">
                           <InlineStack align="space-between" blockAlign="center">
                             <InlineStack gap="200" blockAlign="center">
-                              <span style={{ fontWeight: 800, fontSize: "16px", color: "#6366f1" }}>#{i + 1}</span>
+                              <span style={{ fontWeight: 800, fontSize: "16px", color: "#09090b" }}>#{i + 1}</span>
                               <Badge tone={priorityTone(link.priority)}>Priorität: {priorityLabel(link.priority)}</Badge>
                             </InlineStack>
                           </InlineStack>
@@ -660,25 +660,25 @@ export default function InternalLinks() {
                           {/* Quelle -> Ziel Visualisierung */}
                           <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
                             <div style={{
-                              background: "#f8fafc", borderRadius: "10px", padding: "10px 14px",
+                              background: "#f4f4f5", borderRadius: "10px", padding: "10px 14px",
                               fontWeight: 600, fontSize: "14px", flex: "1 1 200px",
                             }}>
                               {link.sourceProduct}
                             </div>
-                            <span style={{ fontSize: "20px", color: "#6366f1" }}>&#8594;</span>
+                            <span style={{ fontSize: "20px", color: "#09090b" }}>&#8594;</span>
                             <div style={{
-                              background: "linear-gradient(145deg, #f0fdf4, #ecfdf5)", borderRadius: "10px", padding: "10px 14px",
-                              fontWeight: 600, fontSize: "14px", border: "1px solid rgba(16,185,129,0.2)", flex: "1 1 200px",
+                              background: "linear-gradient(145deg, #f4f4f5, #fafafa)", borderRadius: "10px", padding: "10px 14px",
+                              fontWeight: 600, fontSize: "14px", border: "1px solid rgba(9,9,11,0.2)", flex: "1 1 200px",
                             }}>
                               {link.targetProduct}
                             </div>
                           </div>
 
                           {/* Anchor-Text */}
-                          <div style={{ background: "#f8fafc", borderRadius: "8px", padding: "12px 16px" }}>
+                          <div style={{ background: "#f4f4f5", borderRadius: "8px", padding: "12px 16px" }}>
                             <Text variant="bodySm" fontWeight="semibold" tone="subdued">Empfohlener Anchor-Text:</Text>
                             <div style={{ marginTop: "4px" }}>
-                              <code style={{ background: "#e2e8f0", padding: "4px 8px", borderRadius: "4px", fontSize: "13px" }}>
+                              <code style={{ background: "#e4e4e7", padding: "4px 8px", borderRadius: "4px", fontSize: "13px" }}>
                                 &lt;a href="/products/{link.targetHandle}"&gt;{link.anchorText}&lt;/a&gt;
                               </code>
                             </div>
@@ -689,7 +689,7 @@ export default function InternalLinks() {
 
                           {/* Einfüge-Position */}
                           {link.insertPosition && (
-                            <div style={{ fontSize: "12px", color: "#6366f1" }}>
+                            <div style={{ fontSize: "12px", color: "#09090b" }}>
                               Einfügen: {link.insertPosition}
                             </div>
                           )}
@@ -734,11 +734,11 @@ export default function InternalLinks() {
                     <div key={p.id} className="titan-card-premium" style={{ padding: "14px" }}>
                       <BlockStack gap="200">
                         {p.image ? (
-                          <div style={{ width: "100%", height: "80px", borderRadius: "8px", overflow: "hidden", background: "#f8fafc" }}>
+                          <div style={{ width: "100%", height: "80px", borderRadius: "8px", overflow: "hidden", background: "#f4f4f5" }}>
                             <img src={p.image} alt={p.imageAlt || p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           </div>
                         ) : (
-                          <div style={{ width: "100%", height: "80px", borderRadius: "8px", background: "linear-gradient(135deg, #e0e7ff, #ddd6fe)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>
+                          <div style={{ width: "100%", height: "80px", borderRadius: "8px", background: "linear-gradient(135deg, #e4e4e7, #d4d4d8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>
                             &#128722;
                           </div>
                         )}
@@ -791,7 +791,7 @@ export default function InternalLinks() {
                   <BlockStack gap="200">
                     <Text variant="bodySm" fontWeight="bold">Eingefügte Links:</Text>
                     {previewModal.insertedLinks.map((il, ili) => (
-                      <div key={ili} style={{ background: "#f0fdf4", borderRadius: "6px", padding: "8px 12px", border: "1px solid rgba(16,185,129,0.2)" }}>
+                      <div key={ili} style={{ background: "#f4f4f5", borderRadius: "6px", padding: "8px 12px", border: "1px solid rgba(9,9,11,0.2)" }}>
                         <Text variant="bodySm" fontWeight="semibold">{il.anchorText}</Text>
                         <Text variant="bodySm" tone="subdued">{il.context}</Text>
                       </div>
@@ -803,8 +803,8 @@ export default function InternalLinks() {
                 <div>
                   <Text variant="bodySm" fontWeight="bold">Vorschau der aktualisierten Beschreibung:</Text>
                   <div style={{
-                    background: "#f8fafc", borderRadius: "8px", padding: "16px",
-                    border: "1px solid #e2e8f0", marginTop: "8px",
+                    background: "#f4f4f5", borderRadius: "8px", padding: "16px",
+                    border: "1px solid #e4e4e7", marginTop: "8px",
                     maxHeight: "400px", overflowY: "auto",
                     fontSize: "14px", lineHeight: "1.7",
                   }}>
@@ -816,7 +816,7 @@ export default function InternalLinks() {
                 <div>
                   <Text variant="bodySm" fontWeight="bold">HTML-Quellcode:</Text>
                   <div style={{
-                    background: "#1e293b", color: "#e2e8f0", borderRadius: "8px", padding: "14px",
+                    background: "#18181b", color: "#e4e4e7", borderRadius: "8px", padding: "14px",
                     marginTop: "8px", maxHeight: "200px", overflowY: "auto",
                     fontSize: "12px", lineHeight: "1.5", fontFamily: "monospace",
                     whiteSpace: "pre-wrap", wordBreak: "break-all",

@@ -1,5 +1,5 @@
 import { json, redirect } from "@remix-run/node";
-import { useLoaderData, useSubmit } from "@remix-run/react";
+import { useLoaderData, useActionData, useSubmit } from "@remix-run/react";
 import {
   Page, BlockStack, Text, InlineStack, Button, Banner, Box, Card, Divider, Badge,
 } from "@shopify/polaris";
@@ -62,13 +62,38 @@ export const action = async ({ request }) => {
   if (planMap[plan]) {
     const isTest = process.env.NODE_ENV !== "production";
 
-    // billing.request() throws a Response redirect to Shopify's billing page.
-    // We MUST let this propagate to Remix — do NOT catch Response objects.
-    await billing.request({
-      plan: planMap[plan],
-      isTest,
-      returnUrl: `https://${process.env.SHOPIFY_APP_URL || "geo.titanwalls.de"}/app/billing`,
-    });
+    // Strip any existing protocol from SHOPIFY_APP_URL to avoid double "https://https://..."
+    const rawAppUrl = process.env.SHOPIFY_APP_URL || "geo.titanwalls.de";
+    const appHost = rawAppUrl.replace(/^https?:\/\//, "");
+
+    try {
+      // billing.request() throws a Response redirect to Shopify's billing page.
+      // We MUST let this propagate to Remix — do NOT catch Response objects.
+      await billing.request({
+        plan: planMap[plan],
+        isTest,
+        returnUrl: `https://${appHost}/app/billing`,
+      });
+    } catch (error) {
+      // billing.request() throws a Response (redirect) on success — let those through
+      if (error instanceof Response) {
+        throw error;
+      }
+
+      console.error("Billing request error:", error);
+
+      // Surface a user-friendly message for known billing errors
+      const message = error?.message || String(error);
+      if (message.includes("currently owned by a Shop") || message.includes("migrated to the Shopify partners")) {
+        return json({
+          error: "Diese App muss zuerst in den Shopify Partners-Bereich migriert werden, bevor Zahlungen erstellt werden können. Bitte kontaktiere den Support.",
+        }, { status: 422 });
+      }
+
+      return json({
+        error: "Beim Erstellen des Abonnements ist ein Fehler aufgetreten. Bitte versuche es später erneut.",
+      }, { status: 500 });
+    }
   }
 
   return null;
@@ -210,6 +235,7 @@ const comparisonFeatures = [
 
 export default function Billing() {
   const { currentPlan, usage } = useLoaderData();
+  const actionData = useActionData();
   const submit = useSubmit();
   const handleSubscribe = (planKey) => {
     const formData = new FormData();
@@ -225,6 +251,12 @@ export default function Billing() {
     >
       <div className="titan-fade-in">
         <BlockStack gap="600">
+
+          {actionData?.error && (
+            <Banner tone="critical" title="Billing-Fehler">
+              <p>{actionData.error}</p>
+            </Banner>
+          )}
 
           {currentPlan !== "Starter" && (
             <Banner tone="success" title={`Dein aktueller Plan: ${currentPlan}`}>
@@ -242,21 +274,15 @@ export default function Billing() {
               <div
                 key={plan.name}
                 style={{
-                  background: plan.featured ? "#fafaff" : "#ffffff",
+                  background: plan.featured ? "#f4f4f5" : "#ffffff",
                   borderRadius: "16px",
                   padding: "28px 24px",
                   display: "flex",
                   flexDirection: "column",
                   position: "relative",
                   overflow: "hidden",
-                  border: plan.featured ? "2px solid transparent" : "1px solid #e2e8f0",
-                  backgroundImage: plan.featured
-                    ? "linear-gradient(#fafaff, #fafaff), linear-gradient(135deg, #6366f1, #a855f7, #ec4899, #6366f1)"
-                    : "none",
-                  backgroundOrigin: plan.featured ? "border-box" : "padding-box",
-                  backgroundClip: plan.featured ? "padding-box, border-box" : "padding-box",
-                  animation: plan.featured ? "titan-gradient-border 3s linear infinite" : "none",
-                  boxShadow: plan.featured ? "0 0 30px rgba(99, 102, 241, 0.15)" : "0 2px 12px rgba(0,0,0,0.06)",
+                  border: plan.featured ? "2px solid #09090b" : "1px solid #e4e4e7",
+                  boxShadow: plan.featured ? "0 4px 24px rgba(9, 9, 11, 0.12)" : "0 2px 12px rgba(0,0,0,0.04)",
                 }}
               >
                 {plan.featured && (
@@ -264,8 +290,8 @@ export default function Billing() {
                     position: "absolute",
                     top: "12px",
                     right: "12px",
-                    background: "linear-gradient(135deg, #6366f1, #a855f7)",
-                    color: "#fff",
+                    background: "#09090b",
+                    color: "#ffffff",
                     fontSize: "11px",
                     fontWeight: 700,
                     padding: "4px 12px",
@@ -279,14 +305,14 @@ export default function Billing() {
 
                 <div style={{ marginBottom: "16px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                    <span style={{ fontSize: "20px", fontWeight: 800, color: "#0f172a" }}>
+                    <span style={{ fontSize: "20px", fontWeight: 800, color: "#09090b" }}>
                       {plan.name}
                     </span>
                     {plan.name === currentPlan && (
                       <Badge tone="info">Aktiv</Badge>
                     )}
                   </div>
-                  <div style={{ fontSize: "13px", color: "#94a3b8", lineHeight: "1.5" }}>
+                  <div style={{ fontSize: "13px", color: "#a1a1aa", lineHeight: "1.5" }}>
                     {plan.description}
                   </div>
                 </div>
@@ -295,18 +321,18 @@ export default function Billing() {
                   <span style={{
                     fontSize: "36px",
                     fontWeight: 900,
-                    color: "#0f172a",
+                    color: "#09090b",
                     letterSpacing: "-1px",
                   }}>
                     {plan.price === "0" ? "Gratis" : `$${plan.price}`}
                   </span>
                   {plan.price !== "0" && (
-                    <span style={{ fontSize: "14px", color: "#94a3b8", marginLeft: "4px" }}>
+                    <span style={{ fontSize: "14px", color: "#a1a1aa", marginLeft: "4px" }}>
                       {plan.period}
                     </span>
                   )}
                   {plan.trialText && (
-                    <div style={{ fontSize: "12px", color: "#10b981", fontWeight: 600, marginTop: "4px" }}>
+                    <div style={{ fontSize: "12px", color: "#52525b", fontWeight: 600, marginTop: "4px" }}>
                       {plan.trialText}
                     </div>
                   )}
@@ -314,7 +340,7 @@ export default function Billing() {
 
                 <div style={{
                   height: "1px",
-                  background: "linear-gradient(to right, transparent, #e2e8f0, transparent)",
+                  background: "linear-gradient(to right, transparent, #d4d4d8, transparent)",
                   margin: "0 0 20px 0",
                 }} />
 
@@ -335,7 +361,7 @@ export default function Billing() {
                         alignItems: "flex-start",
                         gap: "8px",
                         fontSize: "13px",
-                        color: feature.included ? "#334155" : "#cbd5e1",
+                        color: feature.included ? "#27272a" : "#d4d4d8",
                         lineHeight: "1.4",
                       }}
                     >
@@ -343,7 +369,7 @@ export default function Billing() {
                         flexShrink: 0,
                         marginTop: "1px",
                         fontSize: "14px",
-                        color: feature.included ? "#10b981" : "#475569",
+                        color: feature.included ? "#09090b" : "#a1a1aa",
                       }}>
                         {feature.included ? "✓" : "✗"}
                       </span>
@@ -392,25 +418,25 @@ export default function Billing() {
                   fontSize: "13px",
                 }}>
                   <thead>
-                    <tr style={{ borderBottom: "2px solid #e2e8f0" }}>
-                      <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: 700, color: "#0f172a" }}>Feature</th>
-                      <th style={{ textAlign: "center", padding: "12px 16px", fontWeight: 700, color: "#0f172a" }}>Starter</th>
-                      <th style={{ textAlign: "center", padding: "12px 16px", fontWeight: 700, color: "#0f172a" }}>Growth</th>
-                      <th style={{ textAlign: "center", padding: "12px 16px", fontWeight: 700, color: "#6366f1" }}>Pro</th>
-                      <th style={{ textAlign: "center", padding: "12px 16px", fontWeight: 700, color: "#0f172a" }}>Enterprise</th>
+                    <tr style={{ borderBottom: "2px solid #d4d4d8" }}>
+                      <th style={{ textAlign: "left", padding: "12px 16px", fontWeight: 700, color: "#09090b" }}>Feature</th>
+                      <th style={{ textAlign: "center", padding: "12px 16px", fontWeight: 700, color: "#09090b" }}>Starter</th>
+                      <th style={{ textAlign: "center", padding: "12px 16px", fontWeight: 700, color: "#09090b" }}>Growth</th>
+                      <th style={{ textAlign: "center", padding: "12px 16px", fontWeight: 700, color: "#09090b" }}>Pro</th>
+                      <th style={{ textAlign: "center", padding: "12px 16px", fontWeight: 700, color: "#09090b" }}>Enterprise</th>
                     </tr>
                   </thead>
                   <tbody>
                     {comparisonFeatures.map(([feature, starter, growth, pro, enterprise], i) => (
                       <tr key={i} style={{
-                        borderBottom: "1px solid #f1f5f9",
-                        background: i % 2 === 0 ? "#fafbfc" : "#ffffff",
+                        borderBottom: "1px solid #e4e4e7",
+                        background: i % 2 === 0 ? "#f4f4f5" : "#ffffff",
                       }}>
-                        <td style={{ padding: "10px 16px", fontWeight: 600, color: "#334155" }}>{feature}</td>
-                        <td style={{ padding: "10px 16px", textAlign: "center", color: starter === "—" ? "#cbd5e1" : "#334155" }}>{starter}</td>
-                        <td style={{ padding: "10px 16px", textAlign: "center", color: growth === "—" ? "#cbd5e1" : "#334155" }}>{growth}</td>
-                        <td style={{ padding: "10px 16px", textAlign: "center", color: pro === "—" ? "#cbd5e1" : "#6366f1", fontWeight: pro === "—" ? 400 : 600 }}>{pro}</td>
-                        <td style={{ padding: "10px 16px", textAlign: "center", color: enterprise === "—" ? "#cbd5e1" : "#334155" }}>{enterprise}</td>
+                        <td style={{ padding: "10px 16px", fontWeight: 600, color: "#18181b" }}>{feature}</td>
+                        <td style={{ padding: "10px 16px", textAlign: "center", color: starter === "—" ? "#d4d4d8" : "#27272a" }}>{starter}</td>
+                        <td style={{ padding: "10px 16px", textAlign: "center", color: growth === "—" ? "#d4d4d8" : "#27272a" }}>{growth}</td>
+                        <td style={{ padding: "10px 16px", textAlign: "center", color: pro === "—" ? "#d4d4d8" : "#09090b", fontWeight: pro === "—" ? 400 : 600 }}>{pro}</td>
+                        <td style={{ padding: "10px 16px", textAlign: "center", color: enterprise === "—" ? "#d4d4d8" : "#27272a" }}>{enterprise}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -427,32 +453,32 @@ export default function Billing() {
               </div>
               <Divider />
               <details style={{ padding: "8px 0" }}>
-                <summary style={{ fontWeight: 600, cursor: "pointer", color: "#0f172a" }}>Kann ich jederzeit kündigen?</summary>
-                <div style={{ padding: "8px 0 0 0", color: "#64748b", fontSize: "14px", lineHeight: "1.6" }}>
+                <summary style={{ fontWeight: 600, cursor: "pointer", color: "#09090b" }}>Kann ich jederzeit kündigen?</summary>
+                <div style={{ padding: "8px 0 0 0", color: "#52525b", fontSize: "14px", lineHeight: "1.6" }}>
                   Ja, du kannst deinen Plan jederzeit kündigen. Es gibt keine Mindestvertragslaufzeit. Bei Kündigung behältst du den Zugang bis zum Ende der Abrechnungsperiode.
                 </div>
               </details>
               <details style={{ padding: "8px 0" }}>
-                <summary style={{ fontWeight: 600, cursor: "pointer", color: "#0f172a" }}>Was passiert mit meinen Optimierungen wenn ich downgrade?</summary>
-                <div style={{ padding: "8px 0 0 0", color: "#64748b", fontSize: "14px", lineHeight: "1.6" }}>
+                <summary style={{ fontWeight: 600, cursor: "pointer", color: "#09090b" }}>Was passiert mit meinen Optimierungen wenn ich downgrade?</summary>
+                <div style={{ padding: "8px 0 0 0", color: "#52525b", fontSize: "14px", lineHeight: "1.6" }}>
                   Alle bereits durchgeführten Optimierungen bleiben erhalten. Du kannst weiterhin alle Versionen einsehen und bei Bedarf zurücksetzen. Nur neue Optimierungen sind auf den gewählten Plan begrenzt.
                 </div>
               </details>
               <details style={{ padding: "8px 0" }}>
-                <summary style={{ fontWeight: 600, cursor: "pointer", color: "#0f172a" }}>Gibt es eine kostenlose Testphase?</summary>
-                <div style={{ padding: "8px 0 0 0", color: "#64748b", fontSize: "14px", lineHeight: "1.6" }}>
+                <summary style={{ fontWeight: 600, cursor: "pointer", color: "#09090b" }}>Gibt es eine kostenlose Testphase?</summary>
+                <div style={{ padding: "8px 0 0 0", color: "#52525b", fontSize: "14px", lineHeight: "1.6" }}>
                   Ja! Growth und Pro bieten 7 Tage, Enterprise sogar 14 Tage kostenlose Testphase. Du wirst erst nach Ablauf der Testphase belastet.
                 </div>
               </details>
               <details style={{ padding: "8px 0" }}>
-                <summary style={{ fontWeight: 600, cursor: "pointer", color: "#0f172a" }}>Was ist der Unterschied zwischen Growth und Pro?</summary>
-                <div style={{ padding: "8px 0 0 0", color: "#64748b", fontSize: "14px", lineHeight: "1.6" }}>
+                <summary style={{ fontWeight: 600, cursor: "pointer", color: "#09090b" }}>Was ist der Unterschied zwischen Growth und Pro?</summary>
+                <div style={{ padding: "8px 0 0 0", color: "#52525b", fontSize: "14px", lineHeight: "1.6" }}>
                   Growth bietet großzügige tägliche Limits für wachsende Shops. Pro schaltet unbegrenzte Nutzung, Ranking Tracker, Multi-Language und Bulk-Operationen frei — ideal für Shops die maximale Sichtbarkeit anstreben.
                 </div>
               </details>
               <details style={{ padding: "8px 0" }}>
-                <summary style={{ fontWeight: 600, cursor: "pointer", color: "#0f172a" }}>Was beinhaltet der Enterprise-Plan zusätzlich?</summary>
-                <div style={{ padding: "8px 0 0 0", color: "#64748b", fontSize: "14px", lineHeight: "1.6" }}>
+                <summary style={{ fontWeight: 600, cursor: "pointer", color: "#09090b" }}>Was beinhaltet der Enterprise-Plan zusätzlich?</summary>
+                <div style={{ padding: "8px 0 0 0", color: "#52525b", fontSize: "14px", lineHeight: "1.6" }}>
                   Enterprise umfasst alles aus Pro plus 16 Sprachen Multi-Language, API-Zugang, dedizierten Account Manager, Custom Onboarding, SLA 99.9%, White-Label Option, benutzerdefinierte Integrationen und Priority Support mit weniger als 1 Stunde Reaktionszeit.
                 </div>
               </details>
@@ -460,13 +486,6 @@ export default function Billing() {
           </Card>
         </BlockStack>
       </div>
-
-      <style>{`
-        @keyframes titan-gradient-border {
-          0% { filter: hue-rotate(0deg); }
-          100% { filter: hue-rotate(360deg); }
-        }
-      `}</style>
     </Page>
   );
 }

@@ -148,9 +148,9 @@ Antworte ausschließlich auf Deutsch. Sei konkret und praxisnah mit echten Textb
 };
 
 const scoreColor = (score) => {
-  if (score >= 70) return "#10b981";
-  if (score >= 40) return "#f59e0b";
-  return "#ef4444";
+  if (score >= 70) return "#09090b";
+  if (score >= 40) return "#3f3f46";
+  return "#a1a1aa";
 };
 
 const scoreLabel = (score) => {
@@ -178,9 +178,9 @@ function FilterChip({ label, active, onClick, count }) {
         gap: "6px",
         padding: "8px 18px",
         borderRadius: "100px",
-        border: active ? "2px solid var(--titan-primary, #6366f1)" : "2px solid #e2e8f0",
-        background: active ? "linear-gradient(135deg, #ede9fe, #e0f2fe)" : "white",
-        color: active ? "#4f46e5" : "#64748b",
+        border: active ? "2px solid var(--titan-primary, #09090b)" : "2px solid #e4e4e7",
+        background: active ? "linear-gradient(135deg, #f4f4f5, #e4e4e7)" : "white",
+        color: active ? "#09090b" : "#71717a",
         fontWeight: active ? 700 : 500,
         fontSize: "13px",
         cursor: "pointer",
@@ -191,8 +191,8 @@ function FilterChip({ label, active, onClick, count }) {
       {label}
       {count !== undefined && count > 0 && (
         <span style={{
-          background: active ? "#6366f1" : "#e2e8f0",
-          color: active ? "white" : "#64748b",
+          background: active ? "#09090b" : "#e4e4e7",
+          color: active ? "white" : "#71717a",
           borderRadius: "100px",
           padding: "1px 8px",
           fontSize: "11px",
@@ -218,7 +218,7 @@ function ScoreRing({ score, size = 72, label }) {
         <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
           <circle
             cx={size / 2} cy={size / 2} r={radius}
-            fill="none" stroke="#f1f5f9" strokeWidth="6"
+            fill="none" stroke="#f4f4f5" strokeWidth="6"
           />
           <circle
             cx={size / 2} cy={size / 2} r={radius}
@@ -347,7 +347,7 @@ export default function ContentAudit() {
             borderRadius: "16px",
             padding: "16px 20px",
             boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-            border: "1px solid rgba(99, 102, 241, 0.1)",
+            border: "1px solid rgba(9, 9, 11, 0.1)",
           }}>
             <BlockStack gap="300">
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
@@ -447,7 +447,7 @@ export default function ContentAudit() {
                               <div key={idx} style={{
                                 marginTop: idx === 0 ? "8px" : "0",
                                 padding: "6px 8px",
-                                background: "#f8fafc",
+                                background: "#f4f4f5",
                                 borderRadius: "6px",
                                 borderLeft: "3px solid " + scoreColor(score),
                               }}>
@@ -504,7 +504,7 @@ export default function ContentAudit() {
                             width: "24px",
                             height: "24px",
                             borderRadius: "50%",
-                            background: "linear-gradient(135deg, #6366f1, #06b6d4)",
+                            background: "linear-gradient(135deg, #09090b, #3f3f46)",
                             color: "white",
                             display: "flex",
                             alignItems: "center",
@@ -564,7 +564,7 @@ export default function ContentAudit() {
                     style={{
                       padding: "0",
                       overflow: "hidden",
-                      border: isSelected ? "2px solid #6366f1" : undefined,
+                      border: isSelected ? "2px solid #09090b" : undefined,
                     }}
                   >
                     {/* Card Image Area */}
@@ -572,7 +572,7 @@ export default function ContentAudit() {
                       height: "140px",
                       background: product.image
                         ? `url(${product.image}) center/cover`
-                        : "linear-gradient(135deg, #f1f5f9, #e2e8f0)",
+                        : "linear-gradient(135deg, #f4f4f5, #e4e4e7)",
                       position: "relative",
                     }}>
                       {/* Status Badge */}

@@ -1,27 +1,12 @@
 import { json } from "@remix-run/node";
 import { useLoaderData, useNavigate, useFetcher } from "@remix-run/react";
 import {
-  Page,
-  Card,
-  Text,
-  BlockStack,
-  InlineStack,
-  IndexTable,
-  Thumbnail,
-  Badge,
-  Button,
-  Banner,
-  EmptyState,
-  Box,
-  TextField,
-  Select,
-  useIndexResourceState,
-  Tooltip,
-  ProgressBar,
+  Page, Card, Text, BlockStack, InlineStack, Badge, Button, Banner,
+  EmptyState, Box, TextField, Select, Spinner, Modal, ProgressBar,
+  Divider, Tag,
 } from "@shopify/polaris";
-import { ImageIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { authenticate } from "../shopify.server";
 import { getUsageStats } from "../services/shopify/mutations.server";
 import { getEffectivePlan } from "../middleware/plan-check.server.js";
@@ -32,61 +17,38 @@ export const loader = async ({ request }) => {
   try {
     const { admin, session } = await authenticate.admin(request);
     const shop = session.shop;
-
     const url = new URL(request.url);
     const cursor = url.searchParams.get("cursor");
     const direction = url.searchParams.get("direction") || "next";
 
-    // Check plan for bulk operations permission
     let plan = "Starter";
     let planLimits = PLAN_LIMITS.Starter;
     let bulkAllowed = false;
-
     try {
       plan = await getEffectivePlan(shop, prisma);
       planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.Starter;
       bulkAllowed = planLimits.bulkOperationsAllowed === true;
-    } catch (planError) {
-      console.error("Plan check error:", planError);
-      // Fall back to Starter plan
-      plan = "Starter";
-      planLimits = PLAN_LIMITS.Starter;
-      bulkAllowed = false;
-    }
+    } catch (e) { console.error("Plan check error:", e); }
 
     const variables = cursor
-      ? direction === "next"
-        ? { first: 25, after: cursor }
-        : { last: 25, before: cursor }
+      ? direction === "next" ? { first: 25, after: cursor } : { last: 25, before: cursor }
       : { first: 25 };
 
     const response = await admin.graphql(
       `#graphql
       query getProducts($first: Int, $last: Int, $after: String, $before: String) {
         products(first: $first, last: $last, after: $after, before: $before) {
-          pageInfo {
-            hasNextPage
-            hasPreviousPage
-            startCursor
-            endCursor
-          }
+          pageInfo { hasNextPage hasPreviousPage startCursor endCursor }
           nodes {
-            id
-            title
-            handle
-            status
-            updatedAt
-            featuredImage {
-              url
-              altText
-            }
-            metafield(namespace: "custom", key: "geo_score") {
-              value
-            }
+            id title handle status updatedAt vendor productType
+            featuredImage { url altText }
+            metafield(namespace: "custom", key: "geo_score") { value }
+            seo { title description }
+            totalVariants
           }
         }
       }`,
-      { variables }
+      { variables },
     );
 
     const data = await response.json();
@@ -94,13 +56,7 @@ export const loader = async ({ request }) => {
     const pageInfo = data.data?.products?.pageInfo || {};
 
     let usage = { used: 0, limit: 5, remaining: 5 };
-    try {
-      usage = await getUsageStats(shop);
-    } catch (usageError) {
-      console.error("Usage stats error:", usageError);
-      // Use default usage values on error
-      usage = { used: 0, limit: 5, remaining: 5 };
-    }
+    try { usage = await getUsageStats(shop); } catch (e) { /* fallback */ }
 
     return json({
       products: products.map((p) => ({
@@ -110,790 +66,617 @@ export const loader = async ({ request }) => {
         handle: p.handle,
         status: p.status,
         updatedAt: p.updatedAt,
-        image: p.featuredImage?.url,
-        imageAlt: p.featuredImage?.altText,
+        vendor: p.vendor || "",
+        productType: p.productType || "",
+        image: p.featuredImage?.url || null,
+        imageAlt: p.featuredImage?.altText || "",
         geoScore: p.metafield?.value ? Number(p.metafield.value) : null,
+        seoTitle: p.seo?.title || "",
+        seoDesc: p.seo?.description || "",
+        variants: p.totalVariants || 1,
       })),
-      pageInfo,
-      usageCount: usage.used,
-      freeLimit: usage.limit,
-      limitReached: usage.remaining === 0,
+      pageInfo, plan,
+      usageCount: usage.used, freeLimit: usage.limit,
+      usageRemaining: usage.remaining, limitReached: usage.remaining === 0,
       bulkAllowed,
     });
   } catch (error) {
     console.error("Products loader error:", error);
-    // Return fallback JSON to prevent white screen
     return json({
-      error: "Fehler beim Laden der Produkte. Bitte versuche es später erneut.",
-      products: [],
-      pageInfo: {},
-      usageCount: 0,
-      freeLimit: 5,
-      limitReached: false,
-      bulkAllowed: false,
+      error: "Fehler beim Laden der Produkte.", products: [], pageInfo: {},
+      plan: "Starter", usageCount: 0, freeLimit: 5, usageRemaining: 5,
+      limitReached: false, bulkAllowed: false,
     });
   }
 };
+
+/* -- Detail Label Row -- */
+function DetailRow({ label, value, mono }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0" }}>
+      <span style={{ fontSize: "11px", fontWeight: 600, color: "#a1a1aa", textTransform: "uppercase", letterSpacing: "0.4px" }}>{label}</span>
+      <span style={{ fontSize: "12px", fontWeight: 500, color: "#18181b", maxWidth: "60%", textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: mono ? "monospace" : "inherit" }}>{value || "\u2014"}</span>
+    </div>
+  );
+}
+
+/* ===================================
+   VIBE & AUDIENCE OPTIONS
+   =================================== */
+const VIBE_OPTIONS = [
+  "Luxuri\u00f6s", "Premium", "Hochwertig", "Minimalistisch",
+  "Praktisch", "Robust", "Nachhaltig", "Eco-Friendly",
+  "Verspielt", "Modern", "Klassisch", "Innovativ",
+  "G\u00fcnstig", "Preis-Leistung", "Professionell", "Handgemacht",
+];
+const AUDIENCE_OPTIONS = [
+  { label: "-- Zielgruppe w\u00e4hlen --", value: "" },
+  { label: "Frauen 18-35", value: "Frauen 18-35" },
+  { label: "Frauen 35-55", value: "Frauen 35-55" },
+  { label: "M\u00e4nner 18-35", value: "M\u00e4nner 18-35" },
+  { label: "M\u00e4nner 35-55", value: "M\u00e4nner 35-55" },
+  { label: "Eltern & Familien", value: "Eltern & Familien" },
+  { label: "Teenager & Gen Z", value: "Teenager & Gen Z" },
+  { label: "Senioren 55+", value: "Senioren 55+" },
+  { label: "B2B / Unternehmen", value: "B2B / Unternehmen" },
+  { label: "Fitness & Sport", value: "Fitness & Sport" },
+  { label: "Technik-Enthusiasten", value: "Technik-Enthusiasten" },
+  { label: "Luxus-K\u00e4ufer", value: "Luxus-K\u00e4ufer" },
+  { label: "Alle / Allgemein", value: "Alle / Allgemein" },
+];
+const QUIZ_STEPS = [
+  { title: "Was ist dieses Produkt?", subtitle: "Beschreibe es in 1\u20132 S\u00e4tzen \u2014 die KI baut daraus professionellen Content." },
+  { title: "USP & Features", subtitle: "Was macht es einzigartig? Material, Qualit\u00e4t, Vorteile?" },
+  { title: "Zielgruppe & Vibe", subtitle: "F\u00fcr wen ist es und wie soll es wirken?" },
+];
+
+/* ===================================
+   MAIN COMPONENT
+   =================================== */
 export default function Products() {
-  const { products, pageInfo, usageCount, freeLimit, limitReached, bulkAllowed } =
-    useLoaderData();
+  const {
+    products, pageInfo, plan, usageCount, freeLimit,
+    usageRemaining, limitReached, bulkAllowed,
+  } = useLoaderData();
   const navigate = useNavigate();
   const shopify = useAppBridge();
-  const auditFetcher = useFetcher();
   const optimizeFetcher = useFetcher();
-  const [auditingId, setAuditingId] = useState(null);
   const [optimizingId, setOptimizingId] = useState(null);
   const [searchValue, setSearchValue] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("name");
-  const [healthCheckId, setHealthCheckId] = useState(null);
 
-  const [isMobile, setIsMobile] = useState(false);
+  // -- Context Builder State --
+  const [builderActive, setBuilderActive] = useState(false);
+  const [builderProductId, setBuilderProductId] = useState(null);
+  const [builderProductTitle, setBuilderProductTitle] = useState("");
+  const [builderStep, setBuilderStep] = useState(0);
+  const [builderData, setBuilderData] = useState({ description: "", usp: "", audience: "", keywords: "" });
+  const [selectedVibes, setSelectedVibes] = useState([]);
 
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
-  const resourceName = { singular: "Produkt", plural: "Produkte" };
-
-  // Compute stats
+  // -- Stats --
   const totalProducts = products.length;
-  const optimizedProducts = products.filter(
-    (p) => p.geoScore !== null && p.geoScore >= 40
-  );
-  const optimizedCount = optimizedProducts.length;
-  const pendingCount = products.filter(
-    (p) => p.geoScore === null || p.geoScore < 40
-  ).length;
-  const averageScore =
-    products.filter((p) => p.geoScore !== null).length > 0
-      ? Math.round(
-          products
-            .filter((p) => p.geoScore !== null)
-            .reduce((sum, p) => sum + p.geoScore, 0) /
-            products.filter((p) => p.geoScore !== null).length
-        )
-      : 0;
-  const scoredCount = products.filter((p) => p.geoScore !== null).length;
+  const scoredProducts = products.filter((p) => p.geoScore !== null);
+  const excellentCount = products.filter((p) => p.geoScore >= 70).length;
+  const mediumCount = products.filter((p) => p.geoScore !== null && p.geoScore >= 40 && p.geoScore < 70).length;
+  const criticalCount = products.filter((p) => p.geoScore !== null && p.geoScore < 40).length;
+  const pendingCount = products.filter((p) => p.geoScore === null).length;
+  const averageScore = scoredProducts.length > 0
+    ? Math.round(scoredProducts.reduce((s, p) => s + p.geoScore, 0) / scoredProducts.length) : 0;
 
-  // Filter and sort products
+  // -- Filter & Sort --
   const filteredProducts = useMemo(() => {
-    let result = [...products];
-
-    // Search filter
+    let r = [...products];
     if (searchValue.trim()) {
-      const query = searchValue.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.title.toLowerCase().includes(query) ||
-          p.handle.toLowerCase().includes(query)
-      );
+      const q = searchValue.toLowerCase();
+      r = r.filter((p) => p.title.toLowerCase().includes(q) || p.handle.toLowerCase().includes(q) || p.vendor.toLowerCase().includes(q));
     }
-
-    // Status filter
-    if (statusFilter === "optimized") {
-      result = result.filter(
-        (p) => p.geoScore !== null && p.geoScore >= 40
-      );
-    } else if (statusFilter === "pending") {
-      result = result.filter(
-        (p) => p.geoScore === null || p.geoScore < 40
-      );
-    } else if (statusFilter === "excellent") {
-      result = result.filter(
-        (p) => p.geoScore !== null && p.geoScore >= 70
-      );
-    }
-
-    // Sort
-    if (sortBy === "score_desc") {
-      result.sort((a, b) => (b.geoScore ?? -1) - (a.geoScore ?? -1));
-    } else if (sortBy === "score_asc") {
-      result.sort((a, b) => (a.geoScore ?? -1) - (b.geoScore ?? -1));
-    } else if (sortBy === "name") {
-      result.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortBy === "date") {
-      result.sort(
-        (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-      );
-    }
-
-    return result;
+    if (statusFilter === "optimized") r = r.filter((p) => p.geoScore !== null && p.geoScore >= 40);
+    else if (statusFilter === "excellent") r = r.filter((p) => p.geoScore !== null && p.geoScore >= 70);
+    else if (statusFilter === "pending") r = r.filter((p) => p.geoScore === null || p.geoScore < 40);
+    if (sortBy === "score_desc") r.sort((a, b) => (b.geoScore ?? -1) - (a.geoScore ?? -1));
+    else if (sortBy === "score_asc") r.sort((a, b) => (a.geoScore ?? -1) - (b.geoScore ?? -1));
+    else if (sortBy === "name") r.sort((a, b) => a.title.localeCompare(b.title));
+    else if (sortBy === "date") r.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    return r;
   }, [products, searchValue, statusFilter, sortBy]);
 
-  const { selectedResources, allResourcesSelected, handleSelectionChange } =
-    useIndexResourceState(filteredProducts);
-
+  // -- Fetcher Effects --
   useEffect(() => {
-    if (
-      auditFetcher.data?.geoScore !== undefined &&
-      auditFetcher.state === "idle"
-    ) {
-      shopify.toast.show(`GEO Score: ${auditFetcher.data.geoScore}/100`);
-      if (healthCheckId === auditingId) {
-        setHealthCheckId(null);
-      }
-      setAuditingId(null);
-    }
-    if (auditFetcher.data?.error && auditFetcher.state === "idle") {
-      shopify.toast.show(auditFetcher.data.error, { isError: true });
-      setAuditingId(null);
-      setHealthCheckId(null);
-    }
-  }, [auditFetcher.data, auditFetcher.state]);
-
-  useEffect(() => {
-    if (optimizeFetcher.data?.success && optimizeFetcher.state === "idle") {
-      shopify.toast.show("Optimierung erfolgreich deployed!");
+    if (optimizeFetcher.state !== "idle") return;
+    const d = optimizeFetcher.data;
+    if (!d) return;
+    if (d.success) {
+      shopify.toast.show(`GEO Score: ${d.geoScore}/100 \u2014 deployed!`);
       setOptimizingId(null);
-    }
-    if (optimizeFetcher.data?.error && optimizeFetcher.state === "idle") {
-      shopify.toast.show(optimizeFetcher.data.error, { isError: true });
+      setBuilderActive(false);
+      resetBuilder();
+    } else if (d.status === "NEEDS_CONTEXT") {
+      // Auto-open the Context Builder for this product
+      const pid = optimizingId;
+      const prod = products.find((p) => p.shopifyId === pid);
+      setBuilderProductId(pid);
+      setBuilderProductTitle(d.productTitle || prod?.title || "Produkt");
+      setBuilderStep(0);
+      setBuilderActive(true);
+      setOptimizingId(null);
+    } else if (d.error) {
+      shopify.toast.show(d.error, { isError: true });
+      setOptimizingId(null);
+    } else if (d.requiresUpgrade) {
+      shopify.toast.show("Limit erreicht \u2014 bitte upgraden.", { isError: true });
       setOptimizingId(null);
     }
   }, [optimizeFetcher.data, optimizeFetcher.state]);
 
-  const handleAudit = (shopifyId) => {
-    setAuditingId(shopifyId);
-    auditFetcher.submit(
-      { productId: shopifyId },
-      { method: "post", action: "/app/api/audit" }
-    );
-  };
-
-  const handleHealthCheck = (shopifyId) => {
-    setHealthCheckId(shopifyId);
-    handleAudit(shopifyId);
-  };
-
-  const handleOptimize = (shopifyId) => {
+  const handleOptimize = useCallback((shopifyId) => {
     setOptimizingId(shopifyId);
     optimizeFetcher.submit(
       { productId: shopifyId },
-      { method: "post", action: "/app/api/optimize" }
+      { method: "post", action: "/app/api/optimize" },
+    );
+  }, []);
+
+  // -- Context Builder: open manually --
+  const openBuilder = useCallback((product) => {
+    setBuilderProductId(product.shopifyId);
+    setBuilderProductTitle(product.title);
+    setBuilderStep(0);
+    setBuilderData({ description: "", usp: "", audience: "", keywords: "" });
+    setSelectedVibes([]);
+    setBuilderActive(true);
+  }, []);
+
+  const resetBuilder = () => {
+    setBuilderData({ description: "", usp: "", audience: "", keywords: "" });
+    setSelectedVibes([]);
+    setBuilderStep(0);
+    setBuilderProductId(null);
+    setBuilderProductTitle("");
+  };
+
+  // -- Context Builder: submit with manualContext --
+  const handleBuilderSubmit = () => {
+    if (!builderProductId) return;
+    setOptimizingId(builderProductId);
+    const payload = JSON.stringify({
+      description: builderData.description,
+      usp: builderData.usp,
+      audience: builderData.audience,
+      vibe: selectedVibes.join(", "),
+      keywords: builderData.keywords,
+    });
+    optimizeFetcher.submit(
+      { productId: builderProductId, manualContext: payload },
+      { method: "post", action: "/app/api/optimize" },
     );
   };
 
-  // Helper function for controlled delay
-  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const builderProgress = ((builderStep + 1) / QUIZ_STEPS.length) * 100;
+  const canProceed = builderStep === 0 ? builderData.description.length > 10
+    : builderStep === 1 ? builderData.usp.length > 5
+    : selectedVibes.length > 0;
+  const isOptimizing = optimizeFetcher.state !== "idle";
 
-  const handleBulkOptimize = async () => {
-    if (limitReached) {
-      shopify.toast.show(
-        "Free-Tier Limit erreicht. Bitte upgrade auf Pro.",
-        { isError: true }
-      );
-      return;
-    }
-    if (selectedResources.length === 0) {
-      shopify.toast.show("Bitte wähle mindestens ein Produkt aus.", { isError: true });
-      return;
-    }
-
-    const total = selectedResources.length;
-    shopify.toast.show(`${total} Produkte werden optimiert...`);
-    let completed = 0;
-
-    for (let i = 0; i < selectedResources.length; i++) {
-      const id = selectedResources[i];
-      const product = filteredProducts.find((p) => p.id === id);
-      if (product) {
-        // Add delay between each request (2.5 seconds)
-        if (i > 0) {
-          await delay(2500);
-        }
-        handleOptimize(product.shopifyId);
-        completed++;
-        
-        // Show progress toast every 5 products
-        if (completed % 5 === 0 && completed < total) {
-          shopify.toast.show(`${completed}/${total} Produkte optimiert...`);
-        }
-      }
-    }
-
-    // Final toast
-    shopify.toast.show(`Alle ${total} Produkte wurden zur Optimierung eingereicht.`);
-  };
-
-  // Open product in Shopify admin (external link)
-  const openInShopify = (productId) => {
-    window.open(
-      `shopify:admin/products/${productId}`,
-      "_top"
-    );
-  };
-
-  const promotedBulkActions = bulkAllowed ? [
-    {
-      content: "Bulk Audit starten",
-      onAction: () => {
-        shopify.toast.show(
-          `${selectedResources.length} Produkte werden analysiert...`
-        );
-        selectedResources.forEach((id, i) => {
-          const product = filteredProducts.find((p) => p.id === id);
-          if (product) {
-            setTimeout(() => handleAudit(product.shopifyId), i * 2000);
-          }
-        });
-      },
-    },
-    {
-      content: "Bulk Optimieren",
-      onAction: handleBulkOptimize,
-    },
-  ] : [];
-
-  const getScoreColor = (score) => {
-    if (score === null) return "#94a3b8";
-    if (score >= 70) return "var(--titan-success, #10b981)";
-    if (score >= 40) return "var(--titan-warning, #f59e0b)";
-    return "var(--titan-danger, #ef4444)";
-  };
-
-  const getScoreLabel = (score) => {
-    if (score === null) return "Ausstehend";
-    if (score >= 70) return "Optimiert";
-    if (score >= 40) return "Teilweise";
-    return "Kritisch";
-  };
+  // -- Helpers --
+  const scoreColor = (s) => s === null ? "#e4e4e7" : s >= 70 ? "#09090b" : s >= 40 ? "#3f3f46" : "#a1a1aa";
+  const scoreTone = (s) => s === null ? "info" : s >= 70 ? "success" : s >= 40 ? "warning" : "critical";
+  const scoreLabel = (s) => s === null ? "Ausstehend" : s >= 70 ? "Exzellent" : s >= 40 ? "Teiloptimiert" : "Kritisch";
+  const usagePct = Math.min((usageCount / freeLimit) * 100, 100);
 
   if (products.length === 0) {
     return (
-      <Page
-        title="Produkte"
-        backAction={{ content: "Dashboard", onAction: () => navigate("/app") }}
-      >
-        <Card>
-          <EmptyState
-            heading="Keine Produkte gefunden"
-            image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
-          >
-            <p>
-              Füge zuerst Produkte zu deinem Store hinzu, um sie zu
-              optimieren.
-            </p>
-          </EmptyState>
-        </Card>
+      <Page title="GEO Produkt-Zentrale" backAction={{ content: "Dashboard", onAction: () => navigate("/app") }}>
+        <Card><EmptyState heading="Keine Produkte gefunden" image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png">
+          <p>F\u00fcge Produkte zu deinem Store hinzu, um sie zu optimieren.</p>
+        </EmptyState></Card>
       </Page>
     );
   }
 
-  const rowMarkup = filteredProducts.map((product, index) => (
-    <IndexTable.Row
-      id={product.id}
-      key={product.id}
-      selected={selectedResources.includes(product.id)}
-      position={index}
-      onClick={() => navigate(`/app/products/${product.id}`)}
-    >
-      <IndexTable.Cell>
-        <InlineStack gap="300" blockAlign="center" wrap={false}>
-          <div
-            style={{
-              borderRadius: "10px",
-              overflow: "hidden",
-              border: `2px solid ${getScoreColor(product.geoScore)}20`,
-              flexShrink: 0,
-            }}
-          >
-            <Thumbnail
-              source={product.image || ImageIcon}
-              alt={product.imageAlt || product.title}
-              size="small"
-            />
-          </div>
-          <BlockStack gap="050">
-            <Text variant="bodyMd" as="span" fontWeight="semibold">
-              {product.title}
-            </Text>
-            <Text variant="bodySm" as="span" tone="subdued">
-              /{product.handle}
-            </Text>
-          </BlockStack>
-        </InlineStack>
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        <Badge tone={product.status === "ACTIVE" ? "success" : "info"}>
-          {product.status === "ACTIVE" ? "Aktiv" : product.status}
-        </Badge>
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        <InlineStack gap="200" blockAlign="center">
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              padding: "4px 10px",
-              borderRadius: "20px",
-              background: `${getScoreColor(product.geoScore)}15`,
-              border: `1px solid ${getScoreColor(product.geoScore)}30`,
-            }}
-          >
-            <div
-              style={{
-                width: "8px",
-                height: "8px",
-                borderRadius: "50%",
-                background: getScoreColor(product.geoScore),
-              }}
-            />
-            <Text variant="bodySm" as="span" fontWeight="semibold">
-              {product.geoScore !== null
-                ? `${product.geoScore}/100`
-                : "---"}
-            </Text>
-          </div>
-        </InlineStack>
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        <Text variant="bodySm" as="span" tone="subdued">
-          {getScoreLabel(product.geoScore)}
-        </Text>
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        <InlineStack gap="200">
-          <Tooltip content="GEO Audit durchführen">
-            <Button
-              size="slim"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleHealthCheck(product.shopifyId);
-              }}
-              loading={
-                auditingId === product.shopifyId &&
-                healthCheckId === product.shopifyId
-              }
-              disabled={auditingId === product.shopifyId}
-            >
-              Health Check
-            </Button>
-          </Tooltip>
-          <Tooltip content="GEO-Optimierung starten">
-            <Button
-              size="slim"
-              variant="primary"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOptimize(product.shopifyId);
-              }}
-              loading={optimizingId === product.shopifyId}
-              disabled={optimizingId === product.shopifyId || limitReached}
-            >
-              Optimieren
-            </Button>
-          </Tooltip>
-          <Tooltip content="Produktdetails anzeigen">
-            <Button
-              size="slim"
-              variant="plain"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/app/products/${product.id}`);
-              }}
-            >
-              Details
-            </Button>
-          </Tooltip>
-          <Tooltip content="In Shopify Admin öffnen">
-            <Button
-              size="slim"
-              variant="plain"
-              onClick={(e) => {
-                e.stopPropagation();
-                openInShopify(product.id);
-              }}
-            >
-              Shopify
-            </Button>
-          </Tooltip>
-        </InlineStack>
-      </IndexTable.Cell>
-    </IndexTable.Row>
-  ));
-
   return (
     <Page
-      title="Produkte"
+      title="GEO Produkt-Zentrale"
+      subtitle={`${totalProducts} Produkte | ${plan}`}
       backAction={{ content: "Dashboard", onAction: () => navigate("/app") }}
     >
-      <BlockStack gap="500">
-        {/* Usage Limit Banner */}
+      <BlockStack gap="600">
+
         {limitReached && (
-          <Banner
-            title="Free-Tier Limit erreicht"
-            tone="warning"
-            action={{ content: "Auf Pro upgraden", url: "/app/billing" }}
-          >
-            <p>
-              Du hast alle {freeLimit} kostenlosen Optimierungen aufgebraucht.
-              Upgrade auf Titan GEO Pro für unbegrenzte Optimierungen.
-            </p>
+          <Banner title="Optimierungslimit erreicht" tone="warning" action={{ content: "Jetzt upgraden", url: "/app/billing" }}>
+            <p>Du hast alle {freeLimit} Optimierungen verbraucht.</p>
           </Banner>
         )}
 
-        {/* Paywall Banner for Bulk Operations */}
-        {!bulkAllowed && (
-          <Banner tone="info" title="Bulk-Automatisierung" action={{ content: "Upgrade", url: "/app/billing" }}>
-            🚀 Bulk-Automatisierung ist ein Pro-Feature. Spare Stunden manueller Arbeit.
-          </Banner>
-        )}
-
-        {/* Health Check Quick Result */}
-        {healthCheckId &&
-          auditFetcher.data?.geoScore !== undefined &&
-          auditFetcher.state === "idle" && (
-            <Banner
-              title={`Health Check Ergebnis: ${auditFetcher.data.geoScore}/100`}
-              tone={
-                auditFetcher.data.geoScore >= 70
-                  ? "success"
-                  : auditFetcher.data.geoScore >= 40
-                    ? "warning"
-                    : "critical"
-              }
-              onDismiss={() => setHealthCheckId(null)}
-            >
-              <p>
-                {auditFetcher.data.assessment ||
-                  "Analyse abgeschlossen. Öffne die Produktdetailseite für mehr Details."}
-              </p>
-            </Banner>
-          )}
-
-        {/* Score Summary Bar */}
-        <div className="titan-card-premium">
-          <div style={{ padding: "20px 24px" }}>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-                gap: "20px",
-              }}
-            >
-              {/* Total Products */}
-              <div style={{ textAlign: "center" }}>
-                <Text variant="bodySm" as="p" tone="subdued">
-                  Produkte gesamt
-                </Text>
-                <div style={{ marginTop: "4px" }}>
-                  <Text variant="headingLg" as="p" fontWeight="bold">
-                    {totalProducts}
-                  </Text>
-                </div>
-              </div>
-
-              {/* Optimized */}
-              <div style={{ textAlign: "center" }}>
-                <Text variant="bodySm" as="p" tone="subdued">
-                  Optimiert
-                </Text>
-                <div style={{ marginTop: "4px" }}>
-                  <Text
-                    variant="headingLg"
-                    as="p"
-                    fontWeight="bold"
-                  >
-                    <span style={{ color: "var(--titan-success, #10b981)" }}>
-                      {optimizedCount}
-                    </span>
-                  </Text>
-                </div>
-              </div>
-
-              {/* Average Score */}
-              <div style={{ textAlign: "center" }}>
-                <Text variant="bodySm" as="p" tone="subdued">
-                  Durchschnittl. Score
-                </Text>
-                <div style={{ marginTop: "4px" }}>
-                  <Text variant="headingLg" as="p" fontWeight="bold">
-                    <span
-                      style={{
-                        color:
-                          averageScore >= 70
-                            ? "var(--titan-success, #10b981)"
-                            : averageScore >= 40
-                              ? "var(--titan-warning, #f59e0b)"
-                              : "var(--titan-danger, #ef4444)",
-                      }}
-                    >
-                      {scoredCount > 0 ? averageScore : "---"}
-                    </span>
-                  </Text>
-                </div>
-              </div>
-
-              {/* Pending */}
-              <div style={{ textAlign: "center" }}>
-                <Text variant="bodySm" as="p" tone="subdued">
-                  Ausstehend
-                </Text>
-                <div style={{ marginTop: "4px" }}>
-                  <Text variant="headingLg" as="p" fontWeight="bold">
-                    <span style={{ color: "var(--titan-warning, #f59e0b)" }}>
-                      {pendingCount}
-                    </span>
-                  </Text>
-                </div>
-              </div>
-
-              {/* Usage */}
-              <div style={{ textAlign: "center" }}>
-                <Text variant="bodySm" as="p" tone="subdued">
-                  Optimierungen
-                </Text>
-                <div style={{ marginTop: "4px" }}>
-                  <Text variant="headingLg" as="p" fontWeight="bold">
-                    {usageCount}/{freeLimit}
-                  </Text>
-                </div>
-                <div style={{ marginTop: "6px" }}>
-                  <ProgressBar
-                    progress={Math.min(
-                      (usageCount / freeLimit) * 100,
-                      100
-                    )}
-                    tone={limitReached ? "critical" : "primary"}
-                    size="small"
+        {/* === ANALYTICS HERO === */}
+        <div style={{
+          background: "linear-gradient(135deg, #09090b 0%, #18181b 40%, #27272a 100%)",
+          borderRadius: "20px", padding: "32px", color: "white",
+          boxShadow: "0 8px 32px rgba(9, 9, 11, 0.4)",
+        }}>
+          <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "32px", alignItems: "center" }}>
+            {/* Score Ring */}
+            <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+              <div style={{ position: "relative", width: "100px", height: "100px" }}>
+                <svg width="100" height="100" style={{ transform: "rotate(-90deg)" }}>
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+                  <circle cx="50" cy="50" r="42" fill="none"
+                    stroke={scoredProducts.length ? "#ffffff" : "rgba(255,255,255,0.15)"}
+                    strokeWidth="8" strokeLinecap="round"
+                    strokeDasharray={`${(averageScore / 100) * 263.9} 263.9`}
+                    style={{ transition: "stroke-dasharray 1s ease" }}
                   />
+                </svg>
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: "30px", fontWeight: 800, color: "#ffffff" }}>
+                    {scoredProducts.length > 0 ? averageScore : "\u2014"}
+                  </span>
                 </div>
               </div>
+              <div>
+                <div style={{ fontSize: "11px", opacity: 0.5, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Durchschnitt</div>
+                <div style={{ fontSize: "20px", fontWeight: 700, lineHeight: 1.2 }}>GEO Score</div>
+                <div style={{ fontSize: "12px", opacity: 0.4, marginTop: "4px" }}>{scoredProducts.length}/{totalProducts} analysiert</div>
+              </div>
+            </div>
+
+            {/* Distribution */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px" }}>
+              {[
+                { label: "Exzellent", sub: "70+", count: excellentCount, color: "#09090b", bg: "rgba(255,255,255,0.12)" },
+                { label: "Teiloptimiert", sub: "40\u201369", count: mediumCount, color: "#3f3f46", bg: "rgba(255,255,255,0.08)" },
+                { label: "Kritisch", sub: "< 40", count: criticalCount, color: "#a1a1aa", bg: "rgba(255,255,255,0.05)" },
+                { label: "Ausstehend", sub: "Kein Score", count: pendingCount, color: "#e4e4e7", bg: "rgba(255,255,255,0.03)" },
+              ].map((s) => (
+                <div key={s.label} style={{ background: s.bg, borderRadius: "14px", padding: "16px", border: "1px solid rgba(255,255,255,0.08)", textAlign: "center" }}>
+                  <div style={{ fontSize: "32px", fontWeight: 800, color: "#fafafa", lineHeight: 1 }}>{s.count}</div>
+                  <div style={{ fontSize: "11px", fontWeight: 600, marginTop: "6px", opacity: 0.8, color: "#d4d4d8" }}>{s.label}</div>
+                  <div style={{ fontSize: "9px", opacity: 0.4, marginTop: "2px", color: "#a1a1aa" }}>{s.sub}</div>
+                  <div style={{ marginTop: "10px", height: "3px", borderRadius: "2px", background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                    <div style={{ width: `${totalProducts > 0 ? (s.count / totalProducts) * 100 : 0}%`, height: "100%", background: "#d4d4d8", borderRadius: "2px" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Usage */}
+          <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+              <span style={{ fontSize: "11px", opacity: 0.4, textTransform: "uppercase", letterSpacing: "0.5px" }}>Kontingent</span>
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "#d4d4d8" }}>{usageCount} / {freeLimit}</span>
+            </div>
+            <div style={{ height: "5px", borderRadius: "3px", background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+              <div style={{ width: `${usagePct}%`, height: "100%", borderRadius: "3px", background: "linear-gradient(90deg, #a1a1aa, #ffffff)", transition: "width 0.6s ease" }} />
             </div>
           </div>
         </div>
 
-        {/* Search and Filter Bar */}
-        <Card>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile ? "1fr" : "1fr auto auto",
-              gap: "12px",
-              alignItems: "end",
-            }}
-          >
-            <TextField
-              label="Suche"
-              value={searchValue}
-              onChange={setSearchValue}
-              placeholder="Produkt suchen..."
-              clearButton
-              onClearButtonClick={() => setSearchValue("")}
-              autoComplete="off"
-              labelHidden
-              prefix={<span style={{ opacity: 0.5 }}>Suche</span>}
-            />
-            <Select
-              label="Status"
-              labelHidden
-              options={[
-                { label: "Alle Produkte", value: "all" },
-                { label: "Optimiert (Score 40+)", value: "optimized" },
-                { label: "Exzellent (Score 70+)", value: "excellent" },
-                { label: "Ausstehend", value: "pending" },
-              ]}
-              value={statusFilter}
-              onChange={setStatusFilter}
-            />
-            <Select
-              label="Sortierung"
-              labelHidden
-              options={[
-                { label: "Name (A-Z)", value: "name" },
-                { label: "Score (hoch-niedrig)", value: "score_desc" },
-                { label: "Score (niedrig-hoch)", value: "score_asc" },
-                { label: "Zuletzt bearbeitet", value: "date" },
-              ]}
-              value={sortBy}
-              onChange={setSortBy}
-            />
-          </div>
-          {(searchValue || statusFilter !== "all") && (
-            <div style={{ marginTop: "8px" }}>
-              <InlineStack gap="200" blockAlign="center">
-                <Text variant="bodySm" as="span" tone="subdued">
-                  {filteredProducts.length} von {totalProducts} Produkten
-                </Text>
-                <Button
-                  variant="plain"
-                  size="slim"
-                  onClick={() => {
-                    setSearchValue("");
-                    setStatusFilter("all");
-                  }}
-                >
-                  Filter zurücksetzen
-                </Button>
-              </InlineStack>
-            </div>
-          )}
-        </Card>
+        {!bulkAllowed && (
+          <Banner tone="info" title="Bulk-Automatisierung" action={{ content: "Upgrade", url: "/app/billing" }}>
+            <p>Optimiere alle Produkte gleichzeitig \u2014 ein Pro-Feature.</p>
+          </Banner>
+        )}
 
-        {/* Products — Mobile Cards or Desktop Table */}
+        {/* === SEARCH === */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 180px 180px", gap: "12px", background: "#ffffff", borderRadius: "14px", padding: "16px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)", border: "1px solid #e4e4e7" }}>
+          <TextField label="Suche" value={searchValue} onChange={setSearchValue} placeholder="Produkt, Handle oder Vendor..." clearButton onClearButtonClick={() => setSearchValue("")} autoComplete="off" labelHidden />
+          <Select label="Status" labelHidden options={[
+            { label: "Alle Status", value: "all" },
+            { label: "Exzellent (70+)", value: "excellent" },
+            { label: "Optimiert (40+)", value: "optimized" },
+            { label: "Ausstehend", value: "pending" },
+          ]} value={statusFilter} onChange={setStatusFilter} />
+          <Select label="Sortierung" labelHidden options={[
+            { label: "Name A-Z", value: "name" },
+            { label: "Score hoch \u2192 niedrig", value: "score_desc" },
+            { label: "Score niedrig \u2192 hoch", value: "score_asc" },
+            { label: "Zuletzt bearbeitet", value: "date" },
+          ]} value={sortBy} onChange={setSortBy} />
+        </div>
+
+        {(searchValue || statusFilter !== "all") && (
+          <InlineStack gap="200" blockAlign="center">
+            <Text variant="bodySm" as="span" tone="subdued">{filteredProducts.length} von {totalProducts} Produkten</Text>
+            <Button variant="plain" size="slim" onClick={() => { setSearchValue(""); setStatusFilter("all"); }}>Filter zur\u00fccksetzen</Button>
+          </InlineStack>
+        )}
+
+        {/* === PRODUCT GRID === */}
         {filteredProducts.length > 0 ? (
-          isMobile ? (
-            /* ── MOBILE: Card Layout ── */
-            <BlockStack gap="300">
-              {filteredProducts.map((product) => (
-                <Card key={product.id}>
-                  <BlockStack gap="300">
-                    <InlineStack gap="300" blockAlign="center" wrap={false}>
-                      <div style={{ borderRadius: "10px", overflow: "hidden", flexShrink: 0 }}>
-                        <Thumbnail
-                          source={product.image || ImageIcon}
-                          alt={product.imageAlt || product.title}
-                          size="small"
-                        />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "20px" }}>
+            {filteredProducts.map((product) => {
+              const isOpt = optimizingId === product.shopifyId && optimizeFetcher.state !== "idle";
+              const sc = product.geoScore;
+              const seoTitleLen = (product.seoTitle || product.title).length;
+              const seoDescLen = (product.seoDesc || "").length;
+
+              return (
+                <div key={product.id} style={{
+                  background: "#ffffff", borderRadius: "16px", overflow: "hidden",
+                  border: "1px solid #e4e4e7", boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.02)",
+                  display: "flex", flexDirection: "column",
+                }}>
+                  {/* Image Header */}
+                  <div style={{
+                    height: "160px", position: "relative", borderBottom: "1px solid #e4e4e7",
+                    background: product.image ? `url(${product.image}) center/cover no-repeat` : "linear-gradient(135deg, #f4f4f5, #e4e4e7)",
+                  }}>
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.6) 100%)" }} />
+                    <div style={{ position: "absolute", top: "12px", left: "12px" }}>
+                      <Badge tone={product.status === "ACTIVE" ? "success" : "info"}>{product.status === "ACTIVE" ? "Aktiv" : product.status}</Badge>
+                    </div>
+                    <div style={{ position: "absolute", top: "10px", right: "10px" }}>
+                      <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: sc !== null ? (sc >= 70 ? "#09090b" : sc >= 40 ? "#3f3f46" : "#a1a1aa") : "#e4e4e7", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 12px rgba(0,0,0,0.2)" }}>
+                        <span style={{ fontSize: "16px", fontWeight: 800, color: sc !== null ? (sc >= 70 ? "#ffffff" : sc >= 40 ? "#ffffff" : "#ffffff") : "#a1a1aa" }}>{sc !== null ? sc : "\u2014"}</span>
                       </div>
-                      <BlockStack gap="050">
-                        <Text variant="bodyMd" as="span" fontWeight="semibold">
-                          {product.title}
-                        </Text>
-                        <Text variant="bodySm" as="span" tone="subdued">
-                          /{product.handle}
-                        </Text>
-                      </BlockStack>
-                    </InlineStack>
-                    <InlineStack gap="200" blockAlign="center">
-                      <Badge tone={product.status === "ACTIVE" ? "success" : "info"}>
-                        {product.status === "ACTIVE" ? "Aktiv" : product.status}
-                      </Badge>
-                      <div style={{
-                        display: "inline-flex", alignItems: "center", gap: "6px",
-                        padding: "4px 10px", borderRadius: "20px",
-                        background: `${getScoreColor(product.geoScore)}15`,
-                        border: `1px solid ${getScoreColor(product.geoScore)}30`,
-                      }}>
-                        <div style={{
-                          width: "8px", height: "8px", borderRadius: "50%",
-                          background: getScoreColor(product.geoScore),
-                        }} />
-                        <Text variant="bodySm" as="span" fontWeight="semibold">
-                          {product.geoScore !== null ? `${product.geoScore}/100` : "---"}
-                        </Text>
+                    </div>
+                    <div style={{ position: "absolute", bottom: "12px", left: "14px", right: "14px" }}>
+                      <div style={{ fontSize: "15px", fontWeight: 700, color: "white", textShadow: "0 1px 3px rgba(0,0,0,0.5)", lineHeight: 1.3, maxHeight: "40px", overflow: "hidden" }}>{product.title}</div>
+                    </div>
+                  </div>
+
+                  {/* Body */}
+                  <div style={{ padding: "16px 18px", flex: 1, display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {/* Score Bar */}
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: scoreColor(sc), textTransform: "uppercase", letterSpacing: "0.5px" }}>{scoreLabel(sc)}</span>
+                        <span style={{ fontSize: "11px", fontWeight: 600, color: "#a1a1aa" }}>{sc !== null ? `${sc}/100` : "N/A"}</span>
                       </div>
-                      <Text variant="bodySm" as="span" tone="subdued">
-                        {getScoreLabel(product.geoScore)}
-                      </Text>
-                    </InlineStack>
-                    <InlineStack gap="200">
-                      <Button
-                        size="slim"
-                        onClick={() => handleHealthCheck(product.shopifyId)}
-                        loading={auditingId === product.shopifyId && healthCheckId === product.shopifyId}
-                        disabled={auditingId === product.shopifyId}
+                      <div style={{ height: "6px", borderRadius: "3px", background: "#f4f4f5", overflow: "hidden" }}>
+                        <div style={{ width: sc !== null ? `${sc}%` : "0%", height: "100%", borderRadius: "3px", background: sc !== null ? "linear-gradient(90deg, #3f3f46, #09090b)" : "transparent", transition: "width 0.6s ease" }} />
+                      </div>
+                    </div>
+
+                    {/* Metadata */}
+                    <div style={{ borderTop: "1px solid #f4f4f5", paddingTop: "10px" }}>
+                      <DetailRow label="Handle" value={`/${product.handle}`} mono />
+                      {product.vendor && <DetailRow label="Vendor" value={product.vendor} />}
+                      {product.productType && <DetailRow label="Typ" value={product.productType} />}
+                      <DetailRow label="Varianten" value={`${product.variants}`} />
+                      <DetailRow label="Aktualisiert" value={new Date(product.updatedAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })} />
+                    </div>
+
+                    {/* SEO Indicators */}
+                    <div style={{ borderTop: "1px solid #f4f4f5", paddingTop: "10px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
+                      {[
+                        { ok: seoTitleLen > 0 && seoTitleLen <= 60, warn: seoTitleLen > 60, label: "Titel", sub: `${seoTitleLen} Z.` },
+                        { ok: seoDescLen >= 50 && seoDescLen <= 160, warn: seoDescLen > 0 && (seoDescLen < 50 || seoDescLen > 160), label: "Meta", sub: `${seoDescLen} Z.` },
+                        { ok: sc !== null, warn: false, label: "GEO", sub: sc !== null ? "Aktiv" : "Fehlt" },
+                      ].map((ind) => (
+                        <div key={ind.label} style={{ textAlign: "center" }}>
+                          <div style={{ width: "28px", height: "28px", borderRadius: "8px", margin: "0 auto 4px", background: ind.ok ? "#09090b" : ind.warn ? "#a1a1aa" : "#e4e4e7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: ind.ok ? "#ffffff" : ind.warn ? "#ffffff" : "#52525b" }}>
+                            {ind.ok ? "\u2713" : ind.warn ? "!" : "\u2717"}
+                          </div>
+                          <div style={{ fontSize: "9px", fontWeight: 600, color: "#52525b", textTransform: "uppercase" }}>{ind.label}</div>
+                          <div style={{ fontSize: "9px", color: "#a1a1aa" }}>{ind.sub}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ flex: 1 }} />
+
+                    {/* Actions */}
+                    <div style={{ borderTop: "1px solid #f4f4f5", paddingTop: "14px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                        <Button variant="primary" size="large" fullWidth onClick={() => handleOptimize(product.shopifyId)} loading={isOpt} disabled={isOpt || limitReached}>
+                          {isOpt ? "Optimiert..." : "Optimieren"}
+                        </Button>
+                        <Button size="large" fullWidth onClick={() => navigate(`/app/products/${product.id}`)}>
+                          Details
+                        </Button>
+                      </div>
+                      {/* Context Builder Button */}
+                      <button
+                        type="button"
+                        onClick={() => openBuilder(product)}
+                        style={{
+                          width: "100%", padding: "10px", borderRadius: "10px", cursor: "pointer",
+                          border: "1px dashed #a1a1aa", background: "#f4f4f5",
+                          color: "#18181b", fontSize: "12px", fontWeight: 600,
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                          transition: "all 0.2s ease",
+                        }}
                       >
-                        Health Check
-                      </Button>
-                      <Button
-                        size="slim"
-                        variant="primary"
-                        onClick={() => handleOptimize(product.shopifyId)}
-                        loading={optimizingId === product.shopifyId}
-                        disabled={optimizingId === product.shopifyId || limitReached}
-                      >
-                        Optimieren
-                      </Button>
-                      <Button
-                        size="slim"
-                        variant="plain"
-                        onClick={() => navigate(`/app/products/${product.id}`)}
-                      >
-                        Details
-                      </Button>
-                      <Button
-                        size="slim"
-                        variant="plain"
-                        onClick={() => openInShopify(product.id)}
-                      >
-                        Shopify
-                      </Button>
-                    </InlineStack>
-                  </BlockStack>
-                </Card>
-              ))}
-            </BlockStack>
-          ) : (
-            /* ── DESKTOP: IndexTable Layout ── */
-            <Card padding="0">
-              <IndexTable
-                resourceName={resourceName}
-                itemCount={filteredProducts.length}
-                selectedItemsCount={
-                  allResourcesSelected ? "All" : selectedResources.length
-                }
-                onSelectionChange={handleSelectionChange}
-                headings={[
-                  { title: "Produkt" },
-                  { title: "Status" },
-                  { title: "GEO Score" },
-                  { title: "Bewertung" },
-                  { title: "Aktionen" },
-                ]}
-                promotedBulkActions={promotedBulkActions}
-                selectable
-              >
-                {rowMarkup}
-              </IndexTable>
-            </Card>
-          )
+                        KI Content Builder starten
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ) : (
-          <Card>
-            <Box padding="800">
-              <BlockStack gap="300" inlineAlign="center">
-                <Text variant="headingSm" as="p" alignment="center">
-                  Keine Produkte gefunden
-                </Text>
-                <Text
-                  variant="bodyMd"
-                  as="p"
-                  tone="subdued"
-                  alignment="center"
-                >
-                  Passe deine Suchkriterien oder Filter an.
-                </Text>
-                <Button
-                  onClick={() => {
-                    setSearchValue("");
-                    setStatusFilter("all");
-                  }}
-                >
-                  Filter zurücksetzen
-                </Button>
-              </BlockStack>
-            </Box>
-          </Card>
+          <Card><Box padding="800"><BlockStack gap="300" inlineAlign="center">
+            <Text variant="headingSm" as="p" alignment="center">Keine Produkte gefunden</Text>
+            <Button onClick={() => { setSearchValue(""); setStatusFilter("all"); }}>Filter zur\u00fccksetzen</Button>
+          </BlockStack></Box></Card>
         )}
 
         {/* Pagination */}
         {(pageInfo.hasPreviousPage || pageInfo.hasNextPage) && (
-          <InlineStack align="center" gap="400" blockAlign="center">
-            {pageInfo.hasPreviousPage && (
-              <Button
-                url={`/app/products?cursor=${pageInfo.startCursor}&direction=prev`}
-              >
-                Vorherige Seite
-              </Button>
-            )}
-            <Text variant="bodySm" as="span" tone="subdued">
-              Seite
-            </Text>
-            {pageInfo.hasNextPage && (
-              <Button
-                url={`/app/products?cursor=${pageInfo.endCursor}&direction=next`}
-              >
-                Nächste Seite
-              </Button>
-            )}
-          </InlineStack>
+          <div style={{ display: "flex", justifyContent: "center", gap: "16px", padding: "12px 0" }}>
+            {pageInfo.hasPreviousPage && <Button url={`/app/products?cursor=${pageInfo.startCursor}&direction=prev`}>Vorherige</Button>}
+            <Text variant="bodySm" as="span" tone="subdued">Seite</Text>
+            {pageInfo.hasNextPage && <Button url={`/app/products?cursor=${pageInfo.endCursor}&direction=next`}>N\u00e4chste</Button>}
+          </div>
         )}
       </BlockStack>
+
+      {/* ===================================
+          CONTEXT BUILDER MODAL
+         =================================== */}
+      <Modal
+        open={builderActive}
+        onClose={() => { setBuilderActive(false); resetBuilder(); }}
+        title={`KI Content Builder \u2014 ${builderProductTitle}`}
+        large
+        primaryAction={
+          builderStep < QUIZ_STEPS.length - 1
+            ? { content: "Weiter \u2192", onAction: () => setBuilderStep((s) => s + 1), disabled: !canProceed }
+            : { content: isOptimizing ? "KI optimiert..." : "Jetzt optimieren & deployen", onAction: handleBuilderSubmit, loading: isOptimizing, disabled: !canProceed }
+        }
+        secondaryActions={[
+          ...(builderStep > 0 ? [{ content: "\u2190 Zur\u00fcck", onAction: () => setBuilderStep((s) => s - 1) }] : []),
+          { content: "Abbrechen", onAction: () => { setBuilderActive(false); resetBuilder(); } },
+        ]}
+      >
+        <Modal.Section>
+          <BlockStack gap="500">
+            {/* Progress Header */}
+            <div style={{
+              background: "#f4f4f5", borderRadius: "12px", padding: "16px 20px",
+              border: "1px solid #e4e4e7",
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {QUIZ_STEPS.map((_, i) => (
+                    <div key={i} style={{
+                      width: "32px", height: "32px", borderRadius: "50%",
+                      background: i <= builderStep ? "#09090b" : "#ffffff",
+                      color: i <= builderStep ? "#ffffff" : "#a1a1aa",
+                      border: i <= builderStep ? "none" : "2px solid #e4e4e7",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "13px", fontWeight: 700,
+                      transition: "all 0.3s ease",
+                    }}>
+                      {i < builderStep ? "\u2713" : i + 1}
+                    </div>
+                  ))}
+                </div>
+                <span style={{ fontSize: "12px", fontWeight: 600, color: "#18181b" }}>{Math.round(builderProgress)}%</span>
+              </div>
+              <ProgressBar progress={builderProgress} size="small" tone="primary" />
+            </div>
+
+            {/* Step Title */}
+            <BlockStack gap="100">
+              <Text variant="headingLg" as="h2">{QUIZ_STEPS[builderStep]?.title}</Text>
+              <Text variant="bodyMd" tone="subdued">{QUIZ_STEPS[builderStep]?.subtitle}</Text>
+            </BlockStack>
+
+            <Divider />
+
+            {/* Step 0: Description + Keywords */}
+            {builderStep === 0 && (
+              <BlockStack gap="400">
+                <div style={{
+                  background: "#f4f4f5", borderRadius: "10px", padding: "14px 16px",
+                  border: "1px solid #e4e4e7", display: "flex", gap: "10px", alignItems: "flex-start",
+                }}>
+                  <span style={{ fontSize: "20px", flexShrink: 0 }}>{"\uD83D\uDCA1"}</span>
+                  <div>
+                    <Text variant="bodySm" fontWeight="semibold" as="p">Warum braucht die KI diese Info?</Text>
+                    <Text variant="bodySm" tone="subdued" as="p">
+                      Je mehr Kontext du gibst, desto besser wird der generierte Content.
+                      Die KI erstellt daraus SEO-optimierte Titel, Beschreibungen und strukturierte Daten.
+                    </Text>
+                  </div>
+                </div>
+                <TextField
+                  label="Was ist dieses Produkt?"
+                  placeholder="z.B. Ein handgefertigter Lederg\u00fcrtel aus italienischem Vollnarbenleder mit Messingschnalle"
+                  value={builderData.description}
+                  onChange={(v) => setBuilderData((d) => ({ ...d, description: v }))}
+                  multiline={3} autoComplete="off"
+                  helpText={`${builderData.description.length} Zeichen \u2014 mindestens 10 ben\u00f6tigt`}
+                />
+                <TextField
+                  label="Wichtige Keywords (optional)"
+                  placeholder="z.B. Lederg\u00fcrtel, Herreng\u00fcrtel, handgemacht, italienisches Leder"
+                  value={builderData.keywords}
+                  onChange={(v) => setBuilderData((d) => ({ ...d, keywords: v }))}
+                  autoComplete="off"
+                  helpText="Kommagetrennte Suchbegriffe, die Kunden verwenden w\u00fcrden"
+                />
+              </BlockStack>
+            )}
+
+            {/* Step 1: USP & Features */}
+            {builderStep === 1 && (
+              <BlockStack gap="400">
+                <div style={{
+                  background: "#f4f4f5", borderRadius: "10px", padding: "14px 16px",
+                  border: "1px solid #e4e4e7", display: "flex", gap: "10px", alignItems: "flex-start",
+                }}>
+                  <span style={{ fontSize: "20px", flexShrink: 0 }}>{"\uD83C\uDFAF"}</span>
+                  <div>
+                    <Text variant="bodySm" fontWeight="semibold" as="p">USP = Dein Wettbewerbsvorteil</Text>
+                    <Text variant="bodySm" tone="subdued" as="p">
+                      Was macht dein Produkt besser als die Konkurrenz? Material, Herstellung, Haltbarkeit, Design?
+                    </Text>
+                  </div>
+                </div>
+                <TextField
+                  label="USP \u2014 Was macht dieses Produkt besonders?"
+                  placeholder="z.B. Handgen\u00e4ht in einer Manufaktur in der Toskana. 5mm dick. H\u00e4lt ein Leben lang."
+                  value={builderData.usp}
+                  onChange={(v) => setBuilderData((d) => ({ ...d, usp: v }))}
+                  multiline={4} autoComplete="off"
+                  helpText="Material, Qualit\u00e4t, Besonderheiten, Vorteile"
+                />
+              </BlockStack>
+            )}
+
+            {/* Step 2: Audience & Vibe */}
+            {builderStep === 2 && (
+              <BlockStack gap="400">
+                <Select
+                  label="Prim\u00e4re Zielgruppe"
+                  options={AUDIENCE_OPTIONS}
+                  value={builderData.audience}
+                  onChange={(v) => setBuilderData((d) => ({ ...d, audience: v }))}
+                />
+                <BlockStack gap="200">
+                  <Text variant="bodyMd" fontWeight="semibold">Wie soll das Produkt wirken? (1\u20134 w\u00e4hlen)</Text>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                    {VIBE_OPTIONS.map((vibe) => {
+                      const sel = selectedVibes.includes(vibe);
+                      return (
+                        <button key={vibe} type="button" onClick={() => {
+                          setSelectedVibes((prev) => sel ? prev.filter((v) => v !== vibe) : prev.length < 4 ? [...prev, vibe] : prev);
+                        }} style={{
+                          padding: "8px 16px", borderRadius: "20px", cursor: "pointer",
+                          border: sel ? "2px solid #09090b" : "1px solid #e4e4e7",
+                          background: sel ? "#09090b" : "#ffffff",
+                          color: sel ? "#ffffff" : "#3f3f46",
+                          fontSize: "13px", fontWeight: sel ? 700 : 400,
+                          transition: "all 0.15s ease",
+                        }}>
+                          {sel && "\u2713 "}{vibe}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {selectedVibes.length > 0 && (
+                    <InlineStack gap="100">
+                      <Text variant="bodySm" tone="subdued">Gew\u00e4hlt:</Text>
+                      {selectedVibes.map((v) => <Tag key={v} onRemove={() => setSelectedVibes((p) => p.filter((x) => x !== v))}>{v}</Tag>)}
+                    </InlineStack>
+                  )}
+                </BlockStack>
+
+                {/* Preview of what will be sent */}
+                <div style={{
+                  background: "#f4f4f5", borderRadius: "10px", padding: "14px 16px",
+                  border: "1px solid #e4e4e7", marginTop: "8px",
+                }}>
+                  <Text variant="bodySm" fontWeight="semibold" as="p" tone="subdued">Zusammenfassung f\u00fcr die KI:</Text>
+                  <div style={{ marginTop: "8px", fontSize: "12px", color: "#3f3f46", lineHeight: 1.6 }}>
+                    <div><strong>Produkt:</strong> {builderProductTitle}</div>
+                    <div><strong>Beschreibung:</strong> {builderData.description || "\u2014"}</div>
+                    <div><strong>USP:</strong> {builderData.usp || "\u2014"}</div>
+                    <div><strong>Zielgruppe:</strong> {builderData.audience || "\u2014"}</div>
+                    <div><strong>Vibe:</strong> {selectedVibes.join(", ") || "\u2014"}</div>
+                    {builderData.keywords && <div><strong>Keywords:</strong> {builderData.keywords}</div>}
+                  </div>
+                </div>
+              </BlockStack>
+            )}
+          </BlockStack>
+        </Modal.Section>
+      </Modal>
     </Page>
   );
 }

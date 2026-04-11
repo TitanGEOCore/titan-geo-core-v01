@@ -325,14 +325,14 @@ function ScoreRing({ score, size = 160, label }) {
   const radius = (size - 16) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
-  const color = score >= 80 ? "#10b981" : score >= 60 ? "#f59e0b" : score >= 40 ? "#f97316" : "#ef4444";
+  const color = score >= 80 ? "#09090b" : score >= 60 ? "#3f3f46" : score >= 40 ? "#71717a" : "#a1a1aa";
 
   return (
     <div style={{ textAlign: "center" }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <circle
           cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke="#1e293b" strokeWidth="10"
+          fill="none" stroke="#18181b" strokeWidth="10"
         />
         <circle
           cx={size / 2} cy={size / 2} r={radius}
@@ -346,7 +346,7 @@ function ScoreRing({ score, size = 160, label }) {
         <text x={size / 2} y={size / 2 - 8} textAnchor="middle" fill="white" fontSize="36" fontWeight="800">
           {score}
         </text>
-        <text x={size / 2} y={size / 2 + 18} textAnchor="middle" fill="#94a3b8" fontSize="13" fontWeight="500">
+        <text x={size / 2} y={size / 2 + 18} textAnchor="middle" fill="#a1a1aa" fontSize="13" fontWeight="500">
           von 100
         </text>
       </svg>
@@ -362,11 +362,11 @@ function MiniScoreRing({ score, size = 64 }) {
   const radius = (size - 8) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
-  const color = score >= 80 ? "#10b981" : score >= 60 ? "#f59e0b" : score >= 40 ? "#f97316" : "#ef4444";
+  const color = score >= 80 ? "#09090b" : score >= 60 ? "#3f3f46" : score >= 40 ? "#71717a" : "#a1a1aa";
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#1e293b" strokeWidth="5" />
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#18181b" strokeWidth="5" />
       <circle
         cx={size / 2} cy={size / 2} r={radius}
         fill="none" stroke={color} strokeWidth="5"
@@ -555,12 +555,12 @@ export default function ShopAnalysis() {
                       <div key={i} style={{
                         display: "flex", alignItems: "center", gap: "8px",
                         padding: "10px 14px", borderRadius: "10px",
-                        background: "linear-gradient(135deg, #f8fafc, #f1f5f9)",
-                        border: "1px solid #e2e8f0",
+                        background: "linear-gradient(135deg, #f4f4f5, #f4f4f5)",
+                        border: "1px solid #e4e4e7",
                       }}>
                         <div style={{
                           width: "24px", height: "24px", borderRadius: "50%",
-                          background: "linear-gradient(135deg, #6366f1, #06b6d4)",
+                          background: "linear-gradient(135deg, #09090b, #3f3f46)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           color: "white", fontSize: "12px", fontWeight: "700", flexShrink: 0,
                         }}>{i + 1}</div>
@@ -590,7 +590,7 @@ export default function ShopAnalysis() {
           <Card>
             <div style={{
               padding: "48px 24px", textAlign: "center",
-              background: "linear-gradient(180deg, #0f172a, #1e1b4b)",
+              background: "linear-gradient(180deg, #09090b, #18181b)",
               borderRadius: "12px", color: "white",
             }}>
               <Spinner size="large" />
@@ -609,21 +609,21 @@ export default function ShopAnalysis() {
                       display: "flex", alignItems: "center", gap: "12px",
                       padding: "10px 16px", marginBottom: "6px",
                       borderRadius: "10px",
-                      background: isActive ? "rgba(99, 102, 241, 0.2)" : isDone ? "rgba(16, 185, 129, 0.1)" : "rgba(255,255,255,0.03)",
-                      border: isActive ? "1px solid rgba(99, 102, 241, 0.4)" : "1px solid transparent",
+                      background: isActive ? "rgba(9, 9, 11, 0.2)" : isDone ? "rgba(9, 9, 11, 0.1)" : "rgba(255,255,255,0.03)",
+                      border: isActive ? "1px solid rgba(9, 9, 11, 0.4)" : "1px solid transparent",
                       transition: "all 0.3s ease",
                     }}>
                       <div style={{
                         width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontSize: "12px", fontWeight: "700",
-                        background: isDone ? "#10b981" : isActive ? "linear-gradient(135deg, #6366f1, #06b6d4)" : "#334155",
+                        background: isDone ? "#09090b" : isActive ? "linear-gradient(135deg, #09090b, #3f3f46)" : "#3f3f46",
                         color: "white",
                       }}>
                         {isDone ? "\u2713" : i + 1}
                       </div>
                       <span style={{
-                        color: isActive ? "#a5b4fc" : isDone ? "#6ee7b7" : "#64748b",
+                        color: isActive ? "#a1a1aa" : isDone ? "#a1a1aa" : "#71717a",
                         fontWeight: isActive ? 600 : 400,
                         fontSize: "14px",
                       }}>
@@ -671,10 +671,10 @@ export default function ShopAnalysis() {
 
               {/* Overall Score Card (Dark) */}
               <div style={{
-                background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)",
+                background: "linear-gradient(135deg, #09090b 0%, #18181b 50%, #09090b 100%)",
                 borderRadius: "16px", padding: "40px 32px",
-                border: "1px solid rgba(99, 102, 241, 0.2)",
-                boxShadow: "0 0 40px rgba(99, 102, 241, 0.1)",
+                border: "1px solid rgba(9, 9, 11, 0.2)",
+                boxShadow: "0 0 40px rgba(9, 9, 11, 0.1)",
               }}>
                 <div style={{
                   display: "flex", flexWrap: "wrap", alignItems: "center",
@@ -691,7 +691,7 @@ export default function ShopAnalysis() {
                        (data.overallScore || 0) >= 40 ? "Deutlicher Optimierungsbedarf" :
                        "Dringender Handlungsbedarf"}
                     </h2>
-                    <p style={{ color: "#94a3b8", fontSize: "15px", lineHeight: 1.6 }}>
+                    <p style={{ color: "#a1a1aa", fontSize: "15px", lineHeight: 1.6 }}>
                       {data.summary || "Analyse abgeschlossen."}
                     </p>
                   </div>
@@ -713,7 +713,7 @@ export default function ShopAnalysis() {
                       border: "1px solid rgba(255,255,255,0.06)",
                     }}>
                       <MiniScoreRing score={item.score} />
-                      <div style={{ color: "#94a3b8", fontSize: "12px", marginTop: "8px", fontWeight: 600 }}>
+                      <div style={{ color: "#a1a1aa", fontSize: "12px", marginTop: "8px", fontWeight: 600 }}>
                         {item.label}
                       </div>
                     </div>
@@ -803,9 +803,9 @@ export default function ShopAnalysis() {
                             <InlineStack gap="300" blockAlign="center">
                               <div style={{
                                 width: "36px", height: "36px", borderRadius: "50%", flexShrink: 0,
-                                background: i === 0 ? "linear-gradient(135deg, #ef4444, #f97316)" :
-                                  i === 1 ? "linear-gradient(135deg, #f59e0b, #f97316)" :
-                                  "linear-gradient(135deg, #6366f1, #06b6d4)",
+                                background: i === 0 ? "linear-gradient(135deg, #a1a1aa, #71717a)" :
+                                  i === 1 ? "linear-gradient(135deg, #3f3f46, #71717a)" :
+                                  "linear-gradient(135deg, #09090b, #3f3f46)",
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 color: "white", fontWeight: 800, fontSize: "16px",
                               }}>
@@ -857,9 +857,9 @@ export default function ShopAnalysis() {
                           alignItems: "center",
                           gap: "16px",
                           padding: "12px 16px",
-                          background: i % 2 === 0 ? "#fafbfc" : "#fff",
+                          background: i % 2 === 0 ? "#fafafa" : "#fff",
                           borderRadius: "10px",
-                          border: "1px solid #f1f5f9",
+                          border: "1px solid #f4f4f5",
                         }}>
                           <Thumbnail
                             source={cp.image || ""}
@@ -896,8 +896,8 @@ export default function ShopAnalysis() {
                   {(data.keywordOpportunities || []).map((kw, i) => (
                     <div key={i} style={{
                       padding: "14px 18px", borderRadius: "12px",
-                      background: i % 2 === 0 ? "#f8fafc" : "white",
-                      border: "1px solid #f1f5f9",
+                      background: i % 2 === 0 ? "#f4f4f5" : "white",
+                      border: "1px solid #f4f4f5",
                     }}>
                       <BlockStack gap="200">
                         <InlineStack align="space-between" blockAlign="center">
@@ -915,7 +915,7 @@ export default function ShopAnalysis() {
                             {kw.matchingProducts.map((title, j) => (
                               <span key={j} style={{
                                 padding: "3px 10px", borderRadius: "100px",
-                                background: "#ede9fe", color: "#4f46e5",
+                                background: "#f4f4f5", color: "#09090b",
                                 fontSize: "12px", fontWeight: 600,
                               }}>{title}</span>
                             ))}

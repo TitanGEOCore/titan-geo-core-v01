@@ -247,7 +247,7 @@ export default function Onboarding() {
           <div
             style={{
               height: "4px",
-              background: "rgba(99, 102, 241, 0.1)",
+              background: "rgba(9, 9, 11, 0.1)",
               borderRadius: "4px 4px 0 0",
               overflow: "hidden",
             }}
@@ -257,7 +257,7 @@ export default function Onboarding() {
                 height: "100%",
                 width: `${progressPercent}%`,
                 background:
-                  "linear-gradient(90deg, var(--titan-primary, #6366f1), var(--titan-accent, #06b6d4))",
+                  "linear-gradient(90deg, var(--titan-primary, #09090b), var(--titan-accent, #3f3f46))",
                 transition: "width 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
                 borderRadius: "4px",
               }}
@@ -290,10 +290,10 @@ export default function Onboarding() {
                       borderRadius: "5px",
                       background:
                         i === step
-                          ? "linear-gradient(90deg, var(--titan-primary, #6366f1), var(--titan-accent, #06b6d4))"
+                          ? "linear-gradient(90deg, var(--titan-primary, #09090b), var(--titan-accent, #3f3f46))"
                           : i < step
-                            ? "var(--titan-primary, #6366f1)"
-                            : "rgba(99, 102, 241, 0.15)",
+                            ? "var(--titan-primary, #09090b)"
+                            : "rgba(9, 9, 11, 0.15)",
                       transition:
                         "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                       cursor: i < step ? "pointer" : "default",
@@ -458,7 +458,7 @@ export default function Onboarding() {
                               height: "24px",
                               borderRadius: "50%",
                               background:
-                                "linear-gradient(135deg, var(--titan-primary, #6366f1), var(--titan-accent, #06b6d4))",
+                                "linear-gradient(135deg, var(--titan-primary, #09090b), var(--titan-accent, #3f3f46))",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
@@ -679,8 +679,8 @@ export default function Onboarding() {
                             cursor: "pointer",
                             border:
                               selectedTemplate === template.name
-                                ? "2px solid var(--titan-primary, #6366f1)"
-                                : "1px solid rgba(99, 102, 241, 0.1)",
+                                ? "2px solid var(--titan-primary, #09090b)"
+                                : "1px solid rgba(9, 9, 11, 0.1)",
                             borderRadius: "12px",
                             transition: "all 0.2s ease",
                           }}

@@ -183,10 +183,10 @@ function saveTrackingData(data) {
 }
 
 function positionColor(pos) {
-  if (pos <= 3) return "#10b981";
-  if (pos <= 10) return "#06b6d4";
-  if (pos <= 30) return "#f59e0b";
-  return "#ef4444";
+  if (pos <= 3) return "#09090b";
+  if (pos <= 10) return "#3f3f46";
+  if (pos <= 30) return "#3f3f46";
+  return "#a1a1aa";
 }
 
 function positionLabel(pos) {
@@ -197,10 +197,10 @@ function positionLabel(pos) {
 }
 
 function trendIcon(trend) {
-  if (trend === "up") return { icon: "\u2191", color: "#10b981", label: "Steigend" };
-  if (trend === "down") return { icon: "\u2193", color: "#ef4444", label: "Fallend" };
-  if (trend === "new") return { icon: "\u2605", color: "#6366f1", label: "Neu" };
-  return { icon: "\u2192", color: "#94a3b8", label: "Stabil" };
+  if (trend === "up") return { icon: "\u2191", color: "#09090b", label: "Steigend" };
+  if (trend === "down") return { icon: "\u2193", color: "#a1a1aa", label: "Fallend" };
+  if (trend === "new") return { icon: "\u2605", color: "#09090b", label: "Neu" };
+  return { icon: "\u2192", color: "#a1a1aa", label: "Stabil" };
 }
 
 /* ─── Filter-Optionen ─── */
@@ -381,17 +381,17 @@ export default function RankingTracker() {
                       style={{
                         padding: "10px",
                         cursor: "pointer",
-                        border: isSelected ? "2px solid #6366f1" : "1px solid rgba(99, 102, 241, 0.08)",
-                        background: isSelected ? "linear-gradient(145deg, #eef2ff 0%, #e0e7ff 100%)" : undefined,
+                        border: isSelected ? "2px solid #09090b" : "1px solid rgba(9, 9, 11, 0.08)",
+                        background: isSelected ? "linear-gradient(145deg, #fafafa 0%, #f4f4f5 100%)" : undefined,
                       }}
                     >
                       <BlockStack gap="100">
                         {p.image ? (
-                          <div style={{ width: "100%", height: "60px", borderRadius: "6px", overflow: "hidden", background: "#f8fafc" }}>
+                          <div style={{ width: "100%", height: "60px", borderRadius: "6px", overflow: "hidden", background: "#f4f4f5" }}>
                             <img src={p.image} alt={p.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           </div>
                         ) : (
-                          <div style={{ width: "100%", height: "60px", borderRadius: "6px", background: "linear-gradient(135deg, #e0e7ff, #ddd6fe)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>
+                          <div style={{ width: "100%", height: "60px", borderRadius: "6px", background: "linear-gradient(135deg, #f4f4f5, #e4e4e7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>
                             &#128722;
                           </div>
                         )}
@@ -516,15 +516,15 @@ export default function RankingTracker() {
                           style={{
                             padding: "6px 14px",
                             cursor: "pointer",
-                            background: positionFilter === f.key ? "linear-gradient(135deg, #6366f1, #06b6d4)" : undefined,
-                            color: positionFilter === f.key ? "white" : "#475569",
+                            background: positionFilter === f.key ? "linear-gradient(135deg, #09090b, #3f3f46)" : undefined,
+                            color: positionFilter === f.key ? "white" : "#52525b",
                             fontWeight: 600, fontSize: "12px", borderRadius: "100px",
                           }}
                         >
                           {f.label}
                         </div>
                       ))}
-                      <div style={{ width: "1px", background: "#e2e8f0", margin: "0 4px" }} />
+                      <div style={{ width: "1px", background: "#e4e4e7", margin: "0 4px" }} />
                       {TREND_FILTERS.map(f => (
                         <div
                           key={f.key}
@@ -533,8 +533,8 @@ export default function RankingTracker() {
                           style={{
                             padding: "6px 14px",
                             cursor: "pointer",
-                            background: trendFilter === f.key ? "linear-gradient(135deg, #6366f1, #06b6d4)" : undefined,
-                            color: trendFilter === f.key ? "white" : "#475569",
+                            background: trendFilter === f.key ? "linear-gradient(135deg, #09090b, #3f3f46)" : undefined,
+                            color: trendFilter === f.key ? "white" : "#52525b",
                             fontWeight: 600, fontSize: "12px", borderRadius: "100px",
                           }}
                         >
@@ -549,8 +549,8 @@ export default function RankingTracker() {
                           className="titan-card-premium"
                           style={{
                             padding: "6px 14px", cursor: "pointer",
-                            background: productFilter === "alle_produkte" ? "linear-gradient(135deg, #6366f1, #06b6d4)" : undefined,
-                            color: productFilter === "alle_produkte" ? "white" : "#475569",
+                            background: productFilter === "alle_produkte" ? "linear-gradient(135deg, #09090b, #3f3f46)" : undefined,
+                            color: productFilter === "alle_produkte" ? "white" : "#52525b",
                             fontWeight: 600, fontSize: "12px", borderRadius: "100px",
                           }}
                         >
@@ -563,8 +563,8 @@ export default function RankingTracker() {
                             className="titan-card-premium"
                             style={{
                               padding: "6px 14px", cursor: "pointer",
-                              background: productFilter === name ? "linear-gradient(135deg, #6366f1, #06b6d4)" : undefined,
-                              color: productFilter === name ? "white" : "#475569",
+                              background: productFilter === name ? "linear-gradient(135deg, #09090b, #3f3f46)" : undefined,
+                              color: productFilter === name ? "white" : "#52525b",
                               fontWeight: 600, fontSize: "12px", borderRadius: "100px",
                             }}
                           >
@@ -603,14 +603,14 @@ export default function RankingTracker() {
                             </div>
                             <div style={{ flex: 1 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                                <span style={{ fontWeight: 700, fontSize: "15px", color: "#0f172a" }}>{r.keyword}</span>
+                                <span style={{ fontWeight: 700, fontSize: "15px", color: "#09090b" }}>{r.keyword}</span>
                                 <span style={{ color: t.color, fontWeight: 700, fontSize: "14px" }} title={t.label}>{t.icon}</span>
                               </div>
                               <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
                                 {r.difficulty === "high" ? <Badge tone="critical">Schwierigkeit: Hoch</Badge> :
                                  r.difficulty === "medium" ? <Badge tone="warning">Schwierigkeit: Mittel</Badge> :
                                  <Badge tone="success">Schwierigkeit: Niedrig</Badge>}
-                                <span style={{ fontSize: "12px", color: "#94a3b8" }}>Suchvolumen: {r.searchVolume}</span>
+                                <span style={{ fontSize: "12px", color: "#a1a1aa" }}>Suchvolumen: {r.searchVolume}</span>
                               </div>
                             </div>
                             {/* Positions-Balken */}
@@ -624,7 +624,7 @@ export default function RankingTracker() {
                                   }}
                                 />
                               </div>
-                              <div style={{ fontSize: "10px", color: "#94a3b8", textAlign: "center", marginTop: "2px" }}>
+                              <div style={{ fontSize: "10px", color: "#a1a1aa", textAlign: "center", marginTop: "2px" }}>
                                 {positionLabel(r.estimatedPosition)}
                               </div>
                             </div>
@@ -632,7 +632,7 @@ export default function RankingTracker() {
 
                           {/* Verlinktes Produkt */}
                           {r.linkedProductTitle && (
-                            <div style={{ background: "#f8fafc", borderRadius: "8px", padding: "8px 12px", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div style={{ background: "#f4f4f5", borderRadius: "8px", padding: "8px 12px", display: "flex", alignItems: "center", gap: "8px" }}>
                               <Badge tone="info">Produkt</Badge>
                               <Text variant="bodySm" fontWeight="semibold">{r.linkedProductTitle}</Text>
                             </div>
@@ -673,7 +673,7 @@ export default function RankingTracker() {
                                   );
                                 })}
                               </div>
-                              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "#a1a1aa", marginTop: "2px" }}>
                                 <span>{new Date(history[0]?.date).toLocaleDateString("de-DE")}</span>
                                 <span>{new Date(history[history.length - 1]?.date).toLocaleDateString("de-DE")}</span>
                               </div>
@@ -718,16 +718,16 @@ export default function RankingTracker() {
                                 <Text variant="bodySm" fontWeight="semibold" as="h4">Alternative Keywords:</Text>
                                 {r.alternatives.map((alt, ai) => (
                                   <div key={ai} style={{
-                                    background: "#f8fafc", borderRadius: "8px", padding: "10px 14px",
+                                    background: "#f4f4f5", borderRadius: "8px", padding: "10px 14px",
                                     display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px",
                                     flexWrap: "wrap",
                                   }}>
                                     <div style={{ flex: 1 }}>
-                                      <div style={{ fontWeight: 600, fontSize: "13px", color: "#0f172a" }}>{alt.keyword}</div>
-                                      <div style={{ fontSize: "12px", color: "#64748b", marginTop: "2px" }}>
+                                      <div style={{ fontWeight: 600, fontSize: "13px", color: "#09090b" }}>{alt.keyword}</div>
+                                      <div style={{ fontSize: "12px", color: "#71717a", marginTop: "2px" }}>
                                         Position ~{alt.estimatedPosition} | Volumen: {alt.searchVolume}
                                       </div>
-                                      <div style={{ fontSize: "12px", color: "#475569", marginTop: "4px" }}>{alt.reason}</div>
+                                      <div style={{ fontSize: "12px", color: "#52525b", marginTop: "4px" }}>{alt.reason}</div>
                                     </div>
                                     <Button
                                       size="slim"
@@ -831,7 +831,7 @@ export default function RankingTracker() {
           >
             <Modal.Section>
               <BlockStack gap="400">
-                <div style={{ background: "#f0fdf4", borderRadius: "8px", padding: "12px", border: "1px solid rgba(16,185,129,0.2)" }}>
+                <div style={{ background: "#f4f4f5", borderRadius: "8px", padding: "12px", border: "1px solid rgba(9,9,11,0.2)" }}>
                   <Text variant="bodySm" fontWeight="semibold">Keyword-Dichte: {contentModal.content.keywordDensity}</Text>
                   <Text variant="bodySm" tone="subdued">{contentModal.content.placementNotes}</Text>
                 </div>
@@ -839,7 +839,7 @@ export default function RankingTracker() {
                 <BlockStack gap="300">
                   <div>
                     <Text variant="bodySm" fontWeight="bold">Optimierter Titel:</Text>
-                    <div style={{ background: "#f8fafc", padding: "10px", borderRadius: "6px", marginTop: "4px", fontSize: "14px" }}>
+                    <div style={{ background: "#f4f4f5", padding: "10px", borderRadius: "6px", marginTop: "4px", fontSize: "14px" }}>
                       {contentModal.content.optimizedTitle}
                     </div>
                     <div style={{ marginTop: "4px" }}>
@@ -849,7 +849,7 @@ export default function RankingTracker() {
 
                   <div>
                     <Text variant="bodySm" fontWeight="bold">Meta-Titel:</Text>
-                    <div style={{ background: "#f8fafc", padding: "10px", borderRadius: "6px", marginTop: "4px", fontSize: "14px" }}>
+                    <div style={{ background: "#f4f4f5", padding: "10px", borderRadius: "6px", marginTop: "4px", fontSize: "14px" }}>
                       {contentModal.content.optimizedMetaTitle}
                     </div>
                     <div style={{ marginTop: "4px" }}>
@@ -859,7 +859,7 @@ export default function RankingTracker() {
 
                   <div>
                     <Text variant="bodySm" fontWeight="bold">Meta-Beschreibung:</Text>
-                    <div style={{ background: "#f8fafc", padding: "10px", borderRadius: "6px", marginTop: "4px", fontSize: "14px" }}>
+                    <div style={{ background: "#f4f4f5", padding: "10px", borderRadius: "6px", marginTop: "4px", fontSize: "14px" }}>
                       {contentModal.content.optimizedMetaDescription}
                     </div>
                     <div style={{ marginTop: "4px" }}>
@@ -870,9 +870,9 @@ export default function RankingTracker() {
                   <div>
                     <Text variant="bodySm" fontWeight="bold">Optimierte Beschreibung:</Text>
                     <div style={{
-                      background: "#f8fafc", padding: "14px", borderRadius: "6px", marginTop: "4px",
+                      background: "#f4f4f5", padding: "14px", borderRadius: "6px", marginTop: "4px",
                       fontSize: "13px", lineHeight: "1.7", maxHeight: "300px", overflowY: "auto",
-                      border: "1px solid #e2e8f0",
+                      border: "1px solid #e4e4e7",
                     }}>
                       <div dangerouslySetInnerHTML={{ __html: contentModal.content.optimizedDescription }} />
                     </div>

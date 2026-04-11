@@ -257,11 +257,11 @@ export const loader = async ({ request }) => {
 
     // ── Category Scores ──
     const categories = {
-      meta: { label: "Meta-Daten", icon: "M", color: "#6366f1", checks: [] },
-      bilder: { label: "Bilder & Medien", icon: "B", color: "#06b6d4", checks: [] },
-      content: { label: "Content-Qualität", icon: "C", color: "#10b981", checks: [] },
-      technik: { label: "Technisches SEO", icon: "T", color: "#f59e0b", checks: [] },
-      geo: { label: "GEO-Optimierung", icon: "G", color: "#8b5cf6", checks: [] },
+      meta: { label: "Meta-Daten", icon: "M", color: "#09090b", checks: [] },
+      bilder: { label: "Bilder & Medien", icon: "B", color: "#3f3f46", checks: [] },
+      content: { label: "Content-Qualität", icon: "C", color: "#09090b", checks: [] },
+      technik: { label: "Technisches SEO", icon: "T", color: "#3f3f46", checks: [] },
+      geo: { label: "GEO-Optimierung", icon: "G", color: "#18181b", checks: [] },
     };
 
     for (const [key, check] of Object.entries(serializedChecks)) {
@@ -350,8 +350,8 @@ function ScoreRing({ score, size = 120, strokeWidth = 8, label, showPercent = tr
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
-  const color = score >= 80 ? "#10b981" : score >= 50 ? "#f59e0b" : "#ef4444";
-  const bgTrack = score >= 80 ? "#d1fae533" : score >= 50 ? "#fef3c733" : "#fee2e233";
+  const color = score >= 80 ? "#09090b" : score >= 50 ? "#3f3f46" : "#a1a1aa";
+  const bgTrack = score >= 80 ? "#f4f4f533" : score >= 50 ? "#f4f4f533" : "#f4f4f533";
   const fontSize = size > 100 ? "28px" : size > 60 ? "18px" : "13px";
 
   return (
@@ -424,7 +424,7 @@ function ProductRow({ product, check }) {
             alt=""
             style={{
               width: 32, height: 32, borderRadius: 6, objectFit: "cover",
-              border: "1px solid #e2e8f0", flexShrink: 0,
+              border: "1px solid #e4e4e7", flexShrink: 0,
             }}
           />
         )}
@@ -465,8 +465,8 @@ function CheckRow({ checkKey, check }) {
   const tone = percentage >= 80 ? "success" : percentage >= 50 ? "warning" : "critical";
   const hasFailed = check.failedProducts.length > 0;
 
-  const severityColor = check.severity === "critical" ? "#ef4444"
-    : check.severity === "warning" ? "#f59e0b" : "#6366f1";
+  const severityColor = check.severity === "critical" ? "#a1a1aa"
+    : check.severity === "warning" ? "#3f3f46" : "#09090b";
 
   return (
     <Box>
@@ -477,7 +477,7 @@ function CheckRow({ checkKey, check }) {
           padding: "10px 12px",
           borderRadius: "10px",
           borderLeft: `3px solid ${severityColor}`,
-          background: open ? "rgba(99, 102, 241, 0.03)" : "transparent",
+          background: open ? "rgba(9, 9, 11, 0.03)" : "transparent",
           transition: "background 0.2s",
         }}
         role={hasFailed ? "button" : undefined}
@@ -643,12 +643,12 @@ export default function Health() {
   } = useLoaderData();
 
   const gradeLabel = useMemo(() => {
-    if (healthScore >= 90) return { text: "Exzellent", emoji: "A+", color: "#10b981" };
-    if (healthScore >= 80) return { text: "Sehr gut", emoji: "A", color: "#10b981" };
-    if (healthScore >= 70) return { text: "Gut", emoji: "B", color: "#22c55e" };
-    if (healthScore >= 50) return { text: "Verbesserbar", emoji: "C", color: "#f59e0b" };
-    if (healthScore >= 30) return { text: "Schwach", emoji: "D", color: "#f97316" };
-    return { text: "Kritisch", emoji: "F", color: "#ef4444" };
+    if (healthScore >= 90) return { text: "Exzellent", emoji: "A+", color: "#09090b" };
+    if (healthScore >= 80) return { text: "Sehr gut", emoji: "A", color: "#09090b" };
+    if (healthScore >= 70) return { text: "Gut", emoji: "B", color: "#09090b" };
+    if (healthScore >= 50) return { text: "Verbesserbar", emoji: "C", color: "#3f3f46" };
+    if (healthScore >= 30) return { text: "Schwach", emoji: "D", color: "#3f3f46" };
+    return { text: "Kritisch", emoji: "F", color: "#a1a1aa" };
   }, [healthScore]);
 
   if (error) {
@@ -712,10 +712,10 @@ export default function Health() {
 
           {/* ── Quick Stats ── */}
           <InlineGrid columns={{ xs: 2, sm: 4 }} gap="400">
-            <StatCard value={Object.keys(checks).length} label="Prüfungen" color="#6366f1" icon="P" />
-            <StatCard value={totalCritical} label="Kritische Fehler" color="#ef4444" icon="!" />
-            <StatCard value={totalWarnings} label="Warnungen" color="#f59e0b" icon="W" />
-            <StatCard value={autoFixableCount} label="Auto-Fix möglich" color="#10b981" icon="F" />
+            <StatCard value={Object.keys(checks).length} label="Prüfungen" color="#09090b" icon="P" />
+            <StatCard value={totalCritical} label="Kritische Fehler" color="#a1a1aa" icon="!" />
+            <StatCard value={totalWarnings} label="Warnungen" color="#3f3f46" icon="W" />
+            <StatCard value={autoFixableCount} label="Auto-Fix möglich" color="#09090b" icon="F" />
           </InlineGrid>
 
           {/* ── Category Score Overview ── */}
@@ -821,10 +821,10 @@ export default function Health() {
               <Divider />
               <InlineGrid columns={{ xs: 1, sm: 2, md: 4 }} gap="300">
                 {[
-                  { to: "/app/meta-generator", title: "Meta-Daten Generator", desc: "Fehlende Titel und Beschreibungen generieren", color: "#6366f1" },
-                  { to: "/app/alt-texts", title: "Alt-Text Generator", desc: "Bild-Alt-Texte mit KI generieren", color: "#06b6d4" },
-                  { to: "/app/content-audit", title: "Content Audit", desc: "Beschreibungen analysieren und verbessern", color: "#10b981" },
-                  { to: "/app/products", title: "GEO-Optimierung", desc: "Produkte für KI-Suche optimieren", color: "#8b5cf6" },
+                  { to: "/app/meta-generator", title: "Meta-Daten Generator", desc: "Fehlende Titel und Beschreibungen generieren", color: "#09090b" },
+                  { to: "/app/alt-texts", title: "Alt-Text Generator", desc: "Bild-Alt-Texte mit KI generieren", color: "#3f3f46" },
+                  { to: "/app/content-audit", title: "Content Audit", desc: "Beschreibungen analysieren und verbessern", color: "#09090b" },
+                  { to: "/app/products", title: "GEO-Optimierung", desc: "Produkte für KI-Suche optimieren", color: "#18181b" },
                 ].map((action) => (
                   <Link key={action.to} to={action.to} style={{ textDecoration: "none" }}>
                     <Box padding="400" background="bg-surface-secondary" borderRadius="200">

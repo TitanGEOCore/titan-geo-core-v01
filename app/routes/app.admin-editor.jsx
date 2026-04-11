@@ -20,21 +20,21 @@ const DEFAULT_PAGE_CONFIGS = {
         title: "Titan GEO Core",
         subtitle: "KI-gestützte GEO-Optimierung für Shopify",
         buttonLabel: "Jetzt starten",
-        bgColor: "#0f172a",
-        textColor: "#f1f5f9",
-        accentColor: "#6366f1",
+        bgColor: "#09090b",
+        textColor: "#f4f4f5",
+        accentColor: "#09090b",
       },
       features: {
         title: "Unsere Features",
-        textColor: "#1e293b",
+        textColor: "#18181b",
         bgColor: "#ffffff",
       },
       cta: {
         title: "Bereit für bessere Rankings?",
         buttonLabel: "Kostenlos testen",
-        bgColor: "#1e1b4b",
+        bgColor: "#18181b",
         textColor: "#ffffff",
-        accentColor: "#8b5cf6",
+        accentColor: "#18181b",
       },
     },
   },
@@ -45,20 +45,20 @@ const DEFAULT_PAGE_CONFIGS = {
       header: {
         title: "Willkommen bei Titan GEO",
         subtitle: "Dein SEO-Cockpit",
-        bgColor: "#0f172a",
-        textColor: "#f1f5f9",
-        accentColor: "#6366f1",
+        bgColor: "#09090b",
+        textColor: "#f4f4f5",
+        accentColor: "#09090b",
       },
       metrics: {
         title: "Deine Kennzahlen",
-        textColor: "#1e293b",
-        bgColor: "#f8fafc",
+        textColor: "#18181b",
+        bgColor: "#f4f4f5",
       },
       quickActions: {
         title: "Schnellaktionen",
         buttonLabel: "Optimierung starten",
-        textColor: "#1e293b",
-        accentColor: "#6366f1",
+        textColor: "#18181b",
+        accentColor: "#09090b",
       },
     },
   },
@@ -69,26 +69,26 @@ const DEFAULT_PAGE_CONFIGS = {
       header: {
         title: "Wähle deinen Plan",
         subtitle: "Skaliere deine SEO-Performance",
-        bgColor: "#0f172a",
-        textColor: "#f1f5f9",
+        bgColor: "#09090b",
+        textColor: "#f4f4f5",
       },
       starter: {
         title: "Starter",
         price: "9,99",
         buttonLabel: "Starter wählen",
-        accentColor: "#3b82f6",
+        accentColor: "#27272a",
       },
       pro: {
         title: "Pro",
         price: "29,99",
         buttonLabel: "Pro wählen",
-        accentColor: "#8b5cf6",
+        accentColor: "#18181b",
       },
       enterprise: {
         title: "Enterprise",
         price: "79,99",
         buttonLabel: "Enterprise wählen",
-        accentColor: "#c026d3",
+        accentColor: "#52525b",
       },
     },
   },
@@ -99,14 +99,14 @@ const DEFAULT_PAGE_CONFIGS = {
       header: {
         title: "Produkt-Optimierung",
         subtitle: "Optimiere deine Produkte für Suchmaschinen",
-        bgColor: "#0f172a",
-        textColor: "#f1f5f9",
-        accentColor: "#06b6d4",
+        bgColor: "#09090b",
+        textColor: "#f4f4f5",
+        accentColor: "#3f3f46",
       },
       list: {
         title: "Deine Produkte",
         buttonLabel: "Alle optimieren",
-        textColor: "#1e293b",
+        textColor: "#18181b",
       },
     },
   },
@@ -117,9 +117,9 @@ const DEFAULT_PAGE_CONFIGS = {
       header: {
         title: "Keyword-Recherche",
         subtitle: "Finde die besten Keywords für deine Produkte",
-        bgColor: "#0f172a",
-        textColor: "#f1f5f9",
-        accentColor: "#10b981",
+        bgColor: "#09090b",
+        textColor: "#f4f4f5",
+        accentColor: "#09090b",
       },
     },
   },
@@ -130,9 +130,9 @@ const DEFAULT_PAGE_CONFIGS = {
       header: {
         title: "SEO Health Check",
         subtitle: "Prüfe den SEO-Zustand deines Shops",
-        bgColor: "#0f172a",
-        textColor: "#f1f5f9",
-        accentColor: "#f59e0b",
+        bgColor: "#09090b",
+        textColor: "#f4f4f5",
+        accentColor: "#3f3f46",
       },
     },
   },
@@ -143,9 +143,9 @@ const DEFAULT_PAGE_CONFIGS = {
       header: {
         title: "Content Audit",
         subtitle: "Analysiere und verbessere deine Inhalte",
-        bgColor: "#0f172a",
-        textColor: "#f1f5f9",
-        accentColor: "#ec4899",
+        bgColor: "#09090b",
+        textColor: "#f4f4f5",
+        accentColor: "#52525b",
       },
     },
   },
@@ -156,9 +156,9 @@ const DEFAULT_PAGE_CONFIGS = {
       header: {
         title: "Meta Generator",
         subtitle: "Erstelle optimierte Meta-Tags mit KI",
-        bgColor: "#0f172a",
-        textColor: "#f1f5f9",
-        accentColor: "#14b8a6",
+        bgColor: "#09090b",
+        textColor: "#f4f4f5",
+        accentColor: "#a1a1aa",
       },
     },
   },
@@ -169,7 +169,7 @@ const DEFAULT_PAGE_CONFIGS = {
       header: {
         title: "Einstellungen",
         subtitle: "Konfiguriere Titan GEO Core",
-        textColor: "#1e293b",
+        textColor: "#18181b",
         bgColor: "#ffffff",
       },
     },
@@ -348,23 +348,23 @@ export default function AdminEditor() {
   // Styles
   const containerStyle = {
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #0a0a0f 0%, #0f172a 30%, #1a1033 60%, #0f172a 100%)",
+    background: "linear-gradient(135deg, #0a0a0f 0%, #09090b 30%, #1a1033 60%, #09090b 100%)",
     padding: "24px",
     fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-    color: "#f1f5f9",
+    color: "#f4f4f5",
   };
 
   const headerStyle = {
     marginBottom: "32px",
     padding: "24px 32px",
-    background: "linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1))",
+    background: "linear-gradient(135deg, rgba(9, 9, 11, 0.15), rgba(24, 24, 27, 0.1))",
     borderRadius: "16px",
-    border: "1px solid rgba(99, 102, 241, 0.2)",
+    border: "1px solid rgba(9, 9, 11, 0.2)",
   };
 
   const cardStyle = {
-    background: "rgba(15, 23, 42, 0.8)",
-    border: "1px solid rgba(99, 102, 241, 0.15)",
+    background: "rgba(9, 9, 11, 0.8)",
+    border: "1px solid rgba(9, 9, 11, 0.15)",
     borderRadius: "14px",
     padding: "20px",
     cursor: "pointer",
@@ -375,9 +375,9 @@ export default function AdminEditor() {
     width: "100%",
     padding: "10px 14px",
     borderRadius: "10px",
-    border: "1px solid rgba(99, 102, 241, 0.3)",
-    background: "rgba(15, 23, 42, 0.6)",
-    color: "#f1f5f9",
+    border: "1px solid rgba(9, 9, 11, 0.3)",
+    background: "rgba(9, 9, 11, 0.6)",
+    color: "#f4f4f5",
     fontSize: "14px",
     outline: "none",
     boxSizing: "border-box",
@@ -387,20 +387,20 @@ export default function AdminEditor() {
     padding: "12px 24px",
     borderRadius: "10px",
     border: "none",
-    background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    background: "linear-gradient(135deg, #09090b, #18181b)",
     color: "#fff",
     fontSize: "14px",
     fontWeight: 700,
     cursor: "pointer",
-    boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)",
+    boxShadow: "0 4px 12px rgba(9, 9, 11, 0.3)",
   };
 
   const btnSecondary = {
     padding: "12px 24px",
     borderRadius: "10px",
-    border: "1px solid rgba(239, 68, 68, 0.4)",
-    background: "rgba(239, 68, 68, 0.1)",
-    color: "#f87171",
+    border: "1px solid rgba(161, 161, 170, 0.4)",
+    background: "rgba(161, 161, 170, 0.1)",
+    color: "#a1a1aa",
     fontSize: "14px",
     fontWeight: 600,
     cursor: "pointer",
@@ -412,10 +412,10 @@ export default function AdminEditor() {
       <div style={headerStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1 style={{ fontSize: "24px", fontWeight: 800, margin: "0 0 6px", color: "#f1f5f9" }}>
+            <h1 style={{ fontSize: "24px", fontWeight: 800, margin: "0 0 6px", color: "#f4f4f5" }}>
               Seiten-Editor
             </h1>
-            <p style={{ color: "#94a3b8", margin: 0, fontSize: "14px" }}>
+            <p style={{ color: "#a1a1aa", margin: 0, fontSize: "14px" }}>
               Inhalte und Design aller App-Seiten anpassen
             </p>
           </div>
@@ -425,9 +425,9 @@ export default function AdminEditor() {
               style={{
                 padding: "10px 20px",
                 borderRadius: "10px",
-                border: "1px solid rgba(99, 102, 241, 0.3)",
-                background: "rgba(99, 102, 241, 0.1)",
-                color: "#818cf8",
+                border: "1px solid rgba(9, 9, 11, 0.3)",
+                background: "rgba(9, 9, 11, 0.1)",
+                color: "#27272a",
                 fontSize: "13px",
                 fontWeight: 600,
                 textDecoration: "none",
@@ -440,9 +440,9 @@ export default function AdminEditor() {
               style={{
                 padding: "10px 20px",
                 borderRadius: "10px",
-                border: "1px solid rgba(99, 102, 241, 0.3)",
-                background: "rgba(99, 102, 241, 0.1)",
-                color: "#818cf8",
+                border: "1px solid rgba(9, 9, 11, 0.3)",
+                background: "rgba(9, 9, 11, 0.1)",
+                color: "#27272a",
                 fontSize: "13px",
                 fontWeight: 600,
                 textDecoration: "none",
@@ -459,7 +459,7 @@ export default function AdminEditor() {
 
         {/* Seitenauswahl */}
         <div>
-          <h2 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "16px", color: "#cbd5e1" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "16px", color: "#d4d4d8" }}>
             Seiten auswählen
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -472,19 +472,19 @@ export default function AdminEditor() {
                   onClick={() => selectPage(key)}
                   style={{
                     ...cardStyle,
-                    borderColor: isSelected ? "rgba(99, 102, 241, 0.6)" : "rgba(99, 102, 241, 0.15)",
+                    borderColor: isSelected ? "rgba(9, 9, 11, 0.6)" : "rgba(9, 9, 11, 0.15)",
                     background: isSelected
-                      ? "rgba(99, 102, 241, 0.15)"
-                      : "rgba(15, 23, 42, 0.8)",
+                      ? "rgba(9, 9, 11, 0.15)"
+                      : "rgba(9, 9, 11, 0.8)",
                     transform: isSelected ? "scale(1.02)" : "none",
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#f1f5f9" }}>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: "#f4f4f5" }}>
                         {config.label}
                       </div>
-                      <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>
+                      <div style={{ fontSize: "12px", color: "#71717a", marginTop: "4px" }}>
                         {config.route}
                       </div>
                     </div>
@@ -494,9 +494,9 @@ export default function AdminEditor() {
                         borderRadius: "20px",
                         fontSize: "10px",
                         fontWeight: 700,
-                        background: "rgba(34, 197, 94, 0.15)",
+                        background: "rgba(9, 9, 11, 0.15)",
                         color: "#4ade80",
-                        border: "1px solid rgba(34, 197, 94, 0.3)",
+                        border: "1px solid rgba(9, 9, 11, 0.3)",
                       }}>
                         Angepasst
                       </span>
@@ -512,7 +512,7 @@ export default function AdminEditor() {
         {selectedPage && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#cbd5e1", margin: 0 }}>
+              <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#d4d4d8", margin: 0 }}>
                 {defaultConfigs[selectedPage]?.label} bearbeiten
               </h2>
               <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -522,7 +522,7 @@ export default function AdminEditor() {
                   </span>
                 )}
                 {saveStatus === "reset" && (
-                  <span style={{ color: "#f59e0b", fontSize: "13px", fontWeight: 600 }}>
+                  <span style={{ color: "#3f3f46", fontSize: "13px", fontWeight: 600 }}>
                     Zurückgesetzt!
                   </span>
                 )}
@@ -540,14 +540,14 @@ export default function AdminEditor() {
                 <div
                   key={sectionKey}
                   style={{
-                    background: "rgba(15, 23, 42, 0.8)",
-                    border: "1px solid rgba(99, 102, 241, 0.15)",
+                    background: "rgba(9, 9, 11, 0.8)",
+                    border: "1px solid rgba(9, 9, 11, 0.15)",
                     borderRadius: "14px",
                     padding: "24px",
                   }}
                 >
                   <h3 style={{
-                    fontSize: "14px", fontWeight: 700, color: "#818cf8",
+                    fontSize: "14px", fontWeight: 700, color: "#27272a",
                     marginBottom: "16px", textTransform: "uppercase",
                     letterSpacing: "0.5px",
                   }}>
@@ -560,7 +560,7 @@ export default function AdminEditor() {
                       }}>
                         <label style={{
                           display: "block", fontSize: "12px", fontWeight: 600,
-                          color: "#94a3b8", marginBottom: "6px",
+                          color: "#a1a1aa", marginBottom: "6px",
                           textTransform: "uppercase", letterSpacing: "0.3px",
                         }}>
                           {fieldLabel(fieldKey)}
@@ -573,7 +573,7 @@ export default function AdminEditor() {
                               onChange={(e) => updateField(sectionKey, fieldKey, e.target.value)}
                               style={{
                                 width: "44px", height: "38px",
-                                borderRadius: "8px", border: "1px solid rgba(99, 102, 241, 0.3)",
+                                borderRadius: "8px", border: "1px solid rgba(9, 9, 11, 0.3)",
                                 background: "transparent", cursor: "pointer", padding: "2px",
                               }}
                             />
@@ -613,14 +613,14 @@ export default function AdminEditor() {
         {/* Live-Vorschau */}
         {selectedPage && (
           <div>
-            <h2 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "16px", color: "#cbd5e1" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "16px", color: "#d4d4d8" }}>
               Live-Vorschau
             </h2>
             <div style={{
               background: "#ffffff",
               borderRadius: "14px",
               overflow: "hidden",
-              border: "1px solid rgba(99, 102, 241, 0.2)",
+              border: "1px solid rgba(9, 9, 11, 0.2)",
               minHeight: "500px",
             }}>
               {Object.entries(editedSections).map(([sectionKey, fields]) => (
@@ -629,14 +629,14 @@ export default function AdminEditor() {
                   style={{
                     padding: "20px",
                     background: fields.bgColor || "#ffffff",
-                    borderBottom: "1px solid #e2e8f0",
+                    borderBottom: "1px solid #e4e4e7",
                   }}
                 >
                   {fields.title && (
                     <div style={{
                       fontSize: "18px",
                       fontWeight: 800,
-                      color: fields.textColor || "#1e293b",
+                      color: fields.textColor || "#18181b",
                       marginBottom: "6px",
                     }}>
                       {fields.title}
@@ -645,7 +645,7 @@ export default function AdminEditor() {
                   {fields.subtitle && (
                     <div style={{
                       fontSize: "12px",
-                      color: fields.textColor ? `${fields.textColor}99` : "#64748b",
+                      color: fields.textColor ? `${fields.textColor}99` : "#71717a",
                       marginBottom: "8px",
                     }}>
                       {fields.subtitle}
@@ -654,7 +654,7 @@ export default function AdminEditor() {
                   {fields.description && (
                     <div style={{
                       fontSize: "11px",
-                      color: fields.textColor ? `${fields.textColor}88` : "#94a3b8",
+                      color: fields.textColor ? `${fields.textColor}88` : "#a1a1aa",
                       marginBottom: "8px",
                       lineHeight: "1.5",
                     }}>
@@ -665,7 +665,7 @@ export default function AdminEditor() {
                     <div style={{
                       fontSize: "22px",
                       fontWeight: 800,
-                      color: fields.accentColor || "#6366f1",
+                      color: fields.accentColor || "#09090b",
                       marginBottom: "8px",
                     }}>
                       {"\u20AC"}{fields.price}
@@ -676,7 +676,7 @@ export default function AdminEditor() {
                       display: "inline-block",
                       padding: "6px 16px",
                       borderRadius: "6px",
-                      background: fields.accentColor || "#6366f1",
+                      background: fields.accentColor || "#09090b",
                       color: "#ffffff",
                       fontSize: "11px",
                       fontWeight: 700,
@@ -691,9 +691,9 @@ export default function AdminEditor() {
               <div style={{
                 padding: "12px 20px",
                 textAlign: "center",
-                background: "#f8fafc",
+                background: "#f4f4f5",
               }}>
-                <span style={{ fontSize: "10px", color: "#94a3b8" }}>
+                <span style={{ fontSize: "10px", color: "#a1a1aa" }}>
                   Vorschau — {defaultConfigs[selectedPage]?.label}
                 </span>
               </div>
@@ -707,10 +707,10 @@ export default function AdminEditor() {
         <div style={{
           textAlign: "center",
           padding: "80px 20px",
-          color: "#64748b",
+          color: "#71717a",
         }}>
           <div style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.5 }}>&#x1F3A8;</div>
-          <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#94a3b8", marginBottom: "8px" }}>
+          <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#a1a1aa", marginBottom: "8px" }}>
             Seite auswählen
           </h2>
           <p style={{ fontSize: "14px" }}>

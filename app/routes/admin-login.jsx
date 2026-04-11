@@ -1,7 +1,7 @@
 import { json, redirect } from "@remix-run/node";
 import { useActionData, Form, useNavigation } from "@remix-run/react";
-import { useState } from "react";
-import { getAdminSessions, verifyAdminSession, verifyAdminCredentials } from "../admin-session.server";
+import { useState, useEffect } from "react";
+import { createAdminSession, verifyAdminSession, verifyAdminCredentials } from "../admin-session.server";
 
 export const loader = async ({ request }) => {
   const cookieHeader = request.headers.get("Cookie") || "";
@@ -11,56 +11,64 @@ export const loader = async ({ request }) => {
   return json({});
 };
 
-
 export const action = async ({ request }) => {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
 
-  // Use database-backed authentication with ENV fallback
   const result = await verifyAdminCredentials(email, password);
-  
+
   if (!result.success) {
     return json({ error: result.error }, { status: 401 });
   }
 
-  // Erstelle Session-Token
+  // Create session token
   const token = crypto.randomUUID();
-  getAdminSessions().set(token, {
+  createAdminSession(token, {
     email: result.user.email,
     role: result.user.role,
-    createdAt: Date.now(),
     ip: request.headers.get("x-forwarded-for") || "unknown",
   });
 
-  // Redirect to standalone admin panel (not inside Shopify iframe)
-  return redirect("/titan-admin", {
-    headers: {
-      "Set-Cookie": `titan_admin_session=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=86400`,
-    },
-  });
+  // Return JSON with Set-Cookie — client will do hard redirect
+  // This avoids Remix's client-side fetch race condition with cookies
+  return json(
+    { success: true, redirectTo: "/titan-admin" },
+    {
+      headers: {
+        "Set-Cookie": `titan_admin_session=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=86400`,
+      },
+    }
+  );
 };
 
 export default function AdminLogin() {
   const actionData = useActionData();
   const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting" || navigation.state === "loading";
+  const isSubmitting = navigation.state === "submitting";
   const [showPassword, setShowPassword] = useState(false);
+
+  // Hard redirect after successful login — ensures cookie is applied first
+  useEffect(() => {
+    if (actionData?.success && actionData?.redirectTo) {
+      window.location.href = actionData.redirectTo;
+    }
+  }, [actionData]);
 
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #0a0a0f 0%, #0f172a 30%, #1a1033 60%, #0f172a 100%)",
+      background: "#09090b",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       padding: "20px",
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     }}>
-      {/* Hintergrund-Effekte */}
+      {/* Background effects */}
       <div style={{
         position: "fixed", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none",
-        background: "radial-gradient(ellipse at 30% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%)",
+        background: "radial-gradient(ellipse at 30% 20%, rgba(39, 39, 42, 0.4) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(24, 24, 27, 0.5) 0%, transparent 50%)",
       }} />
 
       <div style={{
@@ -73,43 +81,44 @@ export default function AdminLogin() {
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <div style={{
             width: "64px", height: "64px", margin: "0 auto 16px",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+            background: "#18181b",
             borderRadius: "16px",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: "28px",
-            boxShadow: "0 8px 32px rgba(99, 102, 241, 0.3)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
           }}>
             <span role="img" aria-label="shield">&#x1F6E1;</span>
           </div>
           <h1 style={{
-            fontSize: "24px", fontWeight: 800, color: "#f1f5f9",
+            fontSize: "24px", fontWeight: 800, color: "#fafafa",
             margin: "0 0 8px",
             letterSpacing: "-0.5px",
           }}>
             Titan GEO Admin
           </h1>
           <p style={{
-            fontSize: "14px", color: "#64748b", margin: 0,
+            fontSize: "14px", color: "#71717a", margin: 0,
           }}>
-            Geschützter Zugang zum Backend
+            Gesch&uuml;tzter Zugang zum Backend
           </p>
         </div>
 
         {/* Login Card */}
         <div style={{
-          background: "linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 27, 75, 0.8))",
-          border: "1px solid rgba(99, 102, 241, 0.2)",
+          background: "rgba(24, 24, 27, 0.9)",
+          border: "1px solid rgba(255, 255, 255, 0.06)",
           borderRadius: "20px",
           padding: "36px",
           backdropFilter: "blur(20px)",
-          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.1)",
+          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03)",
         }}>
           <Form method="post">
-            {/* Fehlermeldung */}
+            {/* Error message */}
             {actionData?.error && (
               <div style={{
-                background: "rgba(239, 68, 68, 0.1)",
-                border: "1px solid rgba(239, 68, 68, 0.3)",
+                background: "rgba(39, 39, 42, 0.8)",
+                border: "1px solid rgba(161, 161, 170, 0.2)",
                 borderRadius: "12px",
                 padding: "12px 16px",
                 marginBottom: "24px",
@@ -118,8 +127,27 @@ export default function AdminLogin() {
                 gap: "10px",
               }}>
                 <span style={{ fontSize: "16px" }}>&#x26A0;</span>
-                <span style={{ color: "#f87171", fontSize: "13px", fontWeight: 500 }}>
+                <span style={{ color: "#d4d4d8", fontSize: "13px", fontWeight: 500 }}>
                   {actionData.error}
+                </span>
+              </div>
+            )}
+
+            {/* Success message while redirecting */}
+            {actionData?.success && (
+              <div style={{
+                background: "rgba(39, 39, 42, 0.8)",
+                border: "1px solid rgba(161, 161, 170, 0.2)",
+                borderRadius: "12px",
+                padding: "12px 16px",
+                marginBottom: "24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}>
+                <span style={{ fontSize: "16px" }}>&#x2713;</span>
+                <span style={{ color: "#d4d4d8", fontSize: "13px", fontWeight: 500 }}>
+                  Anmeldung erfolgreich. Weiterleitung...
                 </span>
               </div>
             )}
@@ -128,7 +156,7 @@ export default function AdminLogin() {
             <div style={{ marginBottom: "20px" }}>
               <label style={{
                 display: "block", fontSize: "13px", fontWeight: 600,
-                color: "#94a3b8", marginBottom: "8px",
+                color: "#a1a1aa", marginBottom: "8px",
                 textTransform: "uppercase", letterSpacing: "0.5px",
               }}>
                 E-Mail-Adresse
@@ -143,30 +171,30 @@ export default function AdminLogin() {
                   width: "100%",
                   padding: "12px 16px",
                   borderRadius: "12px",
-                  border: "1px solid rgba(99, 102, 241, 0.3)",
-                  background: "rgba(15, 23, 42, 0.6)",
-                  color: "#f1f5f9",
+                  border: "1px solid rgba(212, 212, 216, 0.3)",
+                  background: "rgba(9, 9, 11, 0.6)",
+                  color: "#fafafa",
                   fontSize: "14px",
                   outline: "none",
                   transition: "border-color 0.2s, box-shadow 0.2s",
                   boxSizing: "border-box",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "rgba(99, 102, 241, 0.6)";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.15)";
+                  e.target.style.borderColor = "rgba(212, 212, 216, 0.6)";
+                  e.target.style.boxShadow = "0 0 0 3px rgba(212, 212, 216, 0.1)";
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = "rgba(99, 102, 241, 0.3)";
+                  e.target.style.borderColor = "rgba(212, 212, 216, 0.3)";
                   e.target.style.boxShadow = "none";
                 }}
               />
             </div>
 
-            {/* Passwort */}
+            {/* Password */}
             <div style={{ marginBottom: "28px" }}>
               <label style={{
                 display: "block", fontSize: "13px", fontWeight: 600,
-                color: "#94a3b8", marginBottom: "8px",
+                color: "#a1a1aa", marginBottom: "8px",
                 textTransform: "uppercase", letterSpacing: "0.5px",
               }}>
                 Passwort
@@ -182,20 +210,20 @@ export default function AdminLogin() {
                     width: "100%",
                     padding: "12px 48px 12px 16px",
                     borderRadius: "12px",
-                    border: "1px solid rgba(99, 102, 241, 0.3)",
-                    background: "rgba(15, 23, 42, 0.6)",
-                    color: "#f1f5f9",
+                    border: "1px solid rgba(212, 212, 216, 0.3)",
+                    background: "rgba(9, 9, 11, 0.6)",
+                    color: "#fafafa",
                     fontSize: "14px",
                     outline: "none",
                     transition: "border-color 0.2s, box-shadow 0.2s",
                     boxSizing: "border-box",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "rgba(99, 102, 241, 0.6)";
-                    e.target.style.boxShadow = "0 0 0 3px rgba(99, 102, 241, 0.15)";
+                    e.target.style.borderColor = "rgba(212, 212, 216, 0.6)";
+                    e.target.style.boxShadow = "0 0 0 3px rgba(212, 212, 216, 0.1)";
                   }}
                   onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(99, 102, 241, 0.3)";
+                    e.target.style.borderColor = "rgba(212, 212, 216, 0.3)";
                     e.target.style.boxShadow = "none";
                   }}
                 />
@@ -206,7 +234,7 @@ export default function AdminLogin() {
                     position: "absolute", right: "12px", top: "50%",
                     transform: "translateY(-50%)",
                     background: "none", border: "none", cursor: "pointer",
-                    color: "#64748b", fontSize: "16px", padding: "4px",
+                    color: "#71717a", fontSize: "16px", padding: "4px",
                   }}
                 >
                   {showPassword ? "\u{1F441}" : "\u{1F441}\u{FE0F}\u{200D}\u{1F5E8}\u{FE0F}"}
@@ -217,36 +245,34 @@ export default function AdminLogin() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || actionData?.success}
               style={{
                 width: "100%",
                 padding: "14px",
                 borderRadius: "12px",
                 border: "none",
-                background: isSubmitting
-                  ? "linear-gradient(135deg, #4f46e5, #7c3aed)"
-                  : "linear-gradient(135deg, #6366f1, #8b5cf6)",
-                color: "#fff",
+                background: (isSubmitting || actionData?.success) ? "rgba(212, 212, 216, 0.7)" : "#ffffff",
+                color: "#09090b",
                 fontSize: "15px",
                 fontWeight: 700,
-                cursor: isSubmitting ? "wait" : "pointer",
+                cursor: (isSubmitting || actionData?.success) ? "wait" : "pointer",
                 transition: "all 0.2s ease",
-                boxShadow: "0 4px 16px rgba(99, 102, 241, 0.3)",
+                boxShadow: "0 4px 16px rgba(255, 255, 255, 0.06)",
                 letterSpacing: "0.3px",
                 opacity: isSubmitting ? 0.8 : 1,
               }}
               onMouseEnter={(e) => {
-                if (!isSubmitting) {
+                if (!isSubmitting && !actionData?.success) {
                   e.target.style.transform = "translateY(-1px)";
-                  e.target.style.boxShadow = "0 6px 24px rgba(99, 102, 241, 0.4)";
+                  e.target.style.boxShadow = "0 6px 24px rgba(255, 255, 255, 0.1)";
                 }
               }}
               onMouseLeave={(e) => {
                 e.target.style.transform = "translateY(0)";
-                e.target.style.boxShadow = "0 4px 16px rgba(99, 102, 241, 0.3)";
+                e.target.style.boxShadow = "0 4px 16px rgba(255, 255, 255, 0.06)";
               }}
             >
-              {isSubmitting ? "Anmeldung..." : "Anmelden"}
+              {actionData?.success ? "Weiterleitung..." : isSubmitting ? "Anmeldung..." : "Anmelden"}
             </button>
           </Form>
 
@@ -254,12 +280,12 @@ export default function AdminLogin() {
           <div style={{
             marginTop: "24px",
             padding: "12px 16px",
-            background: "rgba(99, 102, 241, 0.08)",
+            background: "rgba(255, 255, 255, 0.04)",
             borderRadius: "10px",
-            border: "1px solid rgba(99, 102, 241, 0.15)",
+            border: "1px solid rgba(255, 255, 255, 0.06)",
           }}>
             <p style={{
-              color: "#818cf8", fontSize: "12px", margin: 0,
+              color: "#a1a1aa", fontSize: "12px", margin: 0,
               textAlign: "center", lineHeight: "1.5",
             }}>
               Nur autorisierte Administratoren haben Zugang.
@@ -272,7 +298,7 @@ export default function AdminLogin() {
         {/* Footer */}
         <p style={{
           textAlign: "center",
-          color: "#475569",
+          color: "#52525b",
           fontSize: "12px",
           marginTop: "24px",
         }}>

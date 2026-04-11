@@ -593,7 +593,7 @@ export default function MultiLang() {
             <div className="titan-section-header">
               <span className="titan-section-title">🌍 Zielsprache wählen</span>
             </div>
-            <div style={{ marginBottom: "8px", fontSize: "13px", color: "#64748b" }}>
+            <div style={{ marginBottom: "8px", fontSize: "13px", color: "#71717a" }}>
               Europa
             </div>
             <div className="titan-lang-grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))" }}>
@@ -606,11 +606,11 @@ export default function MultiLang() {
                 >
                   <span className="flag"><FlagIcon code={lang.code} size={28} /></span>
                   <div style={{ fontWeight: 600, fontSize: "13px" }}>{lang.label}</div>
-                  <div style={{ fontSize: "10px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px" }}>{lang.code}</div>
+                  <div style={{ fontSize: "10px", color: "#a1a1aa", textTransform: "uppercase", letterSpacing: "1px" }}>{lang.code}</div>
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: "16px", marginBottom: "8px", fontSize: "13px", color: "#64748b" }}>
+            <div style={{ marginTop: "16px", marginBottom: "8px", fontSize: "13px", color: "#71717a" }}>
               Asien
             </div>
             <div className="titan-lang-grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))" }}>
@@ -623,7 +623,7 @@ export default function MultiLang() {
                 >
                   <span className="flag"><FlagIcon code={lang.code} size={28} /></span>
                   <div style={{ fontWeight: 600, fontSize: "13px" }}>{lang.label}</div>
-                  <div style={{ fontSize: "10px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px" }}>{lang.code}</div>
+                  <div style={{ fontSize: "10px", color: "#a1a1aa", textTransform: "uppercase", letterSpacing: "1px" }}>{lang.code}</div>
                 </div>
               ))}
             </div>
@@ -683,22 +683,22 @@ export default function MultiLang() {
                 <Divider />
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "14px" }}>
-                  <div style={{ padding: "12px", background: "#ecfdf5", borderRadius: "8px", textAlign: "center" }}>
-                    <strong style={{ color: "#059669", fontSize: "20px" }}>
+                  <div style={{ padding: "12px", background: "#f4f4f5", borderRadius: "8px", textAlign: "center" }}>
+                    <strong style={{ color: "#18181b", fontSize: "20px" }}>
                       {result.bulkResults.filter(r => r.success).length}
                     </strong>
-                    <div style={{ color: "#065f46", fontSize: "12px" }}>Erfolgreich übersetzt</div>
+                    <div style={{ color: "#3f3f46", fontSize: "12px" }}>Erfolgreich übersetzt</div>
                   </div>
-                  <div style={{ padding: "12px", background: "#fef2f2", borderRadius: "8px", textAlign: "center" }}>
-                    <strong style={{ color: "#dc2626", fontSize: "20px" }}>
+                  <div style={{ padding: "12px", background: "#fafafa", borderRadius: "8px", textAlign: "center" }}>
+                    <strong style={{ color: "#71717a", fontSize: "20px" }}>
                       {result.bulkResults.filter(r => !r.success).length}
                     </strong>
-                    <div style={{ color: "#991b1b", fontSize: "12px" }}>Fehlgeschlagen</div>
+                    <div style={{ color: "#52525b", fontSize: "12px" }}>Fehlgeschlagen</div>
                   </div>
                 </div>
 
                 {result.bulkResults.filter(r => r.success).map((r, idx) => (
-                  <div key={idx} style={{ background: "#f8fafc", borderRadius: "12px", padding: "16px", border: "1px solid #e2e8f0" }}>
+                  <div key={idx} style={{ background: "#f4f4f5", borderRadius: "12px", padding: "16px", border: "1px solid #e4e4e7" }}>
                     <div className="titan-compare-grid">
                       <div className="titan-compare-before">
                         <div className="titan-compare-label">Original</div>
@@ -746,14 +746,14 @@ export default function MultiLang() {
                   onClearButtonClick={() => setSearchQuery("")}
                 />
                 <div>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#64748b", marginBottom: "4px" }}>Status</label>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#71717a", marginBottom: "4px" }}>Status</label>
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
                     style={{
                       width: "100%", padding: "8px 12px", borderRadius: "8px",
-                      border: "1px solid #e2e8f0", fontSize: "13px", background: "#fff",
-                      color: "#1e293b", cursor: "pointer",
+                      border: "1px solid #e4e4e7", fontSize: "13px", background: "#fff",
+                      color: "#18181b", cursor: "pointer",
                     }}
                   >
                     <option value="all">Alle Produkte</option>
@@ -762,14 +762,14 @@ export default function MultiLang() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#64748b", marginBottom: "4px" }}>Sprache</label>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 600, color: "#71717a", marginBottom: "4px" }}>Sprache</label>
                   <select
                     value={filterLang}
                     onChange={(e) => setFilterLang(e.target.value)}
                     style={{
                       width: "100%", padding: "8px 12px", borderRadius: "8px",
-                      border: "1px solid #e2e8f0", fontSize: "13px", background: "#fff",
-                      color: "#1e293b", cursor: "pointer",
+                      border: "1px solid #e4e4e7", fontSize: "13px", background: "#fff",
+                      color: "#18181b", cursor: "pointer",
                     }}
                   >
                     <option value="all">Alle Sprachen</option>
@@ -810,7 +810,7 @@ export default function MultiLang() {
                       height: "160px",
                       background: product.image
                         ? `url(${product.image}) center/cover no-repeat`
-                        : "linear-gradient(135deg, #e0e7ff, #c7d2fe)",
+                        : "linear-gradient(135deg, #f4f4f5, #e4e4e7)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -823,9 +823,9 @@ export default function MultiLang() {
                       {translatedLangs.length > 0 && (
                         <div style={{
                           position: "absolute", top: "8px", right: "8px",
-                          background: "linear-gradient(135deg, #10b981, #059669)",
+                          background: "linear-gradient(135deg, #09090b, #18181b)",
                           color: "#fff", borderRadius: "20px", padding: "4px 10px",
-                          fontSize: "11px", fontWeight: 700, boxShadow: "0 2px 8px rgba(16,185,129,0.3)",
+                          fontSize: "11px", fontWeight: 700, boxShadow: "0 2px 8px rgba(9,9,11,0.3)",
                         }}>
                           {translatedLangs.length} Sprache{translatedLangs.length > 1 ? "n" : ""}
                         </div>
@@ -997,7 +997,7 @@ export default function MultiLang() {
                 </div>
 
                 {/* SEO Data */}
-                <div style={{ background: "#f8fafc", borderRadius: "12px", padding: "16px" }}>
+                <div style={{ background: "#f4f4f5", borderRadius: "12px", padding: "16px" }}>
                   <Text variant="headingSm" as="h3">SEO-Daten ({result.targetLangLabel})</Text>
                   <Box paddingBlockStart="200">
                     <Text variant="bodySm" fontWeight="semibold" tone="subdued">Meta-Titel:</Text>
@@ -1095,8 +1095,8 @@ export default function MultiLang() {
               {bulkTranslations.map((r, idx) => (
                 <div key={idx} style={{
                   padding: "12px 16px", marginBottom: "8px", borderRadius: "12px",
-                  background: r.success ? "#f0fdf4" : "#fef2f2",
-                  border: `1px solid ${r.success ? "#bbf7d0" : "#fecaca"}`,
+                  background: r.success ? "#f4f4f5" : "#fafafa",
+                  border: `1px solid ${r.success ? "#d4d4d8" : "#d4d4d8"}`,
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                     <Text variant="bodyMd" fontWeight="semibold">
@@ -1107,10 +1107,10 @@ export default function MultiLang() {
                     </Badge>
                   </div>
                   {r.success && r.translation && (
-                    <div style={{ fontSize: "13px", color: "#374151", marginTop: "4px" }}>
+                    <div style={{ fontSize: "13px", color: "#3f3f46", marginTop: "4px" }}>
                       <div><strong>Neuer Titel:</strong> {r.translation.translatedTitle}</div>
                       {r.translation.seoTitle && (
-                        <div style={{ color: "#6b7280", fontSize: "12px", marginTop: "2px" }}>
+                        <div style={{ color: "#71717a", fontSize: "12px", marginTop: "2px" }}>
                           SEO: {r.translation.seoTitle}
                         </div>
                       )}

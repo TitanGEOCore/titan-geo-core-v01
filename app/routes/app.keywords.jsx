@@ -229,9 +229,9 @@ function FilterChip({ label, active, onClick, count }) {
         gap: "6px",
         padding: "8px 18px",
         borderRadius: "100px",
-        border: active ? "2px solid var(--titan-primary, #6366f1)" : "2px solid #e2e8f0",
-        background: active ? "linear-gradient(135deg, #ede9fe, #e0f2fe)" : "white",
-        color: active ? "#4f46e5" : "#64748b",
+        border: active ? "2px solid var(--titan-primary, #09090b)" : "2px solid #e4e4e7",
+        background: active ? "linear-gradient(135deg, #f4f4f5, #e4e4e7)" : "white",
+        color: active ? "#09090b" : "#71717a",
         fontWeight: active ? 700 : 500,
         fontSize: "13px",
         cursor: "pointer",
@@ -242,8 +242,8 @@ function FilterChip({ label, active, onClick, count }) {
       {label}
       {count !== undefined && (
         <span style={{
-          background: active ? "#6366f1" : "#e2e8f0",
-          color: active ? "white" : "#64748b",
+          background: active ? "#09090b" : "#e4e4e7",
+          color: active ? "white" : "#71717a",
           borderRadius: "100px",
           padding: "1px 8px",
           fontSize: "11px",
@@ -266,8 +266,8 @@ function ProductSelectCard({ product, selected, onClick }) {
       style={{
         padding: "16px",
         cursor: "pointer",
-        border: isSelected ? "2px solid #6366f1" : "1px solid rgba(99, 102, 241, 0.08)",
-        background: isSelected ? "linear-gradient(145deg, #f5f3ff 0%, #ede9fe 100%)" : undefined,
+        border: isSelected ? "2px solid #09090b" : "1px solid rgba(9, 9, 11, 0.08)",
+        background: isSelected ? "linear-gradient(145deg, #f4f4f5 0%, #f4f4f5 100%)" : undefined,
         position: "relative",
       }}
     >
@@ -288,7 +288,7 @@ function ProductSelectCard({ product, selected, onClick }) {
             position: "absolute",
             top: "8px",
             right: "8px",
-            background: "linear-gradient(135deg, #6366f1, #06b6d4)",
+            background: "linear-gradient(135deg, #09090b, #3f3f46)",
             color: "white",
             borderRadius: "50%",
             width: "22px",
@@ -370,8 +370,8 @@ function KeywordCard({ kw, products, category }) {
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
-                  background: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  background: "#f4f4f5",
+                  border: "1px solid #e4e4e7",
                   borderRadius: "10px",
                   padding: "6px 12px",
                 }}>
@@ -563,7 +563,7 @@ export default function Keywords() {
                 onChange={setProductSearch}
                 placeholder="Produkt suchen..."
                 autoComplete="off"
-                prefix={<span style={{ color: "#94a3b8" }}>🔍</span>}
+                prefix={<span style={{ color: "#a1a1aa" }}>🔍</span>}
               />
               <TextField
                 label="Eigenes Keyword/Thema"
@@ -654,7 +654,7 @@ export default function Keywords() {
                 borderRadius: "16px",
                 padding: "16px 20px",
                 boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-                border: "1px solid rgba(99, 102, 241, 0.1)",
+                border: "1px solid rgba(9, 9, 11, 0.1)",
               }}>
                 <BlockStack gap="300">
                   {/* Filter Pills */}
@@ -723,9 +723,9 @@ export default function Keywords() {
                             flex: 1,
                             padding: "6px 10px",
                             borderRadius: "8px",
-                            border: sortBy === s ? "2px solid #6366f1" : "1px solid #e2e8f0",
-                            background: sortBy === s ? "#ede9fe" : "white",
-                            color: sortBy === s ? "#4f46e5" : "#64748b",
+                            border: sortBy === s ? "2px solid #09090b" : "1px solid #e4e4e7",
+                            background: sortBy === s ? "#f4f4f5" : "white",
+                            color: sortBy === s ? "#09090b" : "#71717a",
                             fontWeight: sortBy === s ? 700 : 500,
                             fontSize: "12px",
                             cursor: "pointer",
@@ -782,7 +782,7 @@ export default function Keywords() {
                   <BlockStack gap="300">
                     <InlineStack align="space-between" blockAlign="center">
                       <InlineStack gap="200" blockAlign="center">
-                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#10b981" }} />
+                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#09090b" }} />
                         <Text variant="headingSm" as="h2">Primäre Keywords</Text>
                         <Badge tone="success">{data.primaryKeywords.length}</Badge>
                       </InlineStack>
@@ -802,7 +802,7 @@ export default function Keywords() {
                   <BlockStack gap="300">
                     <InlineStack align="space-between" blockAlign="center">
                       <InlineStack gap="200" blockAlign="center">
-                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#f59e0b" }} />
+                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#3f3f46" }} />
                         <Text variant="headingSm" as="h2">Long-Tail Keywords</Text>
                         <Badge tone="warning">{data.longTailKeywords.length}</Badge>
                       </InlineStack>
@@ -822,7 +822,7 @@ export default function Keywords() {
                   <BlockStack gap="300">
                     <InlineStack align="space-between" blockAlign="center">
                       <InlineStack gap="200" blockAlign="center">
-                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#06b6d4" }} />
+                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#3f3f46" }} />
                         <Text variant="headingSm" as="h2">Frage-Keywords</Text>
                         <Badge tone="info">{data.questionKeywords.length}</Badge>
                       </InlineStack>
@@ -842,7 +842,7 @@ export default function Keywords() {
                   <BlockStack gap="300">
                     <InlineStack align="space-between" blockAlign="center">
                       <InlineStack gap="200" blockAlign="center">
-                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#8b5cf6" }} />
+                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#18181b" }} />
                         <Text variant="headingSm" as="h2">Semantische Keywords</Text>
                         <Badge>{data.semanticKeywords.length}</Badge>
                       </InlineStack>
@@ -862,7 +862,7 @@ export default function Keywords() {
                   <BlockStack gap="300">
                     <InlineStack align="space-between" blockAlign="center">
                       <InlineStack gap="200" blockAlign="center">
-                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ef4444" }} />
+                        <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#a1a1aa" }} />
                         <Text variant="headingSm" as="h2">Wettbewerber-Keyword-Lücken</Text>
                         <Badge tone="critical">{data.competitorGap.length}</Badge>
                       </InlineStack>

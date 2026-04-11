@@ -291,7 +291,7 @@ function CharCountBar({ count, min, max, label }) {
   const isTooLong = count > max;
   const isEmpty = count === 0;
   const pct = Math.min((count / max) * 100, 120);
-  const color = isEmpty ? "#94a3b8" : isOptimal ? "#10b981" : isTooShort ? "#f59e0b" : "#ef4444";
+  const color = isEmpty ? "#a1a1aa" : isOptimal ? "#09090b" : isTooShort ? "#3f3f46" : "#a1a1aa";
 
   return (
     <div style={{ marginTop: "4px" }}>
@@ -303,7 +303,7 @@ function CharCountBar({ count, min, max, label }) {
       </InlineStack>
       <div style={{
         height: "6px",
-        background: "#f1f5f9",
+        background: "#f4f4f5",
         borderRadius: "100px",
         marginTop: "4px",
         overflow: "hidden",
@@ -331,9 +331,9 @@ function FilterChip({ label, active, onClick, count }) {
         gap: "6px",
         padding: "8px 18px",
         borderRadius: "100px",
-        border: active ? "2px solid var(--titan-primary, #6366f1)" : "2px solid #e2e8f0",
-        background: active ? "linear-gradient(135deg, #ede9fe, #e0f2fe)" : "white",
-        color: active ? "#4f46e5" : "#64748b",
+        border: active ? "2px solid var(--titan-primary, #09090b)" : "2px solid #e4e4e7",
+        background: active ? "linear-gradient(135deg, #f4f4f5, #fafafa)" : "white",
+        color: active ? "#09090b" : "#71717a",
         fontWeight: active ? 700 : 500,
         fontSize: "13px",
         cursor: "pointer",
@@ -344,8 +344,8 @@ function FilterChip({ label, active, onClick, count }) {
       {label}
       {count !== undefined && count > 0 && (
         <span style={{
-          background: active ? "#6366f1" : "#e2e8f0",
-          color: active ? "white" : "#64748b",
+          background: active ? "#09090b" : "#e4e4e7",
+          color: active ? "white" : "#71717a",
           borderRadius: "100px",
           padding: "1px 8px",
           fontSize: "11px",
@@ -521,13 +521,13 @@ export default function MetaGenerator() {
             </div>
             <div className="titan-metric-card">
               <div className="titan-metric-label">Meta fehlt</div>
-              <div className="titan-metric-value" style={{ color: statusCounts["Meta fehlt"] > 0 ? "#ef4444" : "#10b981" }}>
+              <div className="titan-metric-value" style={{ color: statusCounts["Meta fehlt"] > 0 ? "#a1a1aa" : "#09090b" }}>
                 {statusCounts["Meta fehlt"]}
               </div>
             </div>
             <div className="titan-metric-card">
               <div className="titan-metric-label">Optimiert</div>
-              <div className="titan-metric-value" style={{ color: "#10b981" }}>
+              <div className="titan-metric-value" style={{ color: "#09090b" }}>
                 {statusCounts.Optimiert}
               </div>
             </div>
@@ -557,7 +557,7 @@ export default function MetaGenerator() {
             borderRadius: "16px",
             padding: "16px 20px",
             boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-            border: "1px solid rgba(99, 102, 241, 0.1)",
+            border: "1px solid rgba(9, 9, 11, 0.1)",
           }}>
             <BlockStack gap="300">
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
@@ -747,9 +747,9 @@ export default function MetaGenerator() {
                       {currentGenerated.generated.improvements.map((imp, i) => (
                         <div key={i} style={{
                           padding: "8px 12px",
-                          background: "#f0fdf4",
+                          background: "#f4f4f5",
                           borderRadius: "8px",
-                          borderLeft: "3px solid #10b981",
+                          borderLeft: "3px solid #09090b",
                         }}>
                           <Text variant="bodySm">{imp}</Text>
                         </div>
@@ -780,7 +780,7 @@ export default function MetaGenerator() {
                     style={{
                       padding: "0",
                       overflow: "hidden",
-                      border: isSelected ? "2px solid #6366f1" : undefined,
+                      border: isSelected ? "2px solid #09090b" : undefined,
                     }}
                   >
                     {/* Card Header with Image */}
@@ -789,8 +789,8 @@ export default function MetaGenerator() {
                       alignItems: "center",
                       gap: "12px",
                       padding: "14px 16px",
-                      borderBottom: "1px solid #f1f5f9",
-                      background: "#fafbfc",
+                      borderBottom: "1px solid #f4f4f5",
+                      background: "#fafafa",
                     }}>
                       <Thumbnail
                         source={product.image || "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_large.png"}

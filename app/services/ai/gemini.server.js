@@ -93,6 +93,21 @@ export async function optimizeProduct(shop, product) {
     ? `\n- Options: ${product.variants[0].selectedOptions.map(o => `${o.name}: ${o.value}`).join(", ")}`
     : "";
 
+  // Manual context from Product Context Builder quiz
+  const manualSection = product.manualContext ? `
+
+MERCHANT-PROVIDED CONTEXT (HIGH PRIORITY — use this as primary source):
+- Product Description: ${product.manualContext.description || "N/A"}
+- USP & Features: ${product.manualContext.usp || "N/A"}
+- Target Audience: ${product.manualContext.audience || "N/A"}
+- Brand Vibe: ${product.manualContext.vibe || "N/A"}
+- Keywords: ${product.manualContext.keywords || "N/A"}` : "";
+
+  // Scraped live page context
+  const scrapedSection = product.scrapedContext
+    ? `\n\nLIVE PAGE CONTENT (scraped from the store's product page — use for additional context):\n${product.scrapedContext.substring(0, 2000)}`
+    : "";
+
   const userPrompt = `Optimize this product for Generative Engine Optimization:
 
 CURRENT PRODUCT DATA:
@@ -104,7 +119,7 @@ CURRENT PRODUCT DATA:
 ${product.descriptionHtml || "No description"}
 - Price: ${product.variants?.[0]?.price || "N/A"}
 - SKU: ${product.variants?.[0]?.sku || "N/A"}
-- URL Handle: ${product.handle || "N/A"}${variantDetails}${variantOptions}${deepContextSection}
+- URL Handle: ${product.handle || "N/A"}${variantDetails}${variantOptions}${deepContextSection}${manualSection}${scrapedSection}
 
 CRITICAL: The optimizedMetaDesc MUST be under 160 characters. The optimizedTitle SHOULD be under 70 characters.
 

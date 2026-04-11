@@ -111,35 +111,57 @@ export const loader = async ({ request }) => {
     const estimatedTrafficValue = Math.round(estimatedAdditionalClicks * AVG_CPC_EUR);
     const estimatedRevenueImpact = Math.round(estimatedAdditionalClicks * (CONVERSION_RATE / 100) * AVG_ORDER_VALUE_EUR);
 
-    // ── Recent optimizations with product info ──
+    // ── Recent optimizations with product info (BATCH query) ──
     const recentOpts = allOptimizations.slice(0, 10);
+    const recentProductIds = [...new Set(recentOpts.map((o) => o.productId).filter(Boolean))];
     const recentProducts = [];
-    for (const opt of recentOpts) {
+
+    if (recentProductIds.length > 0) {
       try {
-        const pRes = await admin.graphql(`
-          query getProduct($id: ID!) {
-            product(id: $id) {
-              title
-              handle
-              featuredImage { url }
-              metafield(namespace: "custom", key: "geo_score") { value }
+        // Build a single batched GraphQL query for all product IDs
+        const queryAliases = recentProductIds.map((pid, i) => {
+          const gqlId = pid;
+          return `p${i}: product(id: "${gqlId}") {
+            id
+            title
+            handle
+            featuredImage { url }
+            metafield(namespace: "custom", key: "geo_score") { value }
+          }`;
+        });
+
+        const batchQuery = `query { ${queryAliases.join("\n")} }`;
+        const batchRes = await admin.graphql(batchQuery);
+        const batchData = await batchRes.json();
+
+        // Build a lookup map from product GID to product data
+        const productMap = {};
+        if (batchData.data) {
+          recentProductIds.forEach((pid, i) => {
+            const p = batchData.data[`p${i}`];
+            if (p) {
+              productMap[pid] = p;
             }
-          }
-        `, { variables: { id: opt.productId } });
-        const pData = await pRes.json();
-        const p = pData.data?.product;
-        if (p) {
-          recentProducts.push({
-            id: opt.productId.replace("gid://shopify/Product/", ""),
-            gid: opt.productId,
-            title: p.title,
-            handle: p.handle,
-            thumb: p.featuredImage?.url ? p.featuredImage.url.replace(/\?.*/, "") + "?width=40" : null,
-            geoScore: p.metafield?.value ? Number(p.metafield.value) : null,
-            optimizedAt: opt.optimizedAt,
           });
         }
-      } catch (_) { /* skip */ }
+
+        // Map recent optimizations to product data from the batch result
+        for (const opt of recentOpts) {
+          if (!opt.productId) continue;
+          const p = productMap[opt.productId];
+          if (p) {
+            recentProducts.push({
+              id: opt.productId.replace("gid://shopify/Product/", ""),
+              gid: opt.productId,
+              title: p.title,
+              handle: p.handle,
+              thumb: p.featuredImage?.url ? p.featuredImage.url.replace(/\?.*/, "") + "?width=40" : null,
+              geoScore: p.metafield?.value ? Number(p.metafield.value) : null,
+              optimizedAt: opt.optimizedAt,
+            });
+          }
+        }
+      } catch (_) { /* skip batch fetch */ }
     }
 
     // ── GSC data if connected ──
@@ -151,15 +173,23 @@ export const loader = async ({ request }) => {
         let gscTotalImpressions = 0;
         let gscTotalClicks = 0;
 
-        for (const pid of uniqueProductIds.slice(0, 20)) {
+        // Batch-fetch product data for GSC lookup
+        const gscProductIds = uniqueProductIds.slice(0, 20);
+        const gscQueryAliases = gscProductIds.map((pid, i) => {
+          return `g${i}: product(id: "${pid}") {
+            id
+            title
+            handle
+            onlineStoreUrl
+          }`;
+        });
+        const gscBatchQuery = `query { ${gscQueryAliases.join("\n")} }`;
+        const gscBatchRes = await admin.graphql(gscBatchQuery);
+        const gscBatchData = await gscBatchRes.json();
+
+        for (let i = 0; i < gscProductIds.length; i++) {
           try {
-            const pRes = await admin.graphql(`
-              query getProduct($id: ID!) {
-                product(id: $id) { title handle onlineStoreUrl }
-              }
-            `, { variables: { id: pid } });
-            const pData = await pRes.json();
-            const product = pData.data?.product;
+            const product = gscBatchData.data?.[`g${i}`];
             if (!product?.onlineStoreUrl) continue;
 
             const gsc = await fetchGscData(
@@ -243,20 +273,20 @@ export const loader = async ({ request }) => {
 
 /**
  * ──────────────────────────────────────────────
- *  METRIC CARD — Enhanced version
+ *  METRIC CARD — Monochrome Luxury
  * ──────────────────────────────────────────────
  */
-function MetricCardEnhanced({ title, value, subtitle, icon, color = "#6366f1", prefix, suffix }) {
+function MetricCardEnhanced({ title, value, subtitle, icon, prefix, suffix }) {
   return (
     <Card>
       <BlockStack gap="200">
         <InlineStack gap="200" blockAlign="center">
           <div style={{
             width: 32, height: 32, borderRadius: 8,
-            background: `${color}12`, display: "flex",
+            background: "#09090b", display: "flex",
             alignItems: "center", justifyContent: "center",
-            fontSize: "14px", fontWeight: 700, color,
-            border: `1px solid ${color}20`,
+            fontSize: "14px", fontWeight: 700, color: "#fafafa",
+            border: "1px solid #27272a",
           }}>
             {icon}
           </div>
@@ -275,7 +305,7 @@ function MetricCardEnhanced({ title, value, subtitle, icon, color = "#6366f1", p
 
 /**
  * ──────────────────────────────────────────────
- *  CSS BAR CHART — Weekly optimization timeline
+ *  CSS BAR CHART — Monochrome Luxury
  * ──────────────────────────────────────────────
  */
 function BarChart({ data, labelKey, valueKey, height = 160 }) {
@@ -291,7 +321,7 @@ function BarChart({ data, labelKey, valueKey, height = 160 }) {
         const isLast = idx === data.length - 1;
         const label = item[labelKey];
         const shortLabel = typeof label === "string" && label.length > 5
-          ? label.slice(5) // remove year prefix for display
+          ? label.slice(5)
           : label;
 
         return (
@@ -303,22 +333,25 @@ function BarChart({ data, labelKey, valueKey, height = 160 }) {
             }}
             title={`${label}: ${item[valueKey]} Optimierungen`}
           >
-            <Text variant="bodySm" fontWeight="medium" tone={isLast ? "success" : "subdued"}>
+            <span style={{
+              fontSize: "12px", fontWeight: 500,
+              color: isLast ? "#09090b" : "#a1a1aa",
+            }}>
               {item[valueKey] > 0 ? item[valueKey] : ""}
-            </Text>
+            </span>
             <div style={{
               width: "100%", maxWidth: 40,
               height: barHeight,
               borderRadius: "6px 6px 2px 2px",
-              background: isLast
-                ? "linear-gradient(180deg, #6366f1, #818cf8)"
-                : "linear-gradient(180deg, #e2e8f0, #cbd5e1)",
+              background: isLast ? "#09090b" : "#d4d4d8",
               transition: "height 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
               minHeight: 4,
             }} />
-            <Text variant="bodySm" tone="subdued" alignment="center">
+            <span style={{
+              fontSize: "11px", color: "#a1a1aa", textAlign: "center",
+            }}>
               {shortLabel}
-            </Text>
+            </span>
           </div>
         );
       })}
@@ -328,10 +361,10 @@ function BarChart({ data, labelKey, valueKey, height = 160 }) {
 
 /**
  * ──────────────────────────────────────────────
- *  PROGRESS RING — Small animated ring
+ *  PROGRESS RING — Monochrome Luxury
  * ──────────────────────────────────────────────
  */
-function ProgressRing({ value, max, size = 80, color = "#6366f1" }) {
+function ProgressRing({ value, max, size = 80 }) {
   const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
   const radius = (size - 8) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -340,10 +373,10 @@ function ProgressRing({ value, max, size = 80, color = "#6366f1" }) {
   return (
     <div style={{ position: "relative", width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#f1f5f9" strokeWidth={8} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e4e4e7" strokeWidth={8} />
         <circle
           cx={size / 2} cy={size / 2} r={radius}
-          fill="none" stroke={color} strokeWidth={8}
+          fill="none" stroke="#09090b" strokeWidth={8}
           strokeDasharray={circumference} strokeDashoffset={offset}
           strokeLinecap="round"
           style={{ transition: "stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)" }}
@@ -352,7 +385,7 @@ function ProgressRing({ value, max, size = 80, color = "#6366f1" }) {
       <div style={{
         position: "absolute", top: "50%", left: "50%",
         transform: "translate(-50%, -50%)",
-        fontWeight: 800, fontSize: "16px", color,
+        fontWeight: 800, fontSize: "16px", color: "#09090b",
       }}>
         {pct}%
       </div>
@@ -362,10 +395,10 @@ function ProgressRing({ value, max, size = 80, color = "#6366f1" }) {
 
 /**
  * ──────────────────────────────────────────────
- *  HORIZONTAL PROGRESS BAR — CSS-only chart
+ *  HORIZONTAL PROGRESS BAR — Monochrome Luxury
  * ──────────────────────────────────────────────
  */
-function HorizontalBar({ label, value, maxValue, color = "#6366f1", suffix = "" }) {
+function HorizontalBar({ label, value, maxValue, suffix = "" }) {
   const pct = maxValue > 0 ? Math.min(100, (value / maxValue) * 100) : 0;
   return (
     <div style={{ marginBottom: 8 }}>
@@ -374,12 +407,12 @@ function HorizontalBar({ label, value, maxValue, color = "#6366f1", suffix = "" 
         <Text variant="bodySm" fontWeight="semibold">{value.toLocaleString("de-DE")}{suffix}</Text>
       </InlineStack>
       <div style={{
-        height: 8, borderRadius: 4, background: "#f1f5f9",
+        height: 8, borderRadius: 4, background: "#e4e4e7",
         marginTop: 4, overflow: "hidden",
       }}>
         <div style={{
           height: "100%", borderRadius: 4,
-          background: `linear-gradient(90deg, ${color}, ${color}cc)`,
+          background: "#09090b",
           width: `${pct}%`,
           transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)",
         }} />
@@ -482,16 +515,23 @@ export default function ROI() {
 
           {/* ── Google CTA Banner ── */}
           {!googleConnected && (
-            <Banner
-              tone="warning"
-              title="Google Search Console verbinden"
-              action={{ content: "Google verbinden", url: "/app/settings#google" }}
-            >
-              <p>
-                Verbinde Google Search Console fürechte Impressionen, Klicks und Ranking-Daten.
-                Ohne Google-Verbindung siehst du nur geschätzte Werte basierend auf Branchen-Durchschnittswerten.
-              </p>
-            </Banner>
+            <div style={{
+              padding: "16px 20px", borderRadius: 12,
+              background: "#f4f4f5", border: "1px solid #d4d4d8",
+            }}>
+              <BlockStack gap="200">
+                <InlineStack align="space-between" blockAlign="center">
+                  <Text variant="headingSm" as="h3" fontWeight="semibold">Google Search Console verbinden</Text>
+                  <Link to="/app/settings#google">
+                    <Button variant="primary">Google verbinden</Button>
+                  </Link>
+                </InlineStack>
+                <Text variant="bodySm" as="p" tone="subdued">
+                  Verbinde Google Search Console für echte Impressionen, Klicks und Ranking-Daten.
+                  Ohne Google-Verbindung siehst du nur geschätzte Werte basierend auf Branchen-Durchschnittswerten.
+                </Text>
+              </BlockStack>
+            </div>
           )}
 
           {/* ── Key Metrics ── */}
@@ -501,14 +541,12 @@ export default function ROI() {
               value={totalOptimizations.toLocaleString("de-DE")}
               subtitle={`${uniqueProductCount} Produkte optimiert`}
               icon="O"
-              color="#6366f1"
             />
             <MetricCardEnhanced
               title="Geschätzter Traffic-Zuwachs"
               value={`+${projections.estimatedAdditionalClicks.toLocaleString("de-DE")}`}
               subtitle="Zusätzliche Klicks / Monat"
               icon="T"
-              color="#06b6d4"
             />
             <MetricCardEnhanced
               title="Geschätzter Umsatz-Impact"
@@ -517,14 +555,12 @@ export default function ROI() {
               suffix=" EUR"
               subtitle="Pro Monat (Projektion)"
               icon="U"
-              color="#10b981"
             />
             <MetricCardEnhanced
               title="Optimierungs-Abdeckung"
               value={`${coveragePercent}%`}
               subtitle={`${uniqueProductCount} von ${totalProducts} Produkten`}
               icon="A"
-              color="#8b5cf6"
             />
           </InlineGrid>
 
@@ -533,15 +569,30 @@ export default function ROI() {
             <BlockStack gap="400">
               <InlineStack align="space-between" blockAlign="center">
                 <Text variant="headingSm" as="h2">Optimierungs-Abdeckung</Text>
-                <Badge tone={coveragePercent >= 80 ? "success" : coveragePercent >= 40 ? "warning" : "critical"}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center",
+                  padding: "2px 10px", borderRadius: 999,
+                  background: "#f4f4f5", border: "1px solid #d4d4d8",
+                  fontSize: "12px", fontWeight: 600, color: "#3f3f46",
+                }}>
                   {coveragePercent}%
-                </Badge>
+                </div>
               </InlineStack>
-              <ProgressBar progress={coveragePercent} tone={coveragePercent >= 80 ? "success" : coveragePercent >= 40 ? "warning" : "critical"} size="small" />
+              <div style={{
+                height: 6, borderRadius: 3, background: "#e4e4e7",
+                overflow: "hidden",
+              }}>
+                <div style={{
+                  height: "100%", borderRadius: 3,
+                  background: "#09090b",
+                  width: `${coveragePercent}%`,
+                  transition: "width 1s cubic-bezier(0.4, 0, 0.2, 1)",
+                }} />
+              </div>
               <InlineGrid columns={{ xs: 1, sm: 3 }} gap="300">
-                <HorizontalBar label="GEO-optimiert" value={productsWithGeoScore} maxValue={totalProducts} color="#10b981" />
-                <HorizontalBar label="Mindestens 1x optimiert" value={uniqueProductCount} maxValue={totalProducts} color="#6366f1" />
-                <HorizontalBar label="Noch ausstehend" value={Math.max(0, totalProducts - uniqueProductCount)} maxValue={totalProducts} color="#ef4444" />
+                <HorizontalBar label="GEO-optimiert" value={productsWithGeoScore} maxValue={totalProducts} />
+                <HorizontalBar label="Mindestens 1x optimiert" value={uniqueProductCount} maxValue={totalProducts} />
+                <HorizontalBar label="Noch ausstehend" value={Math.max(0, totalProducts - uniqueProductCount)} maxValue={totalProducts} />
               </InlineGrid>
               {coveragePercent < 100 && (
                 <InlineStack gap="200">
@@ -568,7 +619,14 @@ export default function ROI() {
                 <InlineStack align="space-between" blockAlign="center">
                   <InlineStack gap="200" blockAlign="center">
                     <Text variant="headingSm" as="h2">ROI-Projektion</Text>
-                    <Badge tone="info">Geschätzt</Badge>
+                    <div style={{
+                      display: "inline-flex", alignItems: "center",
+                      padding: "2px 10px", borderRadius: 999,
+                      background: "#f4f4f5", border: "1px solid #d4d4d8",
+                      fontSize: "11px", fontWeight: 600, color: "#52525b",
+                    }}>
+                      Geschätzt
+                    </div>
                   </InlineStack>
                   <Icon source={showProjectionDetails ? ChevronUpIcon : ChevronDownIcon} />
                 </InlineStack>
@@ -580,7 +638,10 @@ export default function ROI() {
                 display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
                 gap: "16px",
               }}>
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                <div style={{
+                  padding: "16px", borderRadius: 12,
+                  background: "#f4f4f5", border: "1px solid #e4e4e7",
+                }}>
                   <BlockStack gap="200">
                     <Text variant="bodySm" tone="subdued">Monatliche Impressionen</Text>
                     <Text variant="headingLg" fontWeight="bold">
@@ -590,8 +651,11 @@ export default function ROI() {
                       ~{AVG_IMPRESSIONS_PER_PRODUCT} pro optimiertem Produkt
                     </Text>
                   </BlockStack>
-                </Box>
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                </div>
+                <div style={{
+                  padding: "16px", borderRadius: 12,
+                  background: "#f4f4f5", border: "1px solid #e4e4e7",
+                }}>
                   <BlockStack gap="200">
                     <Text variant="bodySm" tone="subdued">Traffic-Wert (CPC-Basis)</Text>
                     <Text variant="headingLg" fontWeight="bold">
@@ -601,18 +665,21 @@ export default function ROI() {
                       Bei durchschn. {AVG_CPC_EUR.toFixed(2)} EUR CPC
                     </Text>
                   </BlockStack>
-                </Box>
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                </div>
+                <div style={{
+                  padding: "16px", borderRadius: 12,
+                  background: "#f4f4f5", border: "1px solid #e4e4e7",
+                }}>
                   <BlockStack gap="200">
                     <Text variant="bodySm" tone="subdued">Umsatz-Projektion</Text>
-                    <Text variant="headingLg" fontWeight="bold" tone="success">
+                    <span style={{ fontSize: "20px", fontWeight: 700, color: "#09090b" }}>
                       +{projections.estimatedRevenueImpact.toLocaleString("de-DE")} EUR / Monat
-                    </Text>
+                    </span>
                     <Text variant="bodySm" tone="subdued">
                       Bei {CONVERSION_RATE}% CR und {AVG_ORDER_VALUE_EUR} EUR AOV
                     </Text>
                   </BlockStack>
-                </Box>
+                </div>
               </div>
 
               <Collapsible open={showProjectionDetails} id="projection-details">
@@ -620,8 +687,8 @@ export default function ROI() {
                   <BlockStack gap="300">
                     <Text variant="headingSm" as="h3">Berechnungsgrundlage</Text>
                     <div style={{
-                      background: "#f8fafc", borderRadius: 12, padding: 16,
-                      border: "1px solid #e2e8f0",
+                      background: "#fafafa", borderRadius: 12, padding: 16,
+                      border: "1px solid #e4e4e7",
                     }}>
                       <BlockStack gap="200">
                         <InlineStack align="space-between">
@@ -655,16 +722,16 @@ export default function ROI() {
                         <Divider />
                         <InlineStack align="space-between">
                           <Text variant="bodySm" fontWeight="bold">Resultat: Geschätzter Mehrumsatz</Text>
-                          <Text variant="bodySm" fontWeight="bold" tone="success">
+                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#09090b" }}>
                             +{projections.estimatedRevenueImpact.toLocaleString("de-DE")} EUR / Monat
-                          </Text>
+                          </span>
                         </InlineStack>
                       </BlockStack>
                     </div>
                     <Text variant="bodySm" tone="subdued">
-                      Hinweis: Projektionen basieren auf Branchen-Durchschnittswerten fürE-Commerce.
-                      Tatsaechliche Ergebnisse können je nach Branche, Wettbewerb und Suchvolumen variieren.
-                      Verbinde Google Search Console fürechte Performance-Daten.
+                      Hinweis: Projektionen basieren auf Branchen-Durchschnittswerten für E-Commerce.
+                      Tatsächliche Ergebnisse können je nach Branche, Wettbewerb und Suchvolumen variieren.
+                      Verbinde Google Search Console für echte Performance-Daten.
                     </Text>
                   </BlockStack>
                 </Box>
@@ -686,7 +753,14 @@ export default function ROI() {
                   <InlineStack align="space-between" blockAlign="center">
                     <Text variant="headingSm" as="h2">Optimierungs-Verlauf (Wöchentlich)</Text>
                     <InlineStack gap="200" blockAlign="center">
-                      <Badge>{weeklyTimeline.reduce((s, w) => s + w.count, 0)} gesamt</Badge>
+                      <div style={{
+                        display: "inline-flex", alignItems: "center",
+                        padding: "2px 10px", borderRadius: 999,
+                        background: "#f4f4f5", border: "1px solid #d4d4d8",
+                        fontSize: "12px", fontWeight: 600, color: "#3f3f46",
+                      }}>
+                        {weeklyTimeline.reduce((s, w) => s + w.count, 0)} gesamt
+                      </div>
                       <Icon source={showTimeline ? ChevronUpIcon : ChevronDownIcon} />
                     </InlineStack>
                   </InlineStack>
@@ -715,7 +789,7 @@ export default function ROI() {
                   {recentProducts.map((product, idx) => (
                     <div key={`${product.id}-${idx}`} style={{
                       display: "flex", alignItems: "center", justifyContent: "space-between",
-                      padding: "8px 0", borderBottom: idx < recentProducts.length - 1 ? "1px solid #f1f5f9" : "none",
+                      padding: "8px 0", borderBottom: idx < recentProducts.length - 1 ? "1px solid #e4e4e7" : "none",
                     }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1, minWidth: 0 }}>
                         {product.thumb && (
@@ -724,12 +798,12 @@ export default function ROI() {
                             alt=""
                             style={{
                               width: 36, height: 36, borderRadius: 8,
-                              objectFit: "cover", border: "1px solid #e2e8f0",
+                              objectFit: "cover", border: "1px solid #d4d4d8",
                             }}
                           />
                         )}
                         <div style={{ minWidth: 0 }}>
-                          <Link to={`/app/products/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                          <Link to={`/app/products/${product.id}`} style={{ textDecoration: "none", color: "#18181b" }}>
                             <Text variant="bodyMd" fontWeight="medium" truncate>{product.title}</Text>
                           </Link>
                           <Text variant="bodySm" tone="subdued">
@@ -742,9 +816,15 @@ export default function ROI() {
                       </div>
                       <InlineStack gap="200" blockAlign="center">
                         {product.geoScore !== null && (
-                          <Badge tone={product.geoScore >= 70 ? "success" : product.geoScore >= 40 ? "warning" : "critical"}>
+                          <div style={{
+                            display: "inline-flex", alignItems: "center",
+                            padding: "2px 10px", borderRadius: 999,
+                            background: product.geoScore >= 70 ? "#f4f4f5" : product.geoScore >= 40 ? "#f4f4f5" : "#f4f4f5",
+                            border: "1px solid #d4d4d8",
+                            fontSize: "12px", fontWeight: 600, color: "#3f3f46",
+                          }}>
                             Score: {product.geoScore}
-                          </Badge>
+                          </div>
                         )}
                         <Link to={`/app/products/${product.id}`}>
                           <Button size="slim" variant="plain">Anzeigen</Button>
@@ -763,35 +843,51 @@ export default function ROI() {
               <BlockStack gap="400">
                 <InlineStack gap="200" blockAlign="center">
                   <Text variant="headingSm" as="h2">Google Search Console Daten</Text>
-                  <Badge tone="success">Echte Daten</Badge>
+                  <div style={{
+                    display: "inline-flex", alignItems: "center",
+                    padding: "2px 10px", borderRadius: 999,
+                    background: "#f4f4f5", border: "1px solid #d4d4d8",
+                    fontSize: "11px", fontWeight: 600, color: "#3f3f46",
+                  }}>
+                    Echte Daten
+                  </div>
                 </InlineStack>
                 <Divider />
 
                 <InlineGrid columns={{ xs: 1, sm: 3 }} gap="300">
-                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                  <div style={{
+                    padding: "16px", borderRadius: 12,
+                    background: "#f4f4f5", border: "1px solid #e4e4e7",
+                  }}>
                     <BlockStack gap="100">
                       <Text variant="bodySm" tone="subdued">Impressionen (28 Tage)</Text>
                       <Text variant="headingLg" fontWeight="bold">
                         {gscData.totalImpressions.toLocaleString("de-DE")}
                       </Text>
                     </BlockStack>
-                  </Box>
-                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                  </div>
+                  <div style={{
+                    padding: "16px", borderRadius: 12,
+                    background: "#f4f4f5", border: "1px solid #e4e4e7",
+                  }}>
                     <BlockStack gap="100">
                       <Text variant="bodySm" tone="subdued">Klicks (28 Tage)</Text>
-                      <Text variant="headingLg" fontWeight="bold" tone="success">
+                      <span style={{ fontSize: "20px", fontWeight: 700, color: "#09090b" }}>
                         {gscData.totalClicks.toLocaleString("de-DE")}
-                      </Text>
+                      </span>
                     </BlockStack>
-                  </Box>
-                  <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                  </div>
+                  <div style={{
+                    padding: "16px", borderRadius: 12,
+                    background: "#f4f4f5", border: "1px solid #e4e4e7",
+                  }}>
                     <BlockStack gap="100">
                       <Text variant="bodySm" tone="subdued">Durchschn. CTR</Text>
                       <Text variant="headingLg" fontWeight="bold">
                         {gscData.avgCtr}%
                       </Text>
                     </BlockStack>
-                  </Box>
+                  </div>
                 </InlineGrid>
 
                 {/* Per-product GSC bars */}
@@ -802,7 +898,6 @@ export default function ROI() {
                       label={p.title.length > 40 ? p.title.slice(0, 40) + "..." : p.title}
                       value={p.clicks}
                       maxValue={Math.max(...gscData.products.map((x) => x.clicks), 1)}
-                      color="#6366f1"
                       suffix=" Klicks"
                     />
                   ))}
@@ -820,31 +915,40 @@ export default function ROI() {
                 Wenn alle {totalProducts} Produkte optimiert wären (statt aktuell {uniqueProductCount}):
               </Text>
               <InlineGrid columns={{ xs: 1, sm: 3 }} gap="300">
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                <div style={{
+                  padding: "16px", borderRadius: 12,
+                  background: "#f4f4f5", border: "1px solid #e4e4e7",
+                }}>
                   <BlockStack gap="100">
                     <Text variant="bodySm" tone="subdued">Monatliche Impressionen</Text>
                     <Text variant="headingLg" fontWeight="bold">
                       {(totalProducts * AVG_IMPRESSIONS_PER_PRODUCT).toLocaleString("de-DE")}
                     </Text>
-                    <Text variant="bodySm" tone="success">
+                    <span style={{ fontSize: "12px", color: "#52525b" }}>
                       +{((totalProducts - uniqueProductCount) * AVG_IMPRESSIONS_PER_PRODUCT).toLocaleString("de-DE")} mehr
-                    </Text>
+                    </span>
                   </BlockStack>
-                </Box>
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                </div>
+                <div style={{
+                  padding: "16px", borderRadius: 12,
+                  background: "#f4f4f5", border: "1px solid #e4e4e7",
+                }}>
                   <BlockStack gap="100">
                     <Text variant="bodySm" tone="subdued">Geschätzter Mehrumsatz</Text>
-                    <Text variant="headingLg" fontWeight="bold" tone="success">
+                    <span style={{ fontSize: "20px", fontWeight: 700, color: "#09090b" }}>
                       +{Math.round(
                         totalProducts * AVG_IMPRESSIONS_PER_PRODUCT *
                         (AVG_CTR_ORGANIC / 100) * (AVG_TRAFFIC_INCREASE_PERCENT / 100) *
                         (CONVERSION_RATE / 100) * AVG_ORDER_VALUE_EUR
                       ).toLocaleString("de-DE")} EUR
-                    </Text>
+                    </span>
                     <Text variant="bodySm" tone="subdued">Pro Monat (Projektion)</Text>
                   </BlockStack>
-                </Box>
-                <Box padding="400" background="bg-surface-secondary" borderRadius="200">
+                </div>
+                <div style={{
+                  padding: "16px", borderRadius: 12,
+                  background: "#f4f4f5", border: "1px solid #e4e4e7",
+                }}>
                   <BlockStack gap="100">
                     <Text variant="bodySm" tone="subdued">Traffic-Wert</Text>
                     <Text variant="headingLg" fontWeight="bold">
@@ -855,7 +959,7 @@ export default function ROI() {
                     </Text>
                     <Text variant="bodySm" tone="subdued">CPC-Äquivalent / Monat</Text>
                   </BlockStack>
-                </Box>
+                </div>
               </InlineGrid>
               {coveragePercent < 100 && (
                 <InlineStack gap="200">
@@ -868,15 +972,18 @@ export default function ROI() {
           </Card>
 
           {/* ── Footer Info ── */}
-          <Banner tone="info">
-            <p>
+          <div style={{
+            padding: "16px 20px", borderRadius: 12,
+            background: "#f4f4f5", border: "1px solid #d4d4d8",
+          }}>
+            <Text variant="bodySm" as="p" tone="subdued">
               {googleConnected
                 ? "Die GSC-Daten umfassen die letzten 28 Tage. Es kann bis zu 48 Stunden dauern, bis neue Optimierungen sichtbar sind."
-                : "Alle Projektionen basieren auf Branchen-Durchschnittswerten. Fürechte Performance-Daten verbinde Google Search Console in den Einstellungen."
+                : "Alle Projektionen basieren auf Branchen-Durchschnittswerten. Für echte Performance-Daten verbinde Google Search Console in den Einstellungen."
               }
               {" "}Geschätzte Werte dienen als Orientierung und können von tatsächlichen Ergebnissen abweichen.
-            </p>
-          </Banner>
+            </Text>
+          </div>
         </BlockStack>
       </Page>
   );

@@ -213,15 +213,15 @@ export default function AdminPanel() {
   };
 
   const roleColors = {
-    Admin: { bg: "#fef2f2", color: "#dc2626", border: "#fecaca" },
-    Editor: { bg: "#eff6ff", color: "#2563eb", border: "#bfdbfe" },
-    Viewer: { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0" },
+    Admin: { bg: "#09090b", color: "#fafafa", border: "#27272a" },
+    Editor: { bg: "#18181b", color: "#d4d4d8", border: "#3f3f46" },
+    Viewer: { bg: "#f4f4f5", color: "#52525b", border: "#e4e4e7" },
   };
 
   const severityStyles = {
-    info: { bg: "#eff6ff", color: "#2563eb", dot: "#3b82f6" },
-    warning: { bg: "#fffbeb", color: "#d97706", dot: "#f59e0b" },
-    critical: { bg: "#fef2f2", color: "#dc2626", dot: "#ef4444" },
+    info: { bg: "#f4f4f5", color: "#3f3f46", dot: "#27272a" },
+    warning: { bg: "#e4e4e7", color: "#52525b", dot: "#3f3f46" },
+    critical: { bg: "#18181b", color: "#a1a1aa", dot: "#a1a1aa" },
   };
 
   return (
@@ -234,24 +234,24 @@ export default function AdminPanel() {
         <BlockStack gap="600">
 
           {/* Admin Header */}
-          <div className="titan-hero" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #312e81 100%)" }}>
+          <div className="titan-hero" style={{ background: "linear-gradient(135deg, #09090b 0%, #18181b 40%, #27272a 100%)" }}>
             <div className="titan-hero-content">
               <InlineStack align="space-between" blockAlign="center">
                 <div>
                   <h1 style={{ fontSize: "28px", fontWeight: 800, margin: 0, color: "#fff" }}>
                     🛡️ Admin Backend
                   </h1>
-                  <p style={{ color: "#94a3b8", marginTop: "8px", fontSize: "14px" }}>
+                  <p style={{ color: "#a1a1aa", marginTop: "8px", fontSize: "14px" }}>
                     Vollständige Kontrolle über Titan GEO Core
                   </p>
                 </div>
                 <div style={{
-                  background: "rgba(99, 102, 241, 0.2)",
-                  border: "1px solid rgba(99, 102, 241, 0.3)",
+                  background: "rgba(9, 9, 11, 0.2)",
+                  border: "1px solid rgba(9, 9, 11, 0.3)",
                   borderRadius: "12px", padding: "8px 16px",
                 }}>
                   <Text variant="bodySm" as="span" fontWeight="semibold">
-                    <span style={{ color: "#818cf8" }}>Admin-Modus aktiv</span>
+                    <span style={{ color: "#27272a" }}>Admin-Modus aktiv</span>
                   </Text>
                 </div>
               </InlineStack>
@@ -294,31 +294,31 @@ export default function AdminPanel() {
               <Divider />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
                 <div style={{
-                  background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+                  background: "linear-gradient(135deg, #f4f4f5, #e4e4e7)",
                   borderRadius: "12px", padding: "20px", textAlign: "center",
-                  border: "1px solid #bfdbfe",
+                  border: "1px solid #d4d4d8",
                 }}>
-                  <div style={{ fontSize: "32px", fontWeight: 800, color: "#2563eb" }}>{planDistribution.starter}</div>
-                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#1e40af" }}>Starter</div>
-                  <div style={{ fontSize: "12px", color: "#3b82f6", marginTop: "4px" }}>€9,99/Monat</div>
+                  <div style={{ fontSize: "32px", fontWeight: 800, color: "#09090b" }}>{planDistribution.starter}</div>
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#3f3f46" }}>Starter</div>
+                  <div style={{ fontSize: "12px", color: "#52525b", marginTop: "4px" }}>€9,99/Monat</div>
                 </div>
                 <div style={{
-                  background: "linear-gradient(135deg, #f5f3ff, #ede9fe)",
+                  background: "linear-gradient(135deg, #18181b, #27272a)",
                   borderRadius: "12px", padding: "20px", textAlign: "center",
-                  border: "1px solid #c4b5fd",
+                  border: "1px solid #3f3f46",
                 }}>
-                  <div style={{ fontSize: "32px", fontWeight: 800, color: "#7c3aed" }}>{planDistribution.pro}</div>
-                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#5b21b6" }}>Pro</div>
-                  <div style={{ fontSize: "12px", color: "#8b5cf6", marginTop: "4px" }}>€29,99/Monat</div>
+                  <div style={{ fontSize: "32px", fontWeight: 800, color: "#fafafa" }}>{planDistribution.pro}</div>
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#d4d4d8" }}>Pro</div>
+                  <div style={{ fontSize: "12px", color: "#a1a1aa", marginTop: "4px" }}>€29,99/Monat</div>
                 </div>
                 <div style={{
-                  background: "linear-gradient(135deg, #fdf4ff, #fae8ff)",
+                  background: "linear-gradient(135deg, #09090b, #18181b)",
                   borderRadius: "12px", padding: "20px", textAlign: "center",
-                  border: "1px solid #e879f9",
+                  border: "1px solid #27272a",
                 }}>
-                  <div style={{ fontSize: "32px", fontWeight: 800, color: "#a21caf" }}>{planDistribution.enterprise}</div>
-                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#86198f" }}>Enterprise</div>
-                  <div style={{ fontSize: "12px", color: "#c026d3", marginTop: "4px" }}>€79,99/Monat</div>
+                  <div style={{ fontSize: "32px", fontWeight: 800, color: "#fafafa" }}>{planDistribution.enterprise}</div>
+                  <div style={{ fontSize: "14px", fontWeight: 600, color: "#d4d4d8" }}>Enterprise</div>
+                  <div style={{ fontSize: "12px", color: "#a1a1aa", marginTop: "4px" }}>€79,99/Monat</div>
                 </div>
               </div>
 
@@ -328,15 +328,15 @@ export default function AdminPanel() {
                 <div style={{ display: "flex", height: "12px", borderRadius: "6px", overflow: "hidden", marginTop: "8px" }}>
                   <div style={{
                     width: `${(planDistribution.starter * 9.99 / revenue * 100).toFixed(0)}%`,
-                    background: "#3b82f6",
+                    background: "#27272a",
                   }} />
                   <div style={{
                     width: `${(planDistribution.pro * 29.99 / revenue * 100).toFixed(0)}%`,
-                    background: "#8b5cf6",
+                    background: "#18181b",
                   }} />
                   <div style={{
                     width: `${(planDistribution.enterprise * 79.99 / revenue * 100).toFixed(0)}%`,
-                    background: "#c026d3",
+                    background: "#52525b",
                   }} />
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
@@ -360,11 +360,11 @@ export default function AdminPanel() {
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
                       <tr>
-                        <th style={{ textAlign: "left", padding: "12px 16px", fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "2px solid #e2e8f0" }}>Shop</th>
-                        <th style={{ textAlign: "left", padding: "12px 16px", fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "2px solid #e2e8f0" }}>Plan</th>
-                        <th style={{ textAlign: "left", padding: "12px 16px", fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "2px solid #e2e8f0" }}>Nutzung</th>
-                        <th style={{ textAlign: "left", padding: "12px 16px", fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "2px solid #e2e8f0" }}>Letzte Aktivität</th>
-                        <th style={{ textAlign: "right", padding: "12px 16px", fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "2px solid #e2e8f0" }}>Aktion</th>
+                        <th style={{ textAlign: "left", padding: "12px 16px", fontSize: "12px", fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "2px solid #e4e4e7" }}>Shop</th>
+                        <th style={{ textAlign: "left", padding: "12px 16px", fontSize: "12px", fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "2px solid #e4e4e7" }}>Plan</th>
+                        <th style={{ textAlign: "left", padding: "12px 16px", fontSize: "12px", fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "2px solid #e4e4e7" }}>Nutzung</th>
+                        <th style={{ textAlign: "left", padding: "12px 16px", fontSize: "12px", fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "2px solid #e4e4e7" }}>Letzte Aktivität</th>
+                        <th style={{ textAlign: "right", padding: "12px 16px", fontSize: "12px", fontWeight: 700, color: "#71717a", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "2px solid #e4e4e7" }}>Aktion</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -373,7 +373,7 @@ export default function AdminPanel() {
                         const plan = plans[idx % 3];
                         const usage = Math.floor(Math.random() * 100) + 10;
                         return (
-                          <tr key={s.shop} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                          <tr key={s.shop} style={{ borderBottom: "1px solid #f4f4f5" }}>
                             <td style={{ padding: "12px 16px" }}>
                               <Text variant="bodyMd" fontWeight="semibold">{s.shop}</Text>
                             </td>
@@ -416,8 +416,8 @@ export default function AdminPanel() {
                     style={{
                       display: "flex", alignItems: "center", justifyContent: "space-between",
                       padding: "12px 16px", borderRadius: "10px",
-                      background: features[key] ? "#f0fdf4" : "#f8fafc",
-                      border: `1px solid ${features[key] ? "#bbf7d0" : "#e2e8f0"}`,
+                      background: features[key] ? "#f4f4f5" : "#fafafa",
+                      border: `1px solid ${features[key] ? "#d4d4d8" : "#e4e4e7"}`,
                       transition: "all 0.2s ease",
                     }}
                   >
@@ -455,7 +455,7 @@ export default function AdminPanel() {
                     onChange={(e) => setAiModel(e.target.value)}
                     style={{
                       width: "100%", padding: "8px 12px", borderRadius: "8px",
-                      border: "1px solid #e2e8f0", fontSize: "14px", background: "#fff",
+                      border: "1px solid #e4e4e7", fontSize: "14px", background: "#fff",
                     }}
                   >
                     <option value="gemini-2.5-flash">Gemini 2.5 Flash (Standard)</option>
@@ -471,12 +471,12 @@ export default function AdminPanel() {
               <Text variant="headingSm" as="h3">API-Schlüssel</Text>
               <div style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                background: "#1e293b", borderRadius: "10px", padding: "16px",
+                background: "#18181b", borderRadius: "10px", padding: "16px",
               }}>
                 <div>
                   <Text variant="bodySm" as="span">
-                    <span style={{ color: "#94a3b8" }}>Gemini API Key: </span>
-                    <code style={{ color: "#22d3ee", fontFamily: "monospace", fontSize: "14px" }}>{apiKeyMasked}</code>
+                    <span style={{ color: "#a1a1aa" }}>Gemini API Key: </span>
+                    <code style={{ color: "#52525b", fontFamily: "monospace", fontSize: "14px" }}>{apiKeyMasked}</code>
                   </Text>
                 </div>
                 <InlineStack gap="200">
@@ -494,23 +494,23 @@ export default function AdminPanel() {
               <Divider />
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
-                <div style={{ background: "#f0fdf4", borderRadius: "10px", padding: "16px", border: "1px solid #bbf7d0" }}>
+                <div style={{ background: "#f4f4f5", borderRadius: "10px", padding: "16px", border: "1px solid #e4e4e7" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#22c55e", display: "inline-block" }}></span>
+                    <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#09090b", display: "inline-block" }}></span>
                     <Text variant="bodySm" fontWeight="semibold">Rate-Limiting</Text>
                   </div>
                   <Text variant="bodySm" tone="subdued">Aktiv — 100 Req/min</Text>
                 </div>
-                <div style={{ background: "#fffbeb", borderRadius: "10px", padding: "16px", border: "1px solid #fde68a" }}>
+                <div style={{ background: "#f4f4f5", borderRadius: "10px", padding: "16px", border: "1px solid #e4e4e7" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#f59e0b", display: "inline-block" }}></span>
+                    <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#3f3f46", display: "inline-block" }}></span>
                     <Text variant="bodySm" fontWeight="semibold">API-Key Rotation</Text>
                   </div>
                   <Text variant="bodySm" tone="subdued">Fällig in 23 Tagen</Text>
                 </div>
-                <div style={{ background: "#f0fdf4", borderRadius: "10px", padding: "16px", border: "1px solid #bbf7d0" }}>
+                <div style={{ background: "#f4f4f5", borderRadius: "10px", padding: "16px", border: "1px solid #e4e4e7" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#22c55e", display: "inline-block" }}></span>
+                    <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#09090b", display: "inline-block" }}></span>
                     <Text variant="bodySm" fontWeight="semibold">Sessions</Text>
                   </div>
                   <Text variant="bodySm" tone="subdued">{totalShops} aktive Sessions</Text>
@@ -563,8 +563,8 @@ export default function AdminPanel() {
 
               {/* Add Team Member */}
               <div style={{
-                background: "#f8fafc", borderRadius: "12px", padding: "20px",
-                border: "1px solid #e2e8f0",
+                background: "#f4f4f5", borderRadius: "12px", padding: "20px",
+                border: "1px solid #e4e4e7",
               }}>
                 <Text variant="headingSm" as="h3">Neues Teammitglied hinzufügen</Text>
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr auto", gap: "12px", alignItems: "end", marginTop: "12px" }}>
@@ -583,7 +583,7 @@ export default function AdminPanel() {
                       onChange={(e) => setNewMemberRole(e.target.value)}
                       style={{
                         width: "100%", padding: "8px 12px", borderRadius: "8px",
-                        border: "1px solid #e2e8f0", fontSize: "14px", background: "#fff",
+                        border: "1px solid #e4e4e7", fontSize: "14px", background: "#fff",
                       }}
                     >
                       <option value="Admin">Admin</option>
@@ -607,13 +607,13 @@ export default function AdminPanel() {
                       style={{
                         display: "flex", alignItems: "center", justifyContent: "space-between",
                         padding: "14px 18px", borderRadius: "10px",
-                        background: "#fff", border: "1px solid #e2e8f0",
+                        background: "#fff", border: "1px solid #e4e4e7",
                       }}
                     >
                       <InlineStack gap="300" blockAlign="center">
                         <div style={{
                           width: "40px", height: "40px", borderRadius: "50%",
-                          background: "linear-gradient(135deg, #6366f1, #06b6d4)",
+                          background: "linear-gradient(135deg, #09090b, #3f3f46)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           color: "#fff", fontWeight: 700, fontSize: "16px",
                         }}>
@@ -647,11 +647,11 @@ export default function AdminPanel() {
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
                   <thead>
-                    <tr style={{ borderBottom: "2px solid #e2e8f0" }}>
-                      <th style={{ textAlign: "left", padding: "10px 14px", fontWeight: 700, color: "#64748b" }}>Berechtigung</th>
-                      <th style={{ textAlign: "center", padding: "10px 14px", fontWeight: 700, color: "#dc2626" }}>Admin</th>
-                      <th style={{ textAlign: "center", padding: "10px 14px", fontWeight: 700, color: "#2563eb" }}>Editor</th>
-                      <th style={{ textAlign: "center", padding: "10px 14px", fontWeight: 700, color: "#16a34a" }}>Viewer</th>
+                    <tr style={{ borderBottom: "2px solid #e4e4e7" }}>
+                      <th style={{ textAlign: "left", padding: "10px 14px", fontWeight: 700, color: "#71717a" }}>Berechtigung</th>
+                      <th style={{ textAlign: "center", padding: "10px 14px", fontWeight: 700, color: "#71717a" }}>Admin</th>
+                      <th style={{ textAlign: "center", padding: "10px 14px", fontWeight: 700, color: "#3f3f46" }}>Editor</th>
+                      <th style={{ textAlign: "center", padding: "10px 14px", fontWeight: 700, color: "#52525b" }}>Viewer</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -666,7 +666,7 @@ export default function AdminPanel() {
                       { perm: "Abrechnungsdaten ändern", admin: true, editor: false, viewer: false },
                       { perm: "App löschen/zurücksetzen", admin: true, editor: false, viewer: false },
                     ].map((row, idx) => (
-                      <tr key={idx} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                      <tr key={idx} style={{ borderBottom: "1px solid #f4f4f5" }}>
                         <td style={{ padding: "10px 14px", fontWeight: 500 }}>{row.perm}</td>
                         <td style={{ padding: "10px 14px", textAlign: "center" }}>
                           {row.admin ? "✅" : "❌"}
@@ -712,8 +712,8 @@ export default function AdminPanel() {
                     style={{
                       display: "flex", alignItems: "center", gap: "12px",
                       padding: "14px 18px", borderRadius: "10px",
-                      background: rec.priority === "hoch" ? "#fef2f2" : rec.priority === "mittel" ? "#fffbeb" : "#f0fdf4",
-                      border: `1px solid ${rec.priority === "hoch" ? "#fecaca" : rec.priority === "mittel" ? "#fde68a" : "#bbf7d0"}`,
+                      background: rec.priority === "hoch" ? "#18181b" : rec.priority === "mittel" ? "#e4e4e7" : "#f4f4f5",
+                      border: `1px solid ${rec.priority === "hoch" ? "#3f3f46" : rec.priority === "mittel" ? "#d4d4d8" : "#e4e4e7"}`,
                     }}
                   >
                     <span style={{ fontSize: "20px" }}>{rec.icon}</span>
@@ -754,7 +754,7 @@ export default function AdminPanel() {
                   <div className="titan-metric-subtitle">~1.500 pro Optimierung</div>
                 </div>
                 <div className="titan-metric-card">
-                  <div className="titan-metric-value" style={{ color: estimatedCostUSD > 10 ? "#dc2626" : "#10b981" }}>
+                  <div className="titan-metric-value" style={{ color: estimatedCostUSD > 10 ? "#71717a" : "#09090b" }}>
                     ${estimatedCostUSD.toFixed(2)}
                   </div>
                   <div className="titan-metric-label">Geschätzte Kosten</div>
@@ -764,10 +764,10 @@ export default function AdminPanel() {
               <div style={{
                 padding: "12px 16px",
                 borderRadius: "10px",
-                background: "#f8fafc",
-                border: "1px solid #e2e8f0",
+                background: "#f4f4f5",
+                border: "1px solid #e4e4e7",
                 fontSize: "12px",
-                color: "#64748b",
+                color: "#71717a",
                 lineHeight: 1.6,
               }}>
                 Berechnung basiert auf Gemini 2.5 Flash: $0,15/1M Input Tokens + $0,60/1M Output Tokens.
@@ -791,15 +791,15 @@ export default function AdminPanel() {
                 padding: "20px",
                 borderRadius: "12px",
                 background: isSimulatingEnterprise
-                  ? "linear-gradient(135deg, #fdf4ff, #fae8ff)"
-                  : "#f8fafc",
+                  ? "linear-gradient(135deg, #09090b, #18181b)"
+                  : "#f4f4f5",
                 border: isSimulatingEnterprise
-                  ? "2px solid #c026d3"
-                  : "1px solid #e2e8f0",
+                  ? "2px solid #27272a"
+                  : "1px solid #e4e4e7",
               }}>
                 <div style={{ marginBottom: "12px" }}>
                   <Text variant="headingSm" as="h3">Eigener Shop: {adminShop}</Text>
-                  <div style={{ fontSize: "12px", color: "#64748b", marginTop: "4px" }}>
+                  <div style={{ fontSize: "12px", color: "#71717a", marginTop: "4px" }}>
                     {isSimulatingEnterprise
                       ? "Enterprise-Simulation ist aktiv. Alle Features sind freigeschaltet."
                       : "Simuliere den Enterprise-Plan um alle Features zu testen."}
@@ -830,7 +830,7 @@ export default function AdminPanel() {
                     onChange={(e) => setPlanOverrideShop(e.target.value)}
                     style={{
                       width: "100%", padding: "8px 12px", borderRadius: "8px",
-                      border: "1px solid #e2e8f0", fontSize: "14px", background: "#fff",
+                      border: "1px solid #e4e4e7", fontSize: "14px", background: "#fff",
                     }}
                   >
                     <option value="">Shop auswählen...</option>
@@ -846,7 +846,7 @@ export default function AdminPanel() {
                     onChange={(e) => setPlanOverrideValue(e.target.value)}
                     style={{
                       width: "100%", padding: "8px 12px", borderRadius: "8px",
-                      border: "1px solid #e2e8f0", fontSize: "14px", background: "#fff",
+                      border: "1px solid #e4e4e7", fontSize: "14px", background: "#fff",
                     }}
                   >
                     <option value="none">Kein Override (Standard)</option>

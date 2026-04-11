@@ -665,10 +665,10 @@ const S = {
     display: "flex",
     gap: "6px",
     padding: "6px",
-    background: "linear-gradient(135deg, #f0f0ff 0%, #e8f4f8 100%)",
+    background: "linear-gradient(135deg, #f4f4f5 0%, #fafafa 100%)",
     borderRadius: "16px",
     marginBottom: "24px",
-    border: "1px solid rgba(99, 102, 241, 0.1)",
+    border: "1px solid rgba(9, 9, 11, 0.1)",
   },
   tabPill: (active) => ({
     flex: 1,
@@ -679,19 +679,19 @@ const S = {
     fontSize: "14px",
     fontWeight: active ? 700 : 500,
     color: active ? "#fff" : "#4b5563",
-    background: active ? "linear-gradient(135deg, #6366f1, #06b6d4)" : "transparent",
-    boxShadow: active ? "0 4px 12px rgba(99, 102, 241, 0.3)" : "none",
+    background: active ? "linear-gradient(135deg, #09090b, #3f3f46)" : "transparent",
+    boxShadow: active ? "0 4px 12px rgba(9, 9, 11, 0.3)" : "none",
     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     textAlign: "center",
     letterSpacing: active ? "0.3px" : "0",
   }),
   templateCard: (isActive, locked) => ({
     background: isActive
-      ? "linear-gradient(145deg, #ecfdf5 0%, #d1fae5 100%)"
-      : locked ? "linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%)" : "linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)",
+      ? "linear-gradient(145deg, #f4f4f5 0%, #e4e4e7 100%)"
+      : locked ? "linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%)" : "linear-gradient(145deg, #ffffff 0%, #f4f4f5 100%)",
     border: isActive
-      ? "2px solid #10b981"
-      : locked ? "1px solid #e5e7eb" : "1px solid rgba(99, 102, 241, 0.12)",
+      ? "2px solid #09090b"
+      : locked ? "1px solid #e4e4e7" : "1px solid rgba(9, 9, 11, 0.12)",
     borderRadius: "16px",
     padding: "20px",
     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -701,7 +701,7 @@ const S = {
     overflow: "hidden",
   }),
   templateCardHover: {
-    boxShadow: "0 8px 24px rgba(99, 102, 241, 0.15)",
+    boxShadow: "0 8px 24px rgba(9, 9, 11, 0.15)",
     transform: "translateY(-2px)",
   },
   activeBadge: {
@@ -710,7 +710,7 @@ const S = {
     gap: "4px",
     padding: "3px 10px",
     borderRadius: "20px",
-    background: "linear-gradient(135deg, #10b981, #059669)",
+    background: "linear-gradient(135deg, #09090b, #18181b)",
     color: "#fff",
     fontSize: "11px",
     fontWeight: 700,
@@ -725,18 +725,18 @@ const S = {
     fontSize: "11px",
     fontWeight: 600,
     background: tier === "enterprise"
-      ? "linear-gradient(135deg, #fbbf24, #f59e0b)"
+      ? "linear-gradient(135deg, #52525b, #3f3f46)"
       : tier === "pro"
-        ? "linear-gradient(135deg, #818cf8, #6366f1)"
-        : "linear-gradient(135deg, #6ee7b7, #34d399)",
+        ? "linear-gradient(135deg, #27272a, #09090b)"
+        : "linear-gradient(135deg, #d4d4d8, #09090b)",
     color: "#fff",
   }),
   quizCard: {
-    background: "linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)",
+    background: "linear-gradient(145deg, #ffffff 0%, #f4f4f5 100%)",
     borderRadius: "20px",
     padding: "40px 32px",
-    border: "1px solid rgba(99, 102, 241, 0.1)",
-    boxShadow: "0 4px 20px rgba(99, 102, 241, 0.08)",
+    border: "1px solid rgba(9, 9, 11, 0.1)",
+    boxShadow: "0 4px 20px rgba(9, 9, 11, 0.08)",
     minHeight: "400px",
     transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
   },
@@ -747,23 +747,23 @@ const S = {
     justifyContent: "center",
     padding: "16px 12px",
     borderRadius: "14px",
-    border: selected ? "2px solid #6366f1" : "1px solid #e5e7eb",
-    background: selected ? "linear-gradient(135deg, #ede9fe, #ddd6fe)" : "#fff",
+    border: selected ? "2px solid #09090b" : "1px solid #e4e4e7",
+    background: selected ? "linear-gradient(135deg, #f4f4f5, #e4e4e7)" : "#fff",
     cursor: "pointer",
     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
     minWidth: "110px",
     textAlign: "center",
-    boxShadow: selected ? "0 4px 12px rgba(99, 102, 241, 0.2)" : "0 1px 3px rgba(0,0,0,0.05)",
+    boxShadow: selected ? "0 4px 12px rgba(9, 9, 11, 0.2)" : "0 1px 3px rgba(0,0,0,0.05)",
   }),
   quizOptionCardHover: {
     transform: "translateY(-2px)",
-    boxShadow: "0 4px 12px rgba(99, 102, 241, 0.15)",
+    boxShadow: "0 4px 12px rgba(9, 9, 11, 0.15)",
   },
   chipButton: (selected, color = "indigo") => {
     const colors = {
-      indigo: { border: "#6366f1", bg: "linear-gradient(135deg, #ede9fe, #ddd6fe)", text: "#6d28d9" },
-      red: { border: "#ef4444", bg: "linear-gradient(135deg, #fef2f2, #fecaca)", text: "#dc2626" },
-      green: { border: "#10b981", bg: "linear-gradient(135deg, #ecfdf5, #d1fae5)", text: "#059669" },
+      indigo: { border: "#09090b", bg: "linear-gradient(135deg, #f4f4f5, #e4e4e7)", text: "#09090b" },
+      red: { border: "#a1a1aa", bg: "linear-gradient(135deg, #f4f4f5, #e4e4e7)", text: "#71717a" },
+      green: { border: "#09090b", bg: "linear-gradient(135deg, #f4f4f5, #e4e4e7)", text: "#18181b" },
     };
     const c = colors[color] || colors.indigo;
     return {
@@ -783,7 +783,7 @@ const S = {
     width: "100%",
     height: "6px",
     borderRadius: "3px",
-    background: "#e5e7eb",
+    background: "#e4e4e7",
     overflow: "hidden",
     marginBottom: "24px",
   },
@@ -791,14 +791,14 @@ const S = {
     width: `${pct}%`,
     height: "100%",
     borderRadius: "3px",
-    background: "linear-gradient(90deg, #6366f1, #06b6d4)",
+    background: "linear-gradient(90deg, #09090b, #3f3f46)",
     transition: "width 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
   }),
   navButton: (variant = "default") => ({
     padding: "10px 24px",
     borderRadius: "10px",
     border: variant === "primary" ? "none" : "1px solid #d1d5db",
-    background: variant === "primary" ? "linear-gradient(135deg, #6366f1, #06b6d4)" : "#fff",
+    background: variant === "primary" ? "linear-gradient(135deg, #09090b, #3f3f46)" : "#fff",
     color: variant === "primary" ? "#fff" : "#374151",
     fontSize: "14px",
     fontWeight: 600,
@@ -810,23 +810,23 @@ const S = {
     fontWeight: 700,
     textTransform: "uppercase",
     letterSpacing: "1px",
-    color: "#6366f1",
+    color: "#09090b",
     marginBottom: "4px",
   },
   tagChip: {
     display: "inline-block",
     padding: "2px 10px",
     borderRadius: "12px",
-    background: "rgba(99, 102, 241, 0.08)",
-    color: "#6366f1",
+    background: "rgba(9, 9, 11, 0.08)",
+    color: "#09090b",
     fontSize: "11px",
     fontWeight: 500,
   },
   customTemplateCard: (isActive) => ({
     background: isActive
-      ? "linear-gradient(145deg, #ecfdf5 0%, #d1fae5 100%)"
-      : "linear-gradient(145deg, #ffffff 0%, #f8fafc 100%)",
-    border: isActive ? "2px solid #10b981" : "1px solid rgba(99, 102, 241, 0.12)",
+      ? "linear-gradient(145deg, #f4f4f5 0%, #e4e4e7 100%)"
+      : "linear-gradient(145deg, #ffffff 0%, #f4f4f5 100%)",
+    border: isActive ? "2px solid #09090b" : "1px solid rgba(9, 9, 11, 0.12)",
     borderRadius: "16px",
     padding: "20px",
     transition: "all 0.3s ease",
@@ -992,7 +992,7 @@ export default function Templates() {
       <BlockStack gap="500">
         {/* Vorschlag für deinen Shop */}
         <div style={{
-          background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)",
+          background: "linear-gradient(135deg, #18181b 0%, #27272a 50%, #18181b 100%)",
           borderRadius: "20px",
           padding: "28px 32px",
           color: "#fff",
@@ -1002,7 +1002,7 @@ export default function Templates() {
           <div style={{
             position: "absolute", top: "-40px", right: "-20px",
             width: "200px", height: "200px",
-            background: "radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(9,9,11,0.3) 0%, transparent 70%)",
             borderRadius: "50%",
           }} />
           <div style={{ position: "relative", zIndex: 1 }}>
@@ -1081,7 +1081,7 @@ export default function Templates() {
                     <div style={{
                       width: "44px", height: "44px",
                       borderRadius: "12px",
-                      background: "linear-gradient(135deg, rgba(99,102,241,0.1), rgba(6,182,212,0.1))",
+                      background: "linear-gradient(135deg, rgba(9,9,11,0.1), rgba(63,63,70,0.1))",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: "22px",
                     }}>
@@ -1105,7 +1105,7 @@ export default function Templates() {
                     </div>
                   </div>
                   {accessible && (
-                    <span style={{ fontSize: "11px", color: "#6366f1", fontWeight: 500, marginTop: "4px" }}>
+                    <span style={{ fontSize: "11px", color: "#09090b", fontWeight: 500, marginTop: "4px" }}>
                       {isExpanded ? "▲" : "▼"}
                     </span>
                   )}
@@ -1129,13 +1129,13 @@ export default function Templates() {
                     marginTop: "12px",
                     padding: "10px 14px",
                     borderRadius: "10px",
-                    background: "linear-gradient(135deg, #fffbeb, #fef3c7)",
-                    border: "1px solid #fde68a",
+                    background: "linear-gradient(135deg, #fafafa, #f4f4f5)",
+                    border: "1px solid #e4e4e7",
                     fontSize: "13px",
-                    color: "#92400e",
+                    color: "#52525b",
                   }}>
                     Upgrade auf {template.tier === "enterprise" ? "Enterprise" : "Pro"} für dieses Template.{" "}
-                    <a href="/app/billing" style={{ color: "#6d28d9", fontWeight: 600, textDecoration: "none" }}>
+                    <a href="/app/billing" style={{ color: "#09090b", fontWeight: 600, textDecoration: "none" }}>
                       Jetzt upgraden →
                     </a>
                   </div>
@@ -1143,15 +1143,15 @@ export default function Templates() {
 
                 {/* Expanded Details */}
                 {accessible && isExpanded && (
-                  <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "16px" }}>
+                  <div style={{ borderTop: "1px solid #e4e4e7", paddingTop: "16px" }}>
                     {/* Beispiel-Output (immer sichtbar) */}
                     <div style={{ marginBottom: "16px" }}>
                       <div style={S.sectionTitle}>Beispiel-Output</div>
                       <div style={{
                         padding: "12px 16px",
                         borderRadius: "10px",
-                        background: "linear-gradient(135deg, #f0f0ff, #e8f4f8)",
-                        border: "1px solid rgba(99,102,241,0.1)",
+                        background: "linear-gradient(135deg, #f4f4f5, #fafafa)",
+                        border: "1px solid rgba(9,9,11,0.1)",
                         fontSize: "13px",
                         fontStyle: "italic",
                         color: "#374151",
@@ -1165,8 +1165,8 @@ export default function Templates() {
                       marginBottom: "16px",
                       padding: "12px 16px",
                       borderRadius: "10px",
-                      background: "rgba(99, 102, 241, 0.04)",
-                      border: "1px dashed rgba(99, 102, 241, 0.2)",
+                      background: "rgba(9, 9, 11, 0.04)",
+                      border: "1px dashed rgba(9, 9, 11, 0.2)",
                       fontSize: "12px",
                       color: "#6b7280",
                     }}>
@@ -1186,8 +1186,8 @@ export default function Templates() {
                           borderRadius: "10px",
                           border: "none",
                           background: isActive
-                            ? "linear-gradient(135deg, #10b981, #059669)"
-                            : "linear-gradient(135deg, #6366f1, #06b6d4)",
+                            ? "linear-gradient(135deg, #09090b, #18181b)"
+                            : "linear-gradient(135deg, #09090b, #3f3f46)",
                           color: "#fff",
                           fontSize: "13px",
                           fontWeight: 600,
@@ -1268,7 +1268,7 @@ export default function Templates() {
                   onMouseEnter={(e) => {
                     if (quizData.industry !== ind.label) {
                       e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow = "0 4px 12px rgba(99,102,241,0.15)";
+                      e.currentTarget.style.boxShadow = "0 4px 12px rgba(9,9,11,0.15)";
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -1279,7 +1279,7 @@ export default function Templates() {
                   }}
                 >
                   <span style={{ fontSize: "28px", marginBottom: "6px" }}>{ind.icon}</span>
-                  <span style={{ fontSize: "12px", fontWeight: 600, color: quizData.industry === ind.label ? "#6d28d9" : "#374151" }}>
+                  <span style={{ fontSize: "12px", fontWeight: 600, color: quizData.industry === ind.label ? "#09090b" : "#374151" }}>
                     {ind.label}
                   </span>
                 </button>
@@ -1320,7 +1320,7 @@ export default function Templates() {
                   onMouseEnter={(e) => {
                     if (quizData.style !== style.label) {
                       e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow = "0 4px 12px rgba(99,102,241,0.15)";
+                      e.currentTarget.style.boxShadow = "0 4px 12px rgba(9,9,11,0.15)";
                     }
                   }}
                   onMouseLeave={(e) => {
@@ -1331,7 +1331,7 @@ export default function Templates() {
                   }}
                 >
                   <span style={{ fontSize: "36px", marginBottom: "10px" }}>{style.icon}</span>
-                  <span style={{ fontSize: "14px", fontWeight: 700, color: quizData.style === style.label ? "#6d28d9" : "#1f2937", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "14px", fontWeight: 700, color: quizData.style === style.label ? "#09090b" : "#1f2937", marginBottom: "4px" }}>
                     {style.label}
                   </span>
                   <span style={{ fontSize: "11px", color: "#6b7280" }}>{style.desc}</span>
@@ -1366,14 +1366,14 @@ export default function Templates() {
                   type="range" min="14" max="70"
                   value={quizData.ageMin}
                   onChange={(e) => setQuizData(p => ({ ...p, ageMin: Math.min(Number(e.target.value), p.ageMax - 5) }))}
-                  style={{ flex: 1, accentColor: "#6366f1" }}
+                  style={{ flex: 1, accentColor: "#09090b" }}
                 />
                 <span style={{ fontSize: "12px", color: "#6b7280", minWidth: "30px" }}>Bis</span>
                 <input
                   type="range" min="18" max="80"
                   value={quizData.ageMax}
                   onChange={(e) => setQuizData(p => ({ ...p, ageMax: Math.max(Number(e.target.value), p.ageMin + 5) }))}
-                  style={{ flex: 1, accentColor: "#06b6d4" }}
+                  style={{ flex: 1, accentColor: "#3f3f46" }}
                 />
               </div>
             </div>
@@ -1402,7 +1402,7 @@ export default function Templates() {
                     onMouseEnter={(e) => {
                       if (!selected) {
                         e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(99,102,241,0.15)";
+                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(9,9,11,0.15)";
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -1413,10 +1413,10 @@ export default function Templates() {
                     }}
                   >
                     <span style={{ fontSize: "28px", marginBottom: "6px" }}>{cust.icon}</span>
-                    <span style={{ fontSize: "12px", fontWeight: 600, color: selected ? "#6d28d9" : "#374151" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: selected ? "#09090b" : "#374151" }}>
                       {cust.label}
                     </span>
-                    {selected && <span style={{ fontSize: "10px", color: "#6366f1" }}>✓</span>}
+                    {selected && <span style={{ fontSize: "10px", color: "#09090b" }}>✓</span>}
                   </button>
                 );
               })}
@@ -1453,9 +1453,9 @@ export default function Templates() {
                   style={{
                     padding: "20px 48px",
                     borderRadius: "14px",
-                    border: quizData.ansprache === opt ? "2px solid #6366f1" : "1px solid #d1d5db",
+                    border: quizData.ansprache === opt ? "2px solid #09090b" : "1px solid #d1d5db",
                     background: quizData.ansprache === opt
-                      ? "linear-gradient(135deg, #ede9fe, #ddd6fe)"
+                      ? "linear-gradient(135deg, #f4f4f5, #e4e4e7)"
                       : "#fff",
                     cursor: "pointer",
                     transition: "all 0.2s ease",
@@ -1467,7 +1467,7 @@ export default function Templates() {
                   <span style={{
                     fontSize: "18px",
                     fontWeight: 700,
-                    color: quizData.ansprache === opt ? "#6d28d9" : "#374151",
+                    color: quizData.ansprache === opt ? "#09090b" : "#374151",
                   }}>
                     {opt === "du" ? "Du" : "Sie"}
                   </span>
@@ -1489,7 +1489,7 @@ export default function Templates() {
                   type="range" min="0" max="100"
                   value={quizData.formalitaet}
                   onChange={(e) => setQuizData(p => ({ ...p, formalitaet: Number(e.target.value) }))}
-                  style={{ flex: 1, accentColor: "#6366f1" }}
+                  style={{ flex: 1, accentColor: "#09090b" }}
                 />
                 <span style={{ fontSize: "13px", color: "#6b7280", fontWeight: 500 }}>Locker</span>
               </div>
@@ -1536,7 +1536,7 @@ export default function Templates() {
                     onMouseEnter={(e) => {
                       if (!selected) {
                         e.currentTarget.style.transform = "translateY(-2px)";
-                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(99,102,241,0.15)";
+                        e.currentTarget.style.boxShadow = "0 4px 12px rgba(9,9,11,0.15)";
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -1547,7 +1547,7 @@ export default function Templates() {
                     }}
                   >
                     <span style={{ fontSize: "32px", marginBottom: "8px" }}>{val.icon}</span>
-                    <span style={{ fontSize: "13px", fontWeight: 700, color: selected ? "#6d28d9" : "#1f2937" }}>
+                    <span style={{ fontSize: "13px", fontWeight: 700, color: selected ? "#09090b" : "#1f2937" }}>
                       {val.label}
                     </span>
                     {selected && <span style={{ fontSize: "18px", marginTop: "4px" }}>✓</span>}
@@ -1628,10 +1628,10 @@ export default function Templates() {
                 marginTop: "16px",
                 padding: "16px",
                 borderRadius: "12px",
-                background: "linear-gradient(135deg, #f0f0ff, #e8f4f8)",
-                border: "1px solid rgba(99,102,241,0.1)",
+                background: "linear-gradient(135deg, #f4f4f5, #fafafa)",
+                border: "1px solid rgba(9,9,11,0.1)",
               }}>
-                <div style={{ fontSize: "13px", fontWeight: 600, color: "#6366f1", marginBottom: "8px" }}>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: "#09090b", marginBottom: "8px" }}>
                   📋 Zusammenfassung deiner Angaben:
                 </div>
                 <div style={{ fontSize: "12px", color: "#4b5563", lineHeight: 1.8 }}>
@@ -1665,16 +1665,16 @@ export default function Templates() {
               <div>
                 <div style={{
                   borderRadius: "16px",
-                  border: "2px solid #10b981",
+                  border: "2px solid #09090b",
                   overflow: "hidden",
                   marginBottom: "24px",
                 }}>
                   <div style={{
                     padding: "16px 20px",
-                    background: "linear-gradient(135deg, #ecfdf5, #d1fae5)",
-                    borderBottom: "1px solid #a7f3d0",
+                    background: "linear-gradient(135deg, #f4f4f5, #e4e4e7)",
+                    borderBottom: "1px solid #d4d4d8",
                   }}>
-                    <span style={{ fontSize: "14px", fontWeight: 700, color: "#065f46" }}>
+                    <span style={{ fontSize: "14px", fontWeight: 700, color: "#18181b" }}>
                       ✓ KI-generierte Brand DNA
                     </span>
                   </div>
@@ -1685,17 +1685,17 @@ export default function Templates() {
                         {generatedDNA.brandVoice}
                       </p>
                     </div>
-                    <div style={{ height: "1px", background: "#e5e7eb", margin: "16px 0" }} />
+                    <div style={{ height: "1px", background: "#e4e4e7", margin: "16px 0" }} />
                     <div style={{ marginBottom: "16px" }}>
                       <div style={S.sectionTitle}>Zielgruppe</div>
                       <p style={{ fontSize: "13px", color: "#374151", lineHeight: 1.7, margin: 0 }}>
                         {generatedDNA.targetAudience}
                       </p>
                     </div>
-                    <div style={{ height: "1px", background: "#e5e7eb", margin: "16px 0" }} />
+                    <div style={{ height: "1px", background: "#e4e4e7", margin: "16px 0" }} />
                     <div>
                       <div style={S.sectionTitle}>No-Gos</div>
-                      <p style={{ fontSize: "13px", color: "#dc2626", lineHeight: 1.7, margin: 0 }}>
+                      <p style={{ fontSize: "13px", color: "#71717a", lineHeight: 1.7, margin: 0 }}>
                         {generatedDNA.noGos}
                       </p>
                     </div>
@@ -1706,8 +1706,8 @@ export default function Templates() {
                 <div style={{
                   padding: "20px",
                   borderRadius: "14px",
-                  background: "linear-gradient(135deg, #f0f0ff, #e8f4f8)",
-                  border: "1px solid rgba(99,102,241,0.15)",
+                  background: "linear-gradient(135deg, #f4f4f5, #fafafa)",
+                  border: "1px solid rgba(9,9,11,0.15)",
                 }}>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#1f2937", marginBottom: "12px" }}>
                     💾 Als Template speichern
@@ -1741,19 +1741,19 @@ export default function Templates() {
                 textAlign: "center",
                 padding: "40px",
                 borderRadius: "14px",
-                background: "#fffbeb",
-                border: "1px solid #fde68a",
+                background: "#fafafa",
+                border: "1px solid #e4e4e7",
               }}>
                 {isGenerating ? (
                   <>
                     <span style={{ fontSize: "32px", display: "block", marginBottom: "12px" }}>⏳</span>
-                    <p style={{ fontSize: "14px", color: "#92400e" }}>
+                    <p style={{ fontSize: "14px", color: "#52525b" }}>
                       KI generiert deine Brand DNA... Bitte warten.
                     </p>
                   </>
                 ) : (
                   <>
-                    <p style={{ fontSize: "14px", color: "#92400e" }}>
+                    <p style={{ fontSize: "14px", color: "#52525b" }}>
                       Noch keine Brand DNA generiert. Gehe zurück und vervollständige den Fragebogen.
                     </p>
                     <button onClick={() => setQuizStep(6)} style={S.navButton()}>
@@ -1781,7 +1781,7 @@ export default function Templates() {
         <span style={{ fontSize: "12px", color: "#6b7280" }}>
           Schritt {Math.min(quizStep + 1, 7)} von 7
         </span>
-        <span style={{ fontSize: "12px", color: "#6366f1", fontWeight: 600 }}>
+        <span style={{ fontSize: "12px", color: "#09090b", fontWeight: 600 }}>
           {quizProgress}%
         </span>
       </div>
@@ -1849,18 +1849,18 @@ export default function Templates() {
         {/* Aktuelles aktives Template */}
         {currentVoice && (
           <div style={{
-            background: "linear-gradient(145deg, #ecfdf5 0%, #d1fae5 100%)",
-            border: "2px solid #10b981",
+            background: "linear-gradient(145deg, #f4f4f5 0%, #e4e4e7 100%)",
+            border: "2px solid #09090b",
             borderRadius: "16px",
             padding: "20px",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
               <span style={S.activeBadge}>✓ Aktuell aktiv</span>
-              <span style={{ fontSize: "14px", fontWeight: 700, color: "#065f46" }}>
+              <span style={{ fontSize: "14px", fontWeight: 700, color: "#18181b" }}>
                 {activeId ? (TEMPLATES.find(t => t.id === activeId)?.name || "Custom Template") : "Individuelles Profil"}
               </span>
             </div>
-            <p style={{ fontSize: "13px", color: "#065f46", margin: 0 }}>
+            <p style={{ fontSize: "13px", color: "#18181b", margin: 0 }}>
               Deine aktive Brand DNA wird bei jeder SEO-Optimierung automatisch verwendet.
             </p>
           </div>
@@ -1985,7 +1985,7 @@ export default function Templates() {
                               style={{
                                 padding: "6px 14px", borderRadius: "8px",
                                 border: "none",
-                                background: "linear-gradient(135deg, #6366f1, #06b6d4)",
+                                background: "linear-gradient(135deg, #09090b, #3f3f46)",
                                 color: "#fff", fontSize: "12px", fontWeight: 600,
                                 cursor: "pointer", transition: "all 0.2s ease",
                               }}
@@ -2001,18 +2001,18 @@ export default function Templates() {
                         <div style={{
                           padding: "12px",
                           borderRadius: "10px",
-                          background: "rgba(99,102,241,0.04)",
+                          background: "rgba(9,9,11,0.04)",
                           marginBottom: "16px",
                           fontSize: "12px",
                           color: "#4b5563",
                           lineHeight: 1.6,
                         }}>
                           <div style={{ marginBottom: "6px" }}>
-                            <strong style={{ color: "#6366f1", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Markenstimme:</strong>
+                            <strong style={{ color: "#09090b", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Markenstimme:</strong>
                             <div style={{ marginTop: "2px" }}>{tmpl.brandVoice ? tmpl.brandVoice.substring(0, 120) + (tmpl.brandVoice.length > 120 ? "..." : "") : "–"}</div>
                           </div>
                           <div>
-                            <strong style={{ color: "#6366f1", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>No-Gos:</strong>
+                            <strong style={{ color: "#09090b", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.5px" }}>No-Gos:</strong>
                             <div style={{ marginTop: "2px" }}>{tmpl.noGos ? tmpl.noGos.substring(0, 100) + (tmpl.noGos.length > 100 ? "..." : "") : "–"}</div>
                           </div>
                         </div>
@@ -2027,9 +2027,9 @@ export default function Templates() {
                         style={{
                           padding: "6px 14px",
                           borderRadius: "8px",
-                          border: "1px solid #fecaca",
+                          border: "1px solid #e4e4e7",
                           background: "#fff",
-                          color: "#dc2626",
+                          color: "#71717a",
                           fontSize: "12px",
                           fontWeight: 500,
                           cursor: "pointer",
@@ -2043,9 +2043,9 @@ export default function Templates() {
                         style={{
                           padding: "6px 14px",
                           borderRadius: "8px",
-                          border: "1px solid #c7d2fe",
+                          border: "1px solid #d4d4d8",
                           background: "#fff",
-                          color: "#6366f1",
+                          color: "#09090b",
                           fontSize: "12px",
                           fontWeight: 500,
                           cursor: "pointer",
@@ -2061,8 +2061,8 @@ export default function Templates() {
                           borderRadius: "8px",
                           border: "none",
                           background: isActive
-                            ? "linear-gradient(135deg, #10b981, #059669)"
-                            : "linear-gradient(135deg, #6366f1, #06b6d4)",
+                            ? "linear-gradient(135deg, #09090b, #18181b)"
+                            : "linear-gradient(135deg, #09090b, #3f3f46)",
                           color: "#fff",
                           fontSize: "12px",
                           fontWeight: 600,
@@ -2099,7 +2099,7 @@ export default function Templates() {
               padding: "12px 16px",
               borderRadius: "10px",
               background: "#f9fafb",
-              border: "1px solid #e5e7eb",
+              border: "1px solid #e4e4e7",
               fontSize: "13px",
               color: "#4b5563",
             }}>
@@ -2142,7 +2142,7 @@ export default function Templates() {
           {/* Aktive Brand DNA — prominente Anzeige */}
           {currentVoice ? (
             <div style={{
-              background: "linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%)",
+              background: "linear-gradient(135deg, #18181b 0%, #27272a 50%, #18181b 100%)",
               borderRadius: "16px",
               padding: "20px 24px",
               color: "#fff",
@@ -2212,7 +2212,7 @@ export default function Templates() {
                 style={S.tabPill(selectedTab === i)}
                 onMouseEnter={(e) => {
                   if (selectedTab !== i) {
-                    e.currentTarget.style.background = "rgba(99,102,241,0.08)";
+                    e.currentTarget.style.background = "rgba(9,9,11,0.08)";
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -2232,7 +2232,7 @@ export default function Templates() {
                     width: "20px",
                     height: "20px",
                     borderRadius: "50%",
-                    background: selectedTab === i ? "rgba(255,255,255,0.25)" : "rgba(99,102,241,0.12)",
+                    background: selectedTab === i ? "rgba(255,255,255,0.25)" : "rgba(9,9,11,0.12)",
                     fontSize: "11px",
                     fontWeight: 700,
                   }}>
