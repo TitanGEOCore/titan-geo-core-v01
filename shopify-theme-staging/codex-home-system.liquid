@@ -1,0 +1,153 @@
+{% style %}
+#shopify-section-{{ section.id }} .tw-system{padding:{{ section.settings.padding_top }}px 0 {{ section.settings.padding_bottom }}px;background:{{ section.settings.background }};color:{{ section.settings.text_color }}}
+#shopify-section-{{ section.id }} .tw-system__head{display:grid;grid-template-columns:minmax(0,.42fr) minmax(0,1fr);gap:{{ section.settings.header_gap }}px;align-items:start}
+#shopify-section-{{ section.id }} .tw-system__kicker{margin:0 0 {{ section.settings.kicker_margin }}px;color:{{ section.settings.kicker_color }};font-size:{{ section.settings.kicker_size }}px;line-height:{{ section.settings.kicker_line | divided_by: 100.0 }};letter-spacing:{{ section.settings.kicker_letter }}px;font-weight:{{ section.settings.kicker_weight }};text-transform:{{ section.settings.kicker_transform }}}
+#shopify-section-{{ section.id }} .tw-system__intro{max-width:{{ section.settings.intro_width }}px;color:{{ section.settings.intro_color }};font-size:{{ section.settings.intro_size }}px;line-height:{{ section.settings.intro_line | divided_by: 100.0 }};letter-spacing:{{ section.settings.intro_letter }}px}
+#shopify-section-{{ section.id }} .tw-system__title{margin:0;color:{{ section.settings.heading_color }};font-family:var(--font-display);font-size:{{ section.settings.heading_size }}px;line-height:{{ section.settings.heading_line | divided_by: 100.0 }};letter-spacing:{{ section.settings.heading_letter }}px;font-weight:{{ section.settings.heading_weight }};text-align:{{ section.settings.heading_align }}}
+#shopify-section-{{ section.id }} .tw-system__grid{display:grid;grid-template-columns:repeat({{ section.settings.columns_desktop }},minmax(0,1fr));gap:{{ section.settings.box_gap }}px;margin-top:{{ section.settings.box_margin_top }}px}
+#shopify-section-{{ section.id }} .tw-system__card{min-height:var(--card-h);padding:var(--card-pt) var(--card-px) var(--card-pb);display:flex;flex-direction:column;justify-content:var(--card-justify);background:var(--card-bg);color:var(--card-heading);border:var(--card-border-width) solid var(--card-border);border-radius:var(--card-radius);overflow:hidden;transition:transform .25s ease,filter .25s ease}
+#shopify-section-{{ section.id }} .tw-system__card:hover{transform:translateY({{ section.settings.hover_lift }}px);filter:brightness({{ section.settings.hover_brightness | divided_by: 100.0 }})}
+#shopify-section-{{ section.id }} .tw-system__label{display:block;color:var(--card-label);font-size:var(--label-size);line-height:var(--label-line);letter-spacing:var(--label-letter);font-weight:var(--label-weight);text-transform:var(--label-transform)}
+#shopify-section-{{ section.id }} .tw-system__card-title{margin:0;color:var(--card-heading);font-family:var(--font-display);font-size:var(--title-size);line-height:var(--title-line);letter-spacing:var(--title-letter);font-weight:var(--title-weight);text-align:var(--text-align)}
+#shopify-section-{{ section.id }} .tw-system__card-text{max-width:var(--text-width);margin-top:var(--text-margin);color:var(--card-text);font-size:var(--text-size);line-height:var(--text-line);letter-spacing:var(--text-letter);text-align:var(--text-align)}
+#shopify-section-{{ section.id }} .tw-system__card-text p{margin:0}
+@media(max-width:1100px){#shopify-section-{{ section.id }} .tw-system__grid{grid-template-columns:repeat({{ section.settings.columns_tablet }},minmax(0,1fr))}}
+@media(max-width:749px){
+#shopify-section-{{ section.id }} .tw-system{padding:{{ section.settings.padding_top_mobile }}px 0 {{ section.settings.padding_bottom_mobile }}px}
+#shopify-section-{{ section.id }} .tw-system__head{grid-template-columns:1fr;gap:{{ section.settings.header_gap_mobile }}px}
+#shopify-section-{{ section.id }} .tw-system__kicker{margin-bottom:{{ section.settings.kicker_margin_mobile }}px;font-size:{{ section.settings.kicker_size_mobile }}px}
+#shopify-section-{{ section.id }} .tw-system__intro{font-size:{{ section.settings.intro_size_mobile }}px;line-height:{{ section.settings.intro_line_mobile | divided_by: 100.0 }}}
+#shopify-section-{{ section.id }} .tw-system__title{font-size:{{ section.settings.heading_size_mobile }}px;line-height:{{ section.settings.heading_line_mobile | divided_by: 100.0 }}}
+#shopify-section-{{ section.id }} .tw-system__grid{grid-template-columns:repeat({{ section.settings.columns_mobile }},minmax(0,1fr));gap:{{ section.settings.box_gap_mobile }}px;margin-top:{{ section.settings.box_margin_top_mobile }}px}
+#shopify-section-{{ section.id }} .tw-system__card{min-height:var(--card-h-mobile);padding:var(--card-pt-mobile) var(--card-px-mobile) var(--card-pb-mobile)}
+#shopify-section-{{ section.id }} .tw-system__label{font-size:var(--label-size-mobile)}
+#shopify-section-{{ section.id }} .tw-system__card-title{font-size:var(--title-size-mobile)}
+#shopify-section-{{ section.id }} .tw-system__card-text{font-size:var(--text-size-mobile);line-height:var(--text-line-mobile)}
+}
+{% endstyle %}
+<section class="m10-section tw-system" data-tw-section-root>
+  <div class="m10-shell">
+    <div class="tw-system__head" data-reveal>
+      <div>
+        {% if section.settings.kicker != blank %}<p class="m10-kicker tw-system__kicker">{{ section.settings.kicker }}</p>{% endif %}
+        {% if section.settings.intro != blank %}<div class="m10-body tw-system__intro">{{ section.settings.intro }}</div>{% endif %}
+      </div>
+      {% if section.settings.heading != blank %}<h2 class="m10-title tw-system__title">{{ section.settings.heading | newline_to_br }}</h2>{% endif %}
+    </div>
+    <div class="m10-domain-ribbon tw-system__grid" data-reveal>
+      {% for block in section.blocks %}
+        {% case block.settings.vertical_align %}{% when 'start' %}{% assign card_justify = 'flex-start' %}{% when 'center' %}{% assign card_justify = 'center' %}{% when 'end' %}{% assign card_justify = 'flex-end' %}{% else %}{% assign card_justify = 'space-between' %}{% endcase %}
+        <a class="m10-domain-ribbon__item tw-system__card" href="{{ block.settings.link | default: '#' }}" style="--card-bg:{{ block.settings.background }};--card-label:{{ block.settings.label_color }};--card-heading:{{ block.settings.heading_color }};--card-text:{{ block.settings.body_color }};--card-border:{{ block.settings.border_color }};--card-border-width:{{ block.settings.border_width }}px;--card-radius:{{ block.settings.radius }}px;--card-h:{{ block.settings.min_height }}px;--card-h-mobile:{{ block.settings.min_height_mobile }}px;--card-pt:{{ block.settings.padding_top }}px;--card-pb:{{ block.settings.padding_bottom }}px;--card-px:{{ block.settings.padding_horizontal }}px;--card-pt-mobile:{{ block.settings.padding_top_mobile }}px;--card-pb-mobile:{{ block.settings.padding_bottom_mobile }}px;--card-px-mobile:{{ block.settings.padding_horizontal_mobile }}px;--card-justify:{{ card_justify }};--label-size:{{ block.settings.label_size }}px;--label-size-mobile:{{ block.settings.label_size_mobile }}px;--label-line:{{ block.settings.label_line | divided_by: 100.0 }};--label-letter:{{ block.settings.label_letter }}px;--label-weight:{{ block.settings.label_weight }};--label-transform:{{ block.settings.label_transform }};--title-size:{{ block.settings.heading_size }}px;--title-size-mobile:{{ block.settings.heading_size_mobile }}px;--title-line:{{ block.settings.heading_line | divided_by: 100.0 }};--title-letter:{{ block.settings.heading_letter }}px;--title-weight:{{ block.settings.heading_weight }};--text-size:{{ block.settings.body_size }}px;--text-size-mobile:{{ block.settings.body_size_mobile }}px;--text-line:{{ block.settings.body_line | divided_by: 100.0 }};--text-line-mobile:{{ block.settings.body_line_mobile | divided_by: 100.0 }};--text-letter:{{ block.settings.body_letter }}px;--text-width:{{ block.settings.body_width }}px;--text-margin:{{ block.settings.body_margin }}px;--text-align:{{ block.settings.text_align }}" {{ block.shopify_attributes }}>
+          <span class="m10-domain-ribbon__number tw-system__label">{{ block.settings.label }}</span>
+          <div><h3 class="m10-domain-ribbon__title tw-system__card-title">{{ block.settings.heading }}</h3>{% if block.settings.body != blank %}<div class="m10-domain-ribbon__text tw-system__card-text">{{ block.settings.body }}</div>{% endif %}</div>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% schema %}
+{
+  "name":"Codex Start — System",
+  "tag":"section",
+  "max_blocks":6,
+  "settings":[
+    {"type":"header","content":"Inhalt"},
+    {"type":"text","id":"kicker","label":"Oberzeile","default":"Die Architektur"},
+    {"type":"richtext","id":"intro","label":"Einleitung","default":"<p>Die Bereiche sind keine Kategorien zum Durchklicken. Sie bauen aufeinander auf: Zustand, Grundlage, Wirkung und die unsichtbare Mechanik darunter.</p>"},
+    {"type":"textarea","id":"heading","label":"Überschrift","default":"Vier Ebenen.\nEin geschlossenes System."},
+    {"type":"header","content":"Layout"},
+    {"type":"range","id":"padding_top","label":"Abstand oben Desktop","min":0,"max":240,"step":4,"unit":"px","default":140},
+    {"type":"range","id":"padding_bottom","label":"Abstand unten Desktop","min":0,"max":240,"step":4,"unit":"px","default":140},
+    {"type":"range","id":"padding_top_mobile","label":"Abstand oben Mobil","min":0,"max":180,"step":4,"unit":"px","default":84},
+    {"type":"range","id":"padding_bottom_mobile","label":"Abstand unten Mobil","min":0,"max":180,"step":4,"unit":"px","default":84},
+    {"type":"range","id":"header_gap","label":"Abstand Kopf Desktop","min":0,"max":180,"step":4,"unit":"px","default":96},
+    {"type":"range","id":"header_gap_mobile","label":"Abstand Kopf Mobil","min":0,"max":100,"step":4,"unit":"px","default":40},
+    {"type":"range","id":"box_margin_top","label":"Abstand zu Boxen Desktop","min":0,"max":160,"step":4,"unit":"px","default":90},
+    {"type":"range","id":"box_margin_top_mobile","label":"Abstand zu Boxen Mobil","min":0,"max":120,"step":4,"unit":"px","default":56},
+    {"type":"select","id":"columns_desktop","label":"Spalten Desktop","default":"4","options":[{"value":"1","label":"1"},{"value":"2","label":"2"},{"value":"3","label":"3"},{"value":"4","label":"4"}]},
+    {"type":"select","id":"columns_tablet","label":"Spalten Tablet","default":"2","options":[{"value":"1","label":"1"},{"value":"2","label":"2"},{"value":"3","label":"3"}]},
+    {"type":"select","id":"columns_mobile","label":"Spalten Mobil","default":"1","options":[{"value":"1","label":"1"},{"value":"2","label":"2"}]},
+    {"type":"range","id":"box_gap","label":"Abstand Boxen Desktop","min":0,"max":60,"step":2,"unit":"px","default":0},
+    {"type":"range","id":"box_gap_mobile","label":"Abstand Boxen Mobil","min":0,"max":40,"step":2,"unit":"px","default":0},
+    {"type":"range","id":"hover_lift","label":"Hover Anhebung","min":-12,"max":0,"step":1,"unit":"px","default":0},
+    {"type":"range","id":"hover_brightness","label":"Hover Helligkeit","min":90,"max":115,"step":1,"unit":"%","default":104},
+    {"type":"header","content":"Typografie Kopf"},
+    {"type":"range","id":"kicker_size","label":"Oberzeile Desktop","min":8,"max":24,"step":1,"unit":"px","default":10},
+    {"type":"range","id":"kicker_size_mobile","label":"Oberzeile Mobil","min":8,"max":20,"step":1,"unit":"px","default":10},
+    {"type":"range","id":"kicker_line","label":"Oberzeile Zeilenhöhe","min":90,"max":220,"step":5,"unit":"%","default":140},
+    {"type":"range","id":"kicker_letter","label":"Oberzeile Buchstabenabstand","min":0,"max":8,"step":0.2,"unit":"px","default":2},
+    {"type":"select","id":"kicker_weight","label":"Oberzeile Stärke","default":"700","options":[{"value":"400","label":"Normal"},{"value":"500","label":"Medium"},{"value":"600","label":"Semibold"},{"value":"700","label":"Bold"}]},
+    {"type":"select","id":"kicker_transform","label":"Oberzeile Schreibweise","default":"uppercase","options":[{"value":"none","label":"Original"},{"value":"uppercase","label":"Großbuchstaben"}]},
+    {"type":"range","id":"kicker_margin","label":"Abstand nach Oberzeile Desktop","min":0,"max":80,"step":2,"unit":"px","default":28},
+    {"type":"range","id":"kicker_margin_mobile","label":"Abstand nach Oberzeile Mobil","min":0,"max":60,"step":2,"unit":"px","default":24},
+    {"type":"range","id":"intro_size","label":"Einleitung Desktop","min":13,"max":32,"step":1,"unit":"px","default":19},
+    {"type":"range","id":"intro_size_mobile","label":"Einleitung Mobil","min":13,"max":26,"step":1,"unit":"px","default":17},
+    {"type":"range","id":"intro_line","label":"Einleitung Zeilenhöhe Desktop","min":110,"max":220,"step":5,"unit":"%","default":180},
+    {"type":"range","id":"intro_line_mobile","label":"Einleitung Zeilenhöhe Mobil","min":110,"max":220,"step":5,"unit":"%","default":170},
+    {"type":"range","id":"intro_letter","label":"Einleitung Buchstabenabstand","min":-1,"max":4,"step":0.1,"unit":"px","default":0},
+    {"type":"range","id":"intro_width","label":"Einleitung maximale Breite","min":280,"max":900,"step":20,"unit":"px","default":560},
+    {"type":"range","id":"heading_size","label":"Überschrift Desktop","min":32,"max":110,"step":2,"unit":"px","default":72},
+    {"type":"range","id":"heading_size_mobile","label":"Überschrift Mobil","min":28,"max":70,"step":1,"unit":"px","default":48},
+    {"type":"range","id":"heading_line","label":"Überschrift Zeilenhöhe Desktop","min":75,"max":160,"step":1,"unit":"%","default":96},
+    {"type":"range","id":"heading_line_mobile","label":"Überschrift Zeilenhöhe Mobil","min":80,"max":170,"step":1,"unit":"%","default":100},
+    {"type":"range","id":"heading_letter","label":"Überschrift Buchstabenabstand","min":-4,"max":4,"step":0.1,"unit":"px","default":-2.4},
+    {"type":"select","id":"heading_weight","label":"Überschrift Stärke","default":"400","options":[{"value":"400","label":"Normal"},{"value":"500","label":"Medium"},{"value":"600","label":"Semibold"},{"value":"700","label":"Bold"}]},
+    {"type":"select","id":"heading_align","label":"Überschrift Ausrichtung","default":"left","options":[{"value":"left","label":"Links"},{"value":"center","label":"Zentriert"},{"value":"right","label":"Rechts"}]},
+    {"type":"header","content":"Farben"},
+    {"type":"color","id":"background","label":"Hintergrund","default":"#f2eee5"},
+    {"type":"color","id":"text_color","label":"Grundfarbe","default":"#0a0a09"},
+    {"type":"color","id":"heading_color","label":"Überschrift","default":"#0a0a09"},
+    {"type":"color","id":"intro_color","label":"Einleitung","default":"#6c6962"},
+    {"type":"color","id":"kicker_color","label":"Oberzeile","default":"#0a0a09"}
+  ],
+  "blocks":[
+    {"type":"domain","name":"System-Box","settings":[
+      {"type":"text","id":"label","label":"Oberzeile","default":"I · Innerer Zustand"},
+      {"type":"text","id":"heading","label":"Überschrift","default":"Du selbst"},
+      {"type":"richtext","id":"body","label":"Beschreibung","default":"<p>Impuls, Angst, Kontrollverlust, Körper und das lange Spiel.</p>"},
+      {"type":"url","id":"link","label":"Zielseite"},
+      {"type":"header","content":"Farben"},
+      {"type":"color","id":"background","label":"Hintergrund","default":"#0a0a09"},
+      {"type":"color","id":"label_color","label":"Oberzeile","default":"#f2eee5"},
+      {"type":"color","id":"heading_color","label":"Überschrift","default":"#f2eee5"},
+      {"type":"color","id":"body_color","label":"Beschreibung","default":"#aaa79f"},
+      {"type":"color","id":"border_color","label":"Rahmen","default":"#0a0a09"},
+      {"type":"range","id":"border_width","label":"Rahmenstärke","min":0,"max":8,"step":1,"unit":"px","default":0},
+      {"type":"range","id":"radius","label":"Eckenradius","min":0,"max":40,"step":2,"unit":"px","default":0},
+      {"type":"header","content":"Box"},
+      {"type":"range","id":"min_height","label":"Mindesthöhe Desktop","min":260,"max":900,"step":10,"unit":"px","default":520},
+      {"type":"range","id":"min_height_mobile","label":"Mindesthöhe Mobil","min":220,"max":700,"step":10,"unit":"px","default":340},
+      {"type":"range","id":"padding_top","label":"Innenabstand oben Desktop","min":0,"max":120,"step":4,"unit":"px","default":38},
+      {"type":"range","id":"padding_bottom","label":"Innenabstand unten Desktop","min":0,"max":120,"step":4,"unit":"px","default":38},
+      {"type":"range","id":"padding_horizontal","label":"Innenabstand seitlich Desktop","min":0,"max":100,"step":4,"unit":"px","default":32},
+      {"type":"range","id":"padding_top_mobile","label":"Innenabstand oben Mobil","min":0,"max":100,"step":4,"unit":"px","default":32},
+      {"type":"range","id":"padding_bottom_mobile","label":"Innenabstand unten Mobil","min":0,"max":100,"step":4,"unit":"px","default":32},
+      {"type":"range","id":"padding_horizontal_mobile","label":"Innenabstand seitlich Mobil","min":0,"max":80,"step":4,"unit":"px","default":24},
+      {"type":"select","id":"vertical_align","label":"Vertikale Ausrichtung","default":"space-between","options":[{"value":"space-between","label":"Oben und unten"},{"value":"start","label":"Oben"},{"value":"center","label":"Mitte"},{"value":"end","label":"Unten"}]},
+      {"type":"select","id":"text_align","label":"Textausrichtung","default":"left","options":[{"value":"left","label":"Links"},{"value":"center","label":"Zentriert"},{"value":"right","label":"Rechts"}]},
+      {"type":"header","content":"Oberzeile"},
+      {"type":"range","id":"label_size","label":"Größe Desktop","min":8,"max":24,"step":1,"unit":"px","default":10},
+      {"type":"range","id":"label_size_mobile","label":"Größe Mobil","min":8,"max":20,"step":1,"unit":"px","default":10},
+      {"type":"range","id":"label_line","label":"Zeilenhöhe","min":90,"max":220,"step":5,"unit":"%","default":140},
+      {"type":"range","id":"label_letter","label":"Buchstabenabstand","min":0,"max":8,"step":0.2,"unit":"px","default":1.8},
+      {"type":"select","id":"label_weight","label":"Stärke","default":"700","options":[{"value":"400","label":"Normal"},{"value":"500","label":"Medium"},{"value":"600","label":"Semibold"},{"value":"700","label":"Bold"}]},
+      {"type":"select","id":"label_transform","label":"Schreibweise","default":"uppercase","options":[{"value":"none","label":"Original"},{"value":"uppercase","label":"Großbuchstaben"}]},
+      {"type":"header","content":"Überschrift"},
+      {"type":"range","id":"heading_size","label":"Größe Desktop","min":24,"max":90,"step":2,"unit":"px","default":56},
+      {"type":"range","id":"heading_size_mobile","label":"Größe Mobil","min":22,"max":64,"step":1,"unit":"px","default":42},
+      {"type":"range","id":"heading_line","label":"Zeilenhöhe","min":75,"max":180,"step":1,"unit":"%","default":98},
+      {"type":"range","id":"heading_letter","label":"Buchstabenabstand","min":-4,"max":4,"step":0.1,"unit":"px","default":-1.8},
+      {"type":"select","id":"heading_weight","label":"Stärke","default":"400","options":[{"value":"400","label":"Normal"},{"value":"500","label":"Medium"},{"value":"600","label":"Semibold"},{"value":"700","label":"Bold"}]},
+      {"type":"header","content":"Beschreibung"},
+      {"type":"range","id":"body_size","label":"Größe Desktop","min":12,"max":30,"step":1,"unit":"px","default":15},
+      {"type":"range","id":"body_size_mobile","label":"Größe Mobil","min":12,"max":26,"step":1,"unit":"px","default":15},
+      {"type":"range","id":"body_line","label":"Zeilenhöhe Desktop","min":110,"max":220,"step":5,"unit":"%","default":165},
+      {"type":"range","id":"body_line_mobile","label":"Zeilenhöhe Mobil","min":110,"max":220,"step":5,"unit":"%","default":165},
+      {"type":"range","id":"body_letter","label":"Buchstabenabstand","min":-1,"max":4,"step":0.1,"unit":"px","default":0},
+      {"type":"range","id":"body_width","label":"Maximale Breite","min":160,"max":600,"step":10,"unit":"px","default":320},
+      {"type":"range","id":"body_margin","label":"Abstand nach Überschrift","min":0,"max":80,"step":2,"unit":"px","default":22}
+    ]}
+  ],
+  "presets":[{"name":"Codex Start — System","blocks":[{"type":"domain"},{"type":"domain"},{"type":"domain"},{"type":"domain"}]}]
+}
+{% endschema %}
